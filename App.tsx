@@ -161,6 +161,7 @@ const App: React.FC = () => {
   const [gold, setGold] = useState(1000);
   const [playerLevel, setPlayerLevel] = useState(1);
   const [difficulty, setDifficulty] = useState(1);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Game View State
   const [dungeon, setDungeon] = useState<DungeonData | null>(null);
