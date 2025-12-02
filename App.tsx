@@ -162,6 +162,9 @@ const App: React.FC = () => {
   const [playerLevel, setPlayerLevel] = useState(1);
   const [difficulty, setDifficulty] = useState(1);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
   // Game View State
   const [dungeon, setDungeon] = useState<DungeonData | null>(null);
@@ -306,19 +309,50 @@ const App: React.FC = () => {
 
   // --- RENDER ---
 
+  // 未认证时显示登录页面
+  if (!isAuthenticated) {
+    return (
+      <div className="h-screen bg-[#020617] text-gray-200 flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-slate-900/90 border border-cyan-500/50 rounded-lg p-8 backdrop-blur-sm shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+          <h1 className="text-2xl font-bold text-cyan-400 text-center mb-6 font-mono">登录账号</h1>
+          <div className="space-y-4">
+            <input 
+              type="text" 
+              placeholder="用户名" 
+              className="w-full bg-slate-800 border border-cyan-900/50 rounded px-4 py-2 text-gray-200 focus:outline-none focus:border-cyan-500"
+            />
+            <input 
+              type="password" 
+              placeholder="密码" 
+              className="w-full bg-slate-800 border border-cyan-900/50 rounded px-4 py-2 text-gray-200 focus:outline-none focus:border-cyan-500"
+            />
+            <button
+              onClick={() => setIsAuthenticated(true)}
+              className="w-full bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white py-3 rounded-md font-bold transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_25px_rgba(6,182,212,0.5)]"
+            >
+              登录
+            </button>
+          </div>
+          <div className="text-center mt-4 text-cyan-300 text-sm">
+            游戏登录界面 - 默认显示
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 已认证后显示Home页面
   if (gameState === 'HOME') {
     return (
         <>
-          {!isAuthenticated && (
-            <div className="absolute top-4 right-4">
-              <button
-                onClick={() => setIsAuthenticated(false)}
-                className="px-4 py-2 bg-cyan-900/80 border border-cyan-500 rounded-lg text-cyan-400 text-sm font-mono hover:shadow-[0_0_10px_rgba(6,182,212,0.3)] transition-all"
-              >
-                登录账号
-              </button>
-            </div>
-          )}
+          <div className="absolute top-4 right-4">
+            <button
+              onClick={() => setIsAuthenticated(false)}
+              className="px-4 py-2 bg-cyan-900/80 border border-cyan-500 rounded-lg text-cyan-400 text-sm font-mono hover:shadow-[0_0_10px_rgba(6,182,212,0.3)] transition-all"
+            >
+              退出登录
+            </button>
+          </div>
           <Home 
             gold={gold} 
             level={playerLevel} 
@@ -437,8 +471,39 @@ const App: React.FC = () => {
       
       {/* 登录页面 - 覆盖整个应用 */}
       {!isAuthenticated && !checkingAuth && (
-        <div className="fixed inset-0 z-50 bg-black/90">
-          <LoginPage onLoginSuccess={handleLoginSuccess} />
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center">
+          <div className="bg-slate-900 border border-cyan-500/30 rounded-lg p-8 w-full max-w-md">
+            <h1 className="text-3xl font-bold text-cyan-400 mb-6 text-center">赛博地牢</h1>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">用户名</label>
+                <input 
+                  type="text" 
+                  className="w-full bg-slate-800 border border-slate-700 rounded px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" 
+                  placeholder="输入用户名"
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">密码</label>
+                <input 
+                  type="password" 
+                  className="w-full bg-slate-800 border border-slate-700 rounded px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" 
+                  placeholder="输入密码"
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+              <button 
+                onClick={() => {
+                  setIsAuthenticated(true);
+                  setGameState('HOME');
+                }}
+                className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-2 px-4 rounded transition-all duration-300 shadow-lg hover:shadow-cyan-500/20"
+              >
+                登录
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
