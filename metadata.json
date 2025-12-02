@@ -1,0 +1,5 @@
+{
+  "name": "Pixel Dungeon Architect",
+  "description": "A procedural pixel-art dungeon generator with interactive room inspection powered by Gemini AI.",
+  "requestFramePermissions": []
+}
