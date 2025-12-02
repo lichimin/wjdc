@@ -172,6 +172,14 @@ const App: React.FC = () => {
   const [lore, setLore] = useState<string>("");
   const [loadingLore, setLoadingLore] = useState(false);
   
+  // Authentication functions
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setUsername('');
+    setPassword('');
+    setGameState('HOME');
+  };
+  
   // Loot & Inventory State
   const [isChestOpen, setIsChestOpen] = useState(false);
   const [currentLoot, setCurrentLoot] = useState<LootItem[]>([]);
