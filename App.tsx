@@ -420,7 +420,12 @@ const App: React.FC = () => {
   };
 
   const handleConfirmLoot = (selectedItems: LootItem[]) => {
-    setRunInventory(prev => [...prev, ...selectedItems]);
+    // Generate unique IDs for each item to prevent duplicate keys
+    const itemsWithUniqueIds = selectedItems.map((item, index) => ({
+      ...item,
+      id: `loot-${Date.now()}-${Math.random().toString(36).substring(2, 9)}-${index}`
+    }));
+    setRunInventory(prev => [...prev, ...itemsWithUniqueIds]);
     setIsChestOpen(false);
     setCurrentLoot([]);
   };

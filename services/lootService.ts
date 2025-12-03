@@ -25,13 +25,16 @@ const getRandomRarity = () => {
 };
 
 export const generateLoot = (count: number): LootItem[] => {
+  // Generate a unique base for this batch of loot
+  const uniqueBase = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  
   return Array.from({ length: count }, (_, i) => {
     const rarityConfig = getRandomRarity();
     const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
     const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
     
     return {
-      id: `loot-${Date.now()}-${i}`,
+      id: `loot-${uniqueBase}-${i}`,
       name: `${adj} ${noun}`,
       value: Math.floor((Math.random() * 50 + 10) * rarityConfig.multiplier),
       rarity: rarityConfig.type,
