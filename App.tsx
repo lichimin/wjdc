@@ -622,9 +622,21 @@ const App: React.FC = () => {
             )}
             
             <button
-              onClick={() => {
-                console.log('Login button clicked directly in App.tsx');
-                alert('Login button clicked!');
+              onClick={(e) => {
+                console.log('=====================================');
+                console.log('Login button clicked!');
+                console.log('Event object:', e);
+                console.log('Event type:', e.type);
+                console.log('Button element:', e.target);
+                console.log('Current time:', new Date().toISOString());
+                console.log('Username:', username);
+                console.log('Password:', password);
+                console.log('=====================================');
+                
+                // 立即执行alert确保用户看到反馈
+                alert('登录按钮已点击！正在处理登录...');
+                
+                // 调用登录处理函数
                 handleLogin();
               }}
               style={{
