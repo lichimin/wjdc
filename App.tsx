@@ -281,7 +281,8 @@ const App: React.FC = () => {
       console.log('API response data:', data.data);
       
       // Map API response to LootItem format with error handling
-      const mappedItems = data.data.map((item: any) => {
+      const mappedItems = data.data.map((item: any, index: number) => {
+        console.log(`Item ${index} (${item.type}):`, item);
         let itemData: any;
         let itemType: string = item.type || 'treasure';
         
@@ -304,8 +305,12 @@ const App: React.FC = () => {
           itemValue = itemData.value || 0;
         }
         
+        // Generate ID with detailed logging
+        const generatedId = item.id || item.equipment?.id || itemData.id || Math.random().toString(36).substr(2, 9);
+        console.log(`Generated ID for ${itemType}: ${generatedId} from item.id: ${item.id}, item.equipment.id: ${item.equipment?.id}, itemData.id: ${itemData.id}`);
+        
         return {
-          id: item.id || item.equipment?.id || itemData.id || Math.random().toString(36).substr(2, 9),
+          id: generatedId,
           name: itemData.name || 'Unknown Item',
           value: itemValue,
           iconColor: itemType === 'equipment' ? '#4ade80' : '#ffd700', // Different color for equipment vs treasure

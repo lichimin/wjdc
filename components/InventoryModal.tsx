@@ -26,21 +26,47 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
 
   // Get original equipment data from API response
   const getOriginalEquipmentData = (itemId: string) => {
-    return originalItems.find(apiItem => 
-      apiItem.type === 'equipment' && 
-      (apiItem.id?.toString() === itemId || 
-       apiItem.equipment?.id?.toString() === itemId)
-    );
+    console.log('Searching for equipment with ID:', itemId);
+    console.log('Available original items:', originalItems);
+    
+    const foundItem = originalItems.find((apiItem: any) => {
+      console.log(`Checking item type: ${apiItem.type}, id: ${apiItem.id}, equipment id: ${apiItem.equipment?.id}`);
+      const matchesType = apiItem.type === 'equipment';
+      const matchesItemId = apiItem.id?.toString() === itemId;
+      const matchesEquipmentId = apiItem.equipment?.id?.toString() === itemId;
+      
+      console.log(`Matches type: ${matchesType}, matches item id: ${matchesItemId}, matches equipment id: ${matchesEquipmentId}`);
+      
+      return matchesType && (matchesItemId || matchesEquipmentId);
+    });
+    
+    console.log('Found equipment data:', foundItem);
+    return foundItem;
   };
 
   // Handle equipment click to show details
   const handleEquipmentClick = (item: LootItem) => {
+    console.log('Equipment clicked:', item);
     if (item.type === 'equipment') {
+      console.log('Item type is equipment, searching for original data');
       const originalData = getOriginalEquipmentData(item.id);
+      console.log('Original equipment data found:', originalData);
       if (originalData) {
+        console.log('Setting selected equipment:', originalData);
         setSelectedEquipment(originalData);
+        console.log('Setting showDetails to true');
         setShowDetails(true);
+        // Log current state after update
+        setTimeout(() => {
+          console.log('After state update - selectedEquipment:', selectedEquipment);
+          console.log('After state update - showDetails:', showDetails);
+        }, 0);
+      } else {
+        console.log('No original equipment data found for item ID:', item.id);
+        console.log('Original items available:', originalItems);
       }
+    } else {
+      console.log('Item type is not equipment:', item.type);
     }
   };
 
