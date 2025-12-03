@@ -439,19 +439,12 @@ const App: React.FC = () => {
   if (gameState === 'HOME') {
     return (
         <>
-          <div className="absolute top-4 right-4">
-            <button
-              onClick={() => setIsAuthenticated(false)}
-              className="px-4 py-2 bg-cyan-900/80 border border-cyan-500 rounded-lg text-cyan-400 text-sm font-mono hover:shadow-[0_0_10px_rgba(6,182,212,0.3)] transition-all"
-            >
-              退出登录
-            </button>
-          </div>
           {userData && (
             <Home 
               userData={userData}
               onStartAdventure={startGame} 
               onOpenInventory={() => setIsInventoryOpen(true)}
+              onLogout={() => setIsAuthenticated(false)}
             />
           )}
         {/* Inventory Overlay for Home */}

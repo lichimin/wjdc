@@ -5,6 +5,7 @@ interface HomeProps {
   userData: UserData;
   onStartAdventure: (difficulty: number) => void;
   onOpenInventory: () => void;
+  onLogout: () => void;
 }
 
 const DIFFICULTIES = [
@@ -77,8 +78,9 @@ const PixelIcon: React.FC<{ type: 'sword' | 'bag' | 'anvil' | 'shirt', scale?: n
   );
 };
 
-export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenInventory }) => {
+export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenInventory, onLogout }) => {
   const [showDifficulty, setShowDifficulty] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
 
   return (
     <div className="h-screen w-full bg-[#020205] flex flex-col font-sans relative overflow-hidden text-gray-100 selection:bg-cyan-500 selection:text-black">
@@ -93,18 +95,38 @@ export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenIn
       {/* --- HEADER (HUD) --- */}
       <header className="relative z-10 p-4 flex justify-between items-start">
         {/* Profile Badge */}
-        <div className="flex items-center gap-3 bg-slate-900/80 border border-cyan-500/30 pl-1 pr-4 py-1 rounded-r-full shadow-[0_0_10px_rgba(6,182,212,0.2)] backdrop-blur-sm">
-           <div className="w-10 h-10 rounded-full bg-cyan-900/50 border border-cyan-400 overflow-hidden relative">
-              <img 
-                src={userData.img || "https://czrimg.godqb.com/game/v2/play2/1.png"} 
-                alt={userData.username || "Player"} 
-                className="w-full h-full object-cover" 
-              />
-           </div>
-           <div className="flex flex-col">
-              <span className="text-[10px] text-cyan-400 font-bold tracking-widest uppercase font-['Press_Start_2P']">{userData.username || 'Player_01'}</span>
-              <span className="text-[8px] text-slate-400 font-mono">LV.{userData.level || 1} // {userData.className || 'WARRIOR'}</span>
-           </div>
+        <div className="relative">
+          <div 
+            className="flex items-center gap-3 bg-slate-900/80 border border-cyan-500/30 pl-1 pr-4 py-1 rounded-r-full shadow-[0_0_10px_rgba(6,182,212,0.2)] backdrop-blur-sm cursor-pointer hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-all"
+            onClick={() => setShowLogout(!showLogout)}
+          >
+             <div className="w-10 h-10 rounded-full bg-cyan-900/50 border border-cyan-400 overflow-hidden relative">
+                <img 
+                  src={userData.img || "https://czrimg.godqb.com/game/v2/play2/1.png"} 
+                  alt={userData.username || "Player"} 
+                  className="w-full h-full object-cover" 
+                />
+             </div>
+             <div className="flex flex-col">
+                <span className="text-[10px] text-cyan-400 font-bold tracking-widest uppercase font-['Press_Start_2P']">{userData.username || 'Player_01'}</span>
+                <span className="text-[8px] text-slate-400 font-mono">LV.{userData.level || 1} // {userData.className || 'WARRIOR'}</span>
+             </div>
+          </div>
+          
+          {/* Logout Button */}
+          {showLogout && (
+            <div className="absolute top-full left-0 mt-2 bg-slate-900/95 border border-cyan-500/50 rounded-lg shadow-[0_0_15px_rgba(6,182,212,0.3)] backdrop-blur-sm z-20">
+              <button
+                onClick={() => {
+                  setShowLogout(false);
+                  onLogout();
+                }}
+                className="px-4 py-2 text-[10px] text-cyan-400 font-mono hover:bg-cyan-900/30 w-full text-left rounded-lg transition-colors"
+              >
+                退出登录
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Top Right Stats */}
