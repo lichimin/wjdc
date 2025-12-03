@@ -67,8 +67,15 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     }
   };
 
-  // Get equipment level color based on level
-  const getLevelColor = (level: number) => {
+const closeDetails = () => {
+  setShowDetails(false);
+  if (detailsModalRef.current) {
+    detailsModalRef.current.style.display = 'none';
+  }
+};
+
+// Get equipment level color based on level
+const getLevelColor = (level: number) => {
     switch (level) {
       case 1: return 'text-white'; // Common
       case 2: return 'text-blue-400'; // Rare
@@ -186,14 +193,14 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         className={`fixed inset-0 z-9999 flex items-center justify-center ${showDetails ? 'block' : 'hidden'}`}
       >
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowDetails(false)}></div>
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={closeDetails}></div>
 
           <div className="relative z-10 w-full max-w-md p-6 bg-slate-900/95 border border-slate-700 rounded-xl shadow-2xl overflow-hidden">
             {/* Close Button */}
             <button 
               onClick={(e) => {
                 e.stopPropagation(); // Prevent event bubbling to parent backdrop
-                setShowDetails(false);
+                closeDetails();
               }}
               className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white transition-colors"
             >
@@ -268,7 +275,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
             )}
           </div>
         </div>
-      )}
+      </div>
     </>
   );
 };
