@@ -51,7 +51,7 @@ class AuthService {
         throw new Error(data.message || '登录失败');
       }
       
-      if (!data.token) {
+      if (!data.data.token) {
         throw new Error('服务器未返回认证令牌');
       }
       
@@ -66,11 +66,11 @@ class AuthService {
       };
       
       // 保存用户数据和token
-      this.saveAuthData(userData, data.token || '');
+      this.saveAuthData(userData, data.data.token);
       
       return {
         userData,
-        token: data.token || '',
+        token: data.data.token,
       };
     } catch (error) {
       console.error('Login error:', error);
