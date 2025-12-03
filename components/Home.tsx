@@ -104,6 +104,15 @@ const PixelIcon: React.FC<{ type: 'sword' | 'bag' | 'anvil' | 'shirt', scale?: n
       )))}
     </div>
   );
+};
+
+export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenInventory, onLogout }) => {
+  const [showDifficulty, setShowDifficulty] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userSkin, setUserSkin] = useState<UserSkin | null>(null);
+  const [currentIdleImageIndex, setCurrentIdleImageIndex] = useState(0);
+  const animationRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch user skin data on component mount
   useEffect(() => {
@@ -177,15 +186,6 @@ const PixelIcon: React.FC<{ type: 'sword' | 'bag' | 'anvil' | 'shirt', scale?: n
       }
     };
   }, [userSkin]);
-};
-
-export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenInventory, onLogout }) => {
-  const [showDifficulty, setShowDifficulty] = useState(false);
-  const [showLogout, setShowLogout] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [userSkin, setUserSkin] = useState<UserSkin | null>(null);
-  const [currentIdleImageIndex, setCurrentIdleImageIndex] = useState(0);
-  const animationRef = useRef<NodeJS.Timeout | null>(null);
 
   return (
     <div className="h-screen w-full bg-[#020205] flex flex-col font-sans relative overflow-hidden text-gray-100 selection:bg-cyan-500 selection:text-black">
