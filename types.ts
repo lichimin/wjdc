@@ -36,7 +36,7 @@ export enum Rarity {
 }
 
 export interface LootItem {
-  id: string;
+  id: string | number;
   name: string;
   value: number;
   rarity: Rarity;

@@ -25,15 +25,17 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   const totalValue = items.reduce((sum, item) => sum + (item.value || 0), 0);
 
   // Get original equipment data from API response
-  const getOriginalEquipmentData = (itemId: string) => {
-    console.log('Searching for equipment with ID:', itemId);
+  const getOriginalEquipmentData = (itemId: any) => {
+    console.log('Searching for equipment with ID:', itemId, 'Type:', typeof itemId);
     console.log('Available original items:', originalItems);
     
     const foundItem = originalItems.find((apiItem: any) => {
-      console.log(`Checking item type: ${apiItem.type}, id: ${apiItem.id}, equipment id: ${apiItem.equipment?.id}`);
+      console.log(`Checking item type: ${apiItem.type}, id: ${apiItem.id} (${typeof apiItem.id}), equipment id: ${apiItem.equipment?.id} (${typeof apiItem.equipment?.id})`);
       const matchesType = apiItem.type === 'equipment';
-      const matchesItemId = apiItem.id?.toString() === itemId;
-      const matchesEquipmentId = apiItem.equipment?.id?.toString() === itemId;
+      
+      // Convert both to string for type-agnostic comparison
+      const matchesItemId = apiItem.id?.toString() === String(itemId);
+      const matchesEquipmentId = apiItem.equipment?.id?.toString() === String(itemId);
       
       console.log(`Matches type: ${matchesType}, matches item id: ${matchesItemId}, matches equipment id: ${matchesEquipmentId}`);
       
@@ -56,11 +58,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         setSelectedEquipment(originalData);
         console.log('Setting showDetails to true');
         setShowDetails(true);
-        // Log current state after update
-        setTimeout(() => {
-          console.log('After state update - selectedEquipment:', selectedEquipment);
-          console.log('After state update - showDetails:', showDetails);
-        }, 0);
       } else {
         console.log('No original equipment data found for item ID:', item.id);
         console.log('Original items available:', originalItems);
