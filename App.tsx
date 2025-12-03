@@ -10,6 +10,7 @@ import { InventoryModal } from './components/InventoryModal';
 import { StatsModal } from './components/StatsModal';
 import { SummaryModal } from './components/SummaryModal';
 import { Home } from './components/Home'; // Imported Home
+import SimpleLogin from './components/SimpleLogin';
 import { DungeonData, Room, ItemType, InputState, PlayerState, Enemy, Projectile, FloatingText, LootItem } from './types';
 import { GoogleGenAI } from "@google/genai";
 
@@ -535,49 +536,19 @@ const App: React.FC = () => {
       
       {/* 登录页面 - 覆盖整个应用 */}
       {!isAuthenticated && !checkingAuth && (
-        <div className="fixed inset-0 z-9999 bg-black/90 flex items-center justify-center">
-          <div className="bg-slate-900 border border-cyan-500/30 rounded-lg p-8 w-full max-w-md">
-            <h1 className="text-3xl font-bold text-cyan-400 mb-6 text-center">赛博地牢</h1>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">用户名</label>
-                <input 
-                  type="text" 
-                  className="w-full bg-slate-800 border border-slate-700 rounded px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" 
-                  placeholder="输入用户名"
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">密码</label>
-                <input 
-                  type="password" 
-                  className="w-full bg-slate-800 border border-slate-700 rounded px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" 
-                  placeholder="输入密码"
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              {loginError && (
-                <div className="text-red-500 text-sm mb-2">{loginError}</div>
-              )}
-              <button 
-                onClick={() => {
-                  alert('Button clicked!');
-                  console.log('Login button clicked!');
-                  handleLogin();
-                }}
-                disabled={checkingAuth}
-                className={`w-full font-bold py-3 px-4 rounded transition-all duration-300 shadow-lg hover:shadow-cyan-500/20 cursor-pointer border-2 border-transparent hover:border-yellow-500 ${  checkingAuth 
-                    ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white'
-                }`}
-                style={{ zIndex: 1000, position: 'relative' }}
-              >
-                {checkingAuth ? '登录中...' : '登录'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <SimpleLogin 
+          onLogin={(userData) => {
+            console.log('SimpleLogin onLogin callback', userData);
+            setUserData(userData);
+            setIsAuthenticated(true);
+            setUsername('');
+            setPassword('');
+            setLoginError('');
+            // 如果需要，这里可以添加游戏初始化逻辑
+          }}
+          setLoginError={setLoginError}
+          checkingAuth={checkingAuth}
+        />
       )}
     </div>
   );
