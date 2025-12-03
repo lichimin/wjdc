@@ -338,41 +338,26 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       p.isMoving = false;
     }
 
-    // Auto Fire Logic
+    // Manual Fire Logic - Only fire when attack button is pressed
     const pCenterX = p.x + TILE_SIZE / 2;
     const pCenterY = p.y + TILE_SIZE / 2;
 
-    if (p.fireCooldown <= 0) { 
-      let closestEnemy: Enemy | null = null;
-      let closestDist = AUTO_FIRE_RANGE;
-      const targetableEnemies = enemiesRef.current.filter(e => e.health > 0);
-
-      targetableEnemies.forEach(e => {
-         const ex = e.x + TILE_SIZE / 2;
-         const ey = e.y + TILE_SIZE / 2;
-         const dist = Math.sqrt((ex - pCenterX) ** 2 + (ey - pCenterY) ** 2);
-         if (dist < closestDist) {
-            closestDist = dist;
-            closestEnemy = e;
-         }
+    if (p.fireCooldown <= 0 && input.isAttacking) {
+      // Determine bullet direction based on player facing
+      const bulletAngle = p.facingLeft ? Math.PI : 0;
+      const projSpeed = p.projectileSpeed || 8;
+      
+      projectilesRef.current.push({
+         id: Math.random().toString(),
+         x: pCenterX,
+         y: pCenterY,
+         vx: Math.cos(bulletAngle) * projSpeed,
+         vy: Math.sin(bulletAngle) * projSpeed,
+         life: 60,
+         damage: (p.damage || 10) + Math.floor(Math.random() * 5)
       });
-
-      if (closestEnemy) {
-         const targetX = (closestEnemy as Enemy).x + TILE_SIZE / 2;
-         const targetY = (closestEnemy as Enemy).y + TILE_SIZE / 2;
-         const angle = Math.atan2(targetY - pCenterY, targetX - pCenterX);
-         const projSpeed = p.projectileSpeed || 8;
-         projectilesRef.current.push({
-            id: Math.random().toString(),
-            x: pCenterX,
-            y: pCenterY,
-            vx: Math.cos(angle) * projSpeed,
-            vy: Math.sin(angle) * projSpeed,
-            life: 60,
-            damage: (p.damage || 10) + Math.floor(Math.random() * 5)
-         });
-         p.fireCooldown = FIRE_RATE;
-      }
+      
+      p.fireCooldown = FIRE_RATE;
     }
 
     // Projectiles

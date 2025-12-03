@@ -613,20 +613,6 @@ const App: React.FC = () => {
           <button onClick={() => setIsStatsOpen(true)} className="p-2 bg-slate-900 border border-slate-700 rounded hover:border-slate-500 transition-colors text-slate-400 hover:text-white">
             <span className="font-serif italic font-bold">i</span>
           </button>
-          <button 
-            onClick={toggleFullscreen} 
-            className="p-2 bg-slate-900 border border-cyan-800 rounded hover:border-cyan-600 transition-colors text-cyan-400 hover:text-cyan-300"
-          >
-            {isFullscreen ? '退出全屏' : '全屏'}
-          </button>
-          {isAuthenticated && (
-            <button 
-              onClick={handleLogout}
-              className="ml-2 px-3 py-1 text-xs bg-red-900/50 border border-red-800 text-red-400 hover:text-red-300 rounded transition-colors"
-            >
-              登出
-            </button>
-          )}
         </div>
       </header>
 
@@ -666,12 +652,28 @@ const App: React.FC = () => {
            </div>
            
            {/* Action Buttons (Bottom Right) */}
-           <div className="absolute bottom-12 right-12 z-50">
-              <CyberDashButton 
-                active={dashBtnActive}
-                onPress={() => { inputRef.current.isDodging = true; setDashBtnActive(true); }}
-                onRelease={() => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
-              />
+           <div className="absolute bottom-12 right-12 z-50 flex gap-4">
+              {/* Dodge Button */}
+              <div style={{ transform: 'scale(0.8)' }}>
+                <CyberDashButton 
+                  active={dashBtnActive}
+                  onPress={() => { inputRef.current.isDodging = true; setDashBtnActive(true); }}
+                  onRelease={() => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
+                />
+              </div>
+              
+              {/* Attack Button */}
+              <button 
+                className="w-12 h-12 bg-gradient-to-br from-red-900 to-red-800 border-2 border-red-700 rounded-full flex items-center justify-center text-white shadow-lg hover:from-red-800 hover:to-red-700 transition-all active:scale-95"
+                onMouseDown={() => { inputRef.current.isAttacking = true; }}
+                onMouseUp={() => { inputRef.current.isAttacking = false; }}
+                onTouchStart={() => { inputRef.current.isAttacking = true; }}
+                onTouchEnd={() => { inputRef.current.isAttacking = false; }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </button>
            </div>
         </div>
       </main>
