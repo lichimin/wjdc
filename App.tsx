@@ -394,14 +394,37 @@ const App: React.FC = () => {
               type="text" 
               placeholder="用户名" 
               className="w-full bg-slate-800 border border-cyan-900/50 rounded px-4 py-2 text-gray-200 focus:outline-none focus:border-cyan-500"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
             <input 
               type="password" 
               placeholder="密码" 
               className="w-full bg-slate-800 border border-cyan-900/50 rounded px-4 py-2 text-gray-200 focus:outline-none focus:border-cyan-500"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
+            {loginError && (
+              <div className="text-red-500 text-sm">{loginError}</div>
+            )}
             <button
-              onClick={() => setIsAuthenticated(true)}
+              onClick={(e) => {
+                console.log('=====================================');
+                console.log('实际登录按钮被点击了！');
+                console.log('Event object:', e);
+                console.log('Event type:', e.type);
+                console.log('Button element:', e.target);
+                console.log('Current time:', new Date().toISOString());
+                console.log('Username:', username);
+                console.log('Password:', password);
+                console.log('=====================================');
+                
+                // 立即执行alert确保用户看到反馈
+                alert('登录按钮已点击！正在处理登录...');
+                
+                // 调用登录处理函数
+                handleLogin();
+              }}
               className="w-full bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white py-3 rounded-md font-bold transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_25px_rgba(6,182,212,0.5)]"
             >
               登录
