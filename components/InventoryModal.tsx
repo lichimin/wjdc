@@ -56,19 +56,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     };
     
     setSelectedEquipment(completeItem);
-    alert('Equipment clicked: ' + item.name + '. Modal should now appear.');
-    
-    // Force re-render to ensure the modal appears
-    setTimeout(() => {
-      console.log('Modal should be visible now');
-      const modal = document.getElementById('equipment-details-modal');
-      if (modal) {
-        console.log('Modal found:', modal);
-        console.log('Modal style:', getComputedStyle(modal));
-      } else {
-        console.log('Modal not found in DOM');
-      }
-    }, 100);
   };
 
   const closeDetails = () => {
@@ -192,35 +179,102 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       {selectedEquipment && (
         <div 
           id="equipment-details-modal"
-          className="fixed inset-0 z-[99999] flex items-center justify-center p-4"
-          style={{ 
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            zIndex: 99999,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            opacity: 1,
-            visibility: 'visible',
-            pointerEvents: 'auto'
-          }}
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-gradient-to-br from-black via-slate-900 to-black"
         >
           {/* Modal Content */}
-          <div className="bg-white rounded-lg p-8 shadow-xl">
-            <h2 className="text-2xl font-bold mb-4">装备详情</h2>
-            <p className="mb-2">名称: {selectedEquipment.name}</p>
-            <p className="mb-2">稀有度: {selectedEquipment.rarity}</p>
-            <p className="mb-2">价值: {selectedEquipment.value} 金币</p>
-            <button 
-              onClick={closeDetails} 
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
-            >
-              关闭
-            </button>
+          <div className="relative w-full max-w-2xl bg-slate-950 border-4 border-cyan-500/50 rounded-lg shadow-[0_0_20px_rgba(0,255,255,0.5)] p-6 font-mono">
+            {/* Header with pixel-style title */}
+            <div className="flex justify-between items-center mb-6 pb-4 border-b-4 border-amber-500/30">
+              <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
+                {selectedEquipment.name}
+              </h2>
+              <button 
+                onClick={closeDetails} 
+                className="p-2 bg-red-500/20 border-2 border-red-500 text-red-400 hover:bg-red-500/30 transition-all hover:shadow-[0_0_10px_rgba(255,0,0,0.8)]"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="square" strokeLinejoin="square" strokeWidth={2} d="M6 6L18 18M6 18L18 6" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Equipment Info Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Left Column - Basic Info */}
+              <div className="space-y-4">
+                {/* Rarity */}
+                <div className="bg-slate-900 p-3 rounded border border-slate-800">
+                  <div className="text-sm text-slate-400 mb-1">稀有度</div>
+                  <div className={`text-xl font-bold ${getRarityStyle(selectedEquipment.rarity).match(/text-\S+/)?.[0] || 'text-slate-300'}`}>
+                    {selectedEquipment.rarity}
+                  </div>
+                </div>
+
+                {/* Value */}
+                <div className="bg-slate-900 p-3 rounded border border-slate-800">
+                  <div className="text-sm text-slate-400 mb-1">价值</div>
+                  <div className="text-xl font-bold text-amber-400">
+                    {selectedEquipment.value} G
+                  </div>
+                </div>
+
+                {/* Attack Power */}
+                <div className="bg-slate-900 p-3 rounded border border-slate-800">
+                  <div className="text-sm text-slate-400 mb-1">攻击力</div>
+                  <div className="text-xl font-bold text-red-400">
+                    {selectedEquipment.attack_power}
+                  </div>
+                </div>
+
+                {/* Defense Power */}
+                <div className="bg-slate-900 p-3 rounded border border-slate-800">
+                  <div className="text-sm text-slate-400 mb-1">防御力</div>
+                  <div className="text-xl font-bold text-blue-400">
+                    {selectedEquipment.defense_power}
+                  </div>
+                </div>
+
+                {/* Health */}
+                <div className="bg-slate-900 p-3 rounded border border-slate-800">
+                  <div className="text-sm text-slate-400 mb-1">生命值</div>
+                  <div className="text-xl font-bold text-green-400">
+                    {selectedEquipment.health}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column - Additional Attributes */}
+              <div>
+                <div className="text-lg font-bold text-cyan-400 mb-3">额外属性</div>
+                <div className="space-y-3">
+                  {selectedEquipment.additional_attrs?.map((attr, index) => (
+                    <div key={index} className="bg-slate-900 p-3 rounded border border-purple-500/30">
+                      <div className="flex justify-between items-center">
+                        <div className="text-sm text-purple-300">{attr.attr_name}</div>
+                        <div className="text-sm font-bold text-purple-400">{attr.attr_value}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pixel-style decoration */}
+                <div className="mt-6 p-4 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border border-cyan-500/20 rounded">
+                  <div className="text-xs text-slate-500">
+                    <span className="text-cyan-400">[SYSTEM]</span> 装备详情已加载
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Close Button */}
+            <div className="mt-8 text-center">
+              <button 
+                onClick={closeDetails}
+                className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-purple-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-cyan-500 to-purple-500 transition-all hover:shadow-[0_0_15px_rgba(0,255,255,0.8)]"
+              >
+                关闭详情
+              </button>
+            </div>
           </div>
         </div>
       )}
