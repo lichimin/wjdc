@@ -24,7 +24,7 @@ const isOverlapping = (r1: Room, r2: Room) => {
   );
 };
 
-export const generateDungeon = (difficultyMultiplier: number = 1): DungeonData => {
+export const generateDungeon = (difficultyMultiplier: number = 1, difficultyLevel: string = 'B'): DungeonData => {
   // 1. Initialize Grid
   const grid: TileType[][] = Array.from({ length: MAP_HEIGHT }, () =>
     Array(MAP_WIDTH).fill(TileType.VOID)
@@ -118,7 +118,7 @@ export const generateDungeon = (difficultyMultiplier: number = 1): DungeonData =
 
   // 4. Populate Items & Enemies
   rooms.forEach(room => {
-    populateItemsByTheme(room);
+    populateItemsByTheme(room, difficultyLevel);
   });
 
   // Inject Standard Enemies (Skip Room 0)
@@ -257,7 +257,28 @@ function tryAddItem(room: Room, x: number, y: number, type: ItemType): boolean {
   return true;
 }
 
-function populateItemsByTheme(room: Room) {
+function populateItemsByTheme(room: Room, difficultyLevel: string) {
+  // 根据难度等级生成宝箱数量
+  const getChestCountByDifficulty = (level: string): number => {
+    switch (level) {
+      case 'B': return randomInt(5, 6);
+      case 'A': return randomInt(6, 7);
+      case 'S': return randomInt(7, 8);
+      case 'SS': return randomInt(8, 9);
+      case 'SSS': return randomInt(10, 12);
+      default: return randomInt(5, 6);
+    }
+  };
+  
+  // 生成宝箱
+  if (Math.random() > 0.7) { // 30%的概率不生成宝箱
+    const chestCount = getChestCountByDifficulty(difficultyLevel);
+    for (let i = 0; i < chestCount; i++) {
+      const tx = randomInt(room.x + 1, room.x + room.w - 2);
+      const ty = randomInt(room.y + 1, room.y + room.h - 2);
+      tryAddItem(room, tx, ty, ItemType.CHEST);
+    }
+  }
   const cx = room.x + Math.floor(room.w / 2);
   const cy = room.y + Math.floor(room.h / 2);
 

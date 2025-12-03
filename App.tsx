@@ -175,6 +175,10 @@ const App: React.FC = () => {
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [lore, setLore] = useState<string>("");
   const [loadingLore, setLoadingLore] = useState(false);
+  const [loadingGame, setLoadingGame] = useState(false); // Loading state for game startup
+  
+  // Treasure Data State
+  const [treasureData, setTreasureData] = useState<any[]>([]);
   
   // Authentication functions
   const handleLogout = () => {
@@ -366,6 +370,33 @@ const App: React.FC = () => {
     } finally {
       setInventoryLoading(false);
     }
+  };  
+  
+  // Fetch treasure data from API
+  const fetchTreasureData = async () => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const token = authService.getAuthToken();
+      if (!token) throw new Error('No authentication token found');
+      
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+      const response = await fetch(`${apiBaseUrl}/api/v1/treasures`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const data = await response.json();
+      if (!data.success) throw new Error(data.message || 'Failed to fetch treasure data');
+      
+      return data.data;
+    } catch (error) {
+      console.error('Error fetching treasure data:', error);
+      return [];
+    }
   };
   
   // Fetch backpack items when inventory is opened
@@ -419,20 +450,63 @@ const App: React.FC = () => {
     };
   }, []);
 
-  const startGame = (selectedDifficulty: number) => {
+  // Function to preload all treasure images
+  const preloadImages = async (treasures: any[]) => {
+    if (!treasures || treasures.length === 0) return Promise.resolve();
+    
+    const imagePromises = treasures.map(treasure => {
+      return new Promise<void>((resolve, reject) => {
+        if (!treasure.image_url) {
+          resolve();
+          return;
+        }
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = () => resolve(); // Continue even if some images fail to load
+        img.src = treasure.image_url.replace(/`/g, ''); // Remove any backticks from URL
+      });
+    });
+    
+    return Promise.all(imagePromises);
+  };
+  
+  const startGame = async (selectedDifficulty: number) => {
     if (!isAuthenticated) {
       // 如果未登录，可以选择跳转到登录页或者弹出提示
       // 这里我们选择直接开始游戏，但在实际场景中可能需要强制登录
       console.warn('Playing without authentication');
     }
     
+    setLoadingGame(true); // Show loading overlay
     setDifficulty(selectedDifficulty);
+    
+    // Fetch treasure data
+    const treasures = await fetchTreasureData();
+    setTreasureData(treasures);
+    
+    // Preload all treasure images
+    await preloadImages(treasures);
+    
+    // Regenerate dungeon with new treasure data
     regenerate(selectedDifficulty);
     setGameState('PLAYING');
+    
+    // Close loading overlay once everything is ready
+    setLoadingGame(false);
   };
 
   const regenerate = (diff: number = 1) => {
-    const newData = generateDungeon(diff);
+    // Convert difficulty number to difficulty level string
+    const difficultyLevelMap = {
+      1: 'B',
+      2: 'A',
+      3: 'S',
+      4: 'SS',
+      5: 'SSS'
+    };
+    const difficultyLevel = difficultyLevelMap[diff as keyof typeof difficultyLevelMap] || 'B';
+    
+    const newData = generateDungeon(diff, difficultyLevel);
     visitedRef.current = Array.from({ length: newData.height }, () => Array(newData.width).fill(false));
     enemiesRef.current = newData.enemies.map(e => ({ ...e }));
     projectilesRef.current = [];
@@ -470,7 +544,7 @@ const App: React.FC = () => {
 
   const handleOpenChest = (chestId: string) => {
     const count = Math.floor(Math.random() * 6) + 3;
-    const loot = generateLoot(count);
+    const loot = generateLoot(count, treasureData, difficulty);
     setCurrentLoot(loot);
     setIsChestOpen(true);
   };
@@ -679,6 +753,19 @@ const App: React.FC = () => {
       </main>
 
       {/* OVERLAYS */}
+      {/* Loading Overlay */}
+      {loadingGame && (
+        <div className="fixed inset-0 bg-gradient-to-br from-slate-950 to-black opacity-95 flex items-center justify-center z-50">
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 border-4 border-cyan-900 border-t-cyan-500 rounded-full animate-spin"></div>
+            </div>
+            <div className="text-cyan-500 font-mono tracking-wider text-lg">LOADING DUNGEON...</div>
+            <div className="text-slate-500 text-sm mt-2">Initializing systems and loading assets</div>
+          </div>
+        </div>
+      )}
+      
       {isChestOpen && <ChestModal loot={currentLoot} onConfirm={handleConfirmLoot} />}
       {isInventoryOpen && <InventoryModal 
         items={runInventory} 
