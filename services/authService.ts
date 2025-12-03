@@ -43,10 +43,11 @@ class AuthService {
 
       console.log('Response received:', response.status, response.statusText);
       
-      const data: ApiResponse<UserData> = await response.json();
+      const data = await response.json();
       console.log('Response data:', data);
       
-      if (!response.ok || data.code !== 200) {
+      // 检查API响应的成功状态
+      if (!response.ok || data.success !== true) {
         throw new Error(data.message || '登录失败');
       }
       
@@ -54,12 +55,22 @@ class AuthService {
         throw new Error('服务器未返回认证令牌');
       }
       
+      // 适配API返回的用户数据格式
+      const userData = {
+        id: data.data.user_id,
+        username: data.data.username,
+        gold: data.data.gold,
+        level: data.data.level,
+        // 保留其他可能的用户数据字段
+        ...data.data
+      };
+      
       // 保存用户数据和token
-      this.saveAuthData(data.data, data.token);
+      this.saveAuthData(userData, data.token || '');
       
       return {
-        userData: data.data,
-        token: data.token,
+        userData,
+        token: data.token || '',
       };
     } catch (error) {
       console.error('Login error:', error);

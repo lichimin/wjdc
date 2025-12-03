@@ -419,9 +419,6 @@ const App: React.FC = () => {
                 console.log('Password:', password);
                 console.log('=====================================');
                 
-                // 立即执行alert确保用户看到反馈
-                alert('登录按钮已点击！正在处理登录...');
-                
                 // 调用登录处理函数
                 handleLogin();
               }}
