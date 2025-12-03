@@ -36,7 +36,19 @@ interface BlinkTrail {
   y: number;
   frameIndex: number;
   facingLeft: boolean;
-  life: number; // Frames remaining
+  life: number;
+}
+
+interface Particle {
+  id: string;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  alpha: number;
+  color: string;
+} // Frames remaining
 }
 
 export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSelect, selectedRoomId, inputRef, playerRef, visitedRef, enemiesRef, projectilesRef, floatingTextsRef, onOpenChest, onExtract, onGameOver, skinData }) => {
@@ -57,6 +69,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
   
   // Visuals for Blink
   const blinkTrailsRef = useRef<BlinkTrail[]>([]);
+  const particlesRef = useRef<Particle[]>([]);
 
   useEffect(() => {
     setDpr(window.devicePixelRatio || 1);
@@ -343,21 +356,67 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     const pCenterY = p.y + TILE_SIZE / 2;
 
     if (p.fireCooldown <= 0 && input.isAttacking) {
-      // Determine bullet direction based on player facing
-      const bulletAngle = p.facingLeft ? Math.PI : 0;
+      // Find nearest enemy to lock onto
+      let nearestEnemy: Enemy | null = null;
+      let nearestDist = Infinity;
+      
+      const activeEnemies = enemiesRef.current.filter(e => e.health > 0);
+      for (const e of activeEnemies) {
+        const ex = e.x + TILE_SIZE / 2;
+        const ey = e.y + TILE_SIZE / 2;
+        const dx = ex - pCenterX;
+        const dy = ey - pCenterY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist < nearestDist && dist < 300) { // Only lock onto enemies within 300 pixels
+          nearestDist = dist;
+          nearestEnemy = e;
+        }
+      }
+      
+      // Determine bullet direction
       const projSpeed = p.projectileSpeed || 8;
+      let vx: number, vy: number;
+      
+      if (nearestEnemy) {
+        // Lock onto nearest enemy
+        const targetX = nearestEnemy.x + TILE_SIZE / 2;
+        const targetY = nearestEnemy.y + TILE_SIZE / 2;
+        const angle = Math.atan2(targetY - pCenterY, targetX - pCenterX);
+        vx = Math.cos(angle) * projSpeed;
+        vy = Math.sin(angle) * projSpeed;
+      } else {
+        // Fallback to player facing if no enemies nearby
+        const bulletAngle = p.facingLeft ? Math.PI : 0;
+        vx = Math.cos(bulletAngle) * projSpeed;
+        vy = Math.sin(bulletAngle) * projSpeed;
+      }
       
       projectilesRef.current.push({
          id: Math.random().toString(),
          x: pCenterX,
          y: pCenterY,
-         vx: Math.cos(bulletAngle) * projSpeed,
-         vy: Math.sin(bulletAngle) * projSpeed,
+         vx,
+         vy,
          life: 60,
          damage: (p.damage || 10) + Math.floor(Math.random() * 5)
       });
       
       p.fireCooldown = FIRE_RATE;
+    }
+
+    // Particle Effects
+    for (let i = particlesRef.current.length - 1; i >= 0; i--) {
+       const particle = particlesRef.current[i];
+       particle.x += particle.vx;
+       particle.y += particle.vy;
+       particle.vx *= 0.95;
+       particle.vy *= 0.95;
+       particle.life--;
+       particle.alpha *= 0.98;
+       if (particle.life <= 0) {
+          particlesRef.current.splice(i, 1);
+       }
     }
 
     // Projectiles
@@ -382,6 +441,23 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
              e.vx = proj.vx * 0.5;
              e.vy = proj.vy * 0.5;
              spawnFloatingText(e.x + TILE_SIZE/2, e.y, `-${proj.damage}`, '#ef4444');
+             
+             // Create hit particle effect
+             for (let j = 0; j < 8; j++) {
+               const angle = (Math.PI * 2 * j) / 8;
+               const speed = 3 + Math.random() * 2;
+               particlesRef.current.push({
+                 id: Math.random().toString(),
+                 x: proj.x,
+                 y: proj.y,
+                 vx: Math.cos(angle) * speed,
+                 vy: Math.sin(angle) * speed,
+                 life: 20 + Math.floor(Math.random() * 20),
+                 alpha: 1,
+                 color: '#ef4444'
+               });
+             }
+             
              hit = true;
              break;
           }
@@ -568,6 +644,18 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       }
     }
 
+    // Draw particles
+    particlesRef.current.forEach(particle => {
+       ctx.save();
+       ctx.globalAlpha = particle.alpha;
+       ctx.fillStyle = particle.color;
+       ctx.beginPath();
+       ctx.arc(particle.x, particle.y, 3, 0, Math.PI * 2);
+       ctx.fill();
+       ctx.restore();
+    });
+
+    // Draw projectiles
     projectilesRef.current.forEach(proj => {
        ctx.fillStyle = '#fde047';
        ctx.beginPath(); ctx.arc(proj.x, proj.y, 4, 0, Math.PI * 2); ctx.fill();
@@ -775,7 +863,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
 
   const drawPlayer = (ctx: CanvasRenderingContext2D, p: PlayerState, isAttacking: boolean) => {
     const drawX = Math.floor(p.x + TILE_SIZE/2);
-    const drawY = Math.floor(p.y + TILE_SIZE/2 - 16); 
+    const drawY = Math.floor(p.y + TILE_SIZE/2); // Moved down by 16 pixels to match reduced size
     const spriteSize = 38; // Reduced by 40% from original 64
     const barWidth = 24; const barHeight = 4; const barOffset = 42; 
 
@@ -790,7 +878,8 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     
     if (isAttacking) ctx.rotate((Math.random() - 0.5) * 0.2); 
 
-    ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(0, 24, 10, 4, 0, 0, Math.PI*2); ctx.fill();
+    // Shadow moved down to match new player position
+    ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(0, 20, 10, 4, 0, 0, Math.PI*2); ctx.fill();
 
     if (imagesLoaded) {
       // 根据玩家状态选择图片数组
