@@ -66,10 +66,14 @@ export const generateLoot = (count: number, treasureData: any[] = [], difficulty
       // Determine type based on treasure attributes
       const type = randomTreasure.type || (Math.random() > 0.5 ? 'equipment' : 'treasure');
       
+      // Extract treasure information with fallback values
+      const treasureName = randomTreasure.treasure_name || randomTreasure.name || 'Mysterious Item';
+      const treasureValue = randomTreasure.treasure_value || randomTreasure.value || 100;
+      
       return {
         id: `loot-${uniqueBase}-${i}`,
-        name: randomTreasure.treasure_name || 'Mysterious Item',
-        value: Math.floor((randomTreasure.treasure_value || 100) * rarityConfig.multiplier),
+        name: treasureName,
+        value: Math.floor(treasureValue * rarityConfig.multiplier),
         rarity: rarityConfig.type,
         iconColor: rarityConfig.color,
         imageUrl: randomTreasure.image_url || undefined,

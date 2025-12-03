@@ -477,8 +477,13 @@ const App: React.FC = () => {
       console.warn('Playing without authentication');
     }
     
-    setLoadingGame(true); // Show loading overlay
     setDifficulty(selectedDifficulty);
+    
+    // Set game state to playing first
+    setGameState('PLAYING');
+    
+    // Show loading overlay after entering dungeon
+    setLoadingGame(true);
     
     // Fetch treasure data
     const treasures = await fetchTreasureData();
@@ -487,14 +492,11 @@ const App: React.FC = () => {
     // Preload all treasure images
     await preloadImages(treasures);
     
-    // Delay to ensure loading overlay is visible
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
     // Regenerate dungeon with new treasure data
     regenerate(selectedDifficulty);
     
-    // Set game state to playing
-    setGameState('PLAYING');
+    // Delay to ensure loading overlay is visible
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Close loading overlay once everything is ready
     setLoadingGame(false);
