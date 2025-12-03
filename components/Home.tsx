@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { UserData } from '../services/authService';
+import { UserData, authService } from '../services/authService';
 
 interface HomeProps {
   userData: UserData;
@@ -119,7 +119,12 @@ export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenIn
     const fetchUserSkin = async () => {
       try {
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-        const response = await fetch(`${apiBaseUrl}/api/v1/user/skins?&is_active=1`);
+        const token = authService.getAuthToken();
+        const response = await fetch(`${apiBaseUrl}/api/v1/user/skins?&is_active=1`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
         const data = await response.json();
         
         if (data.success && data.data.length > 0) {
