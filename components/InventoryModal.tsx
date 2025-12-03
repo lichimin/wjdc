@@ -41,9 +41,15 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
 
   // Handle equipment click to show details
   const handleEquipmentClick = (item: LootItem) => {
-    console.log('Equipment clicked:', item);
+    console.log('========================================');
+    console.log('Equipment click event triggered!');
+    console.log('Clicked item:', item);
+    console.log('Item type:', item.type);
+    console.log('Item id:', item.id);
     
     if (item.type === 'equipment') {
+      console.log('Item is equipment, proceeding to show details');
+      
       // Try to find original equipment data from API
       const originalData = getOriginalEquipmentData(item.id);
       
@@ -52,12 +58,15 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       if (originalData && originalData.equipment && originalData.equipment.equipment_template) {
         // Use API data if available
         console.log('Using API data for equipment details');
+        console.log('About to set selectedEquipment to API data');
         setSelectedEquipment(originalData);
+        console.log('About to set showDetails to true with API data');
         setShowDetails(true);
         console.log('Set showDetails to true with API data');
       } else {
         // Fallback to using the item itself for generated loot
         // Create a mock equipment structure that matches what the details modal expects
+        console.log('Using mock data for equipment details');
         const slots = ['Weapon', 'Armor', 'Helmet', 'Shield', 'Boots'];
         const mockEquipmentData = {
           ...item,
@@ -83,8 +92,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           }
         };
         
-        console.log('Creating mock equipment data:', mockEquipmentData);
+        console.log('Created mock equipment data:', mockEquipmentData);
+        console.log('About to set selectedEquipment to mock data');
         setSelectedEquipment(mockEquipmentData);
+        console.log('About to set showDetails to true with mock data');
         setShowDetails(true);
         console.log('Set showDetails to true with mock data');
       }
@@ -95,6 +106,8 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     // Log current state after click
     setTimeout(() => {
       console.log('After equipment click - showDetails:', showDetails, 'selectedEquipment:', selectedEquipment);
+      // Force re-render to see if that fixes the issue
+      console.log('State updated, component should re-render now');
     }, 0);
   };
 
