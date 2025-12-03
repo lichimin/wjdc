@@ -609,7 +609,11 @@ const App: React.FC = () => {
 
       {/* OVERLAYS */}
       {isChestOpen && <ChestModal loot={currentLoot} onConfirm={handleConfirmLoot} />}
-      {isInventoryOpen && <InventoryModal items={runInventory} onClose={() => setIsInventoryOpen(false)} />}
+      {isInventoryOpen && <InventoryModal 
+        items={runInventory} 
+        onClose={() => setIsInventoryOpen(false)} 
+        originalItems={originalInventoryItems} 
+      />}
       {isStatsOpen && <StatsModal playerState={playerRef.current} onClose={() => setIsStatsOpen(false)} />}
       {isSummaryOpen && <SummaryModal type={summaryType} inventory={runInventory} onRestart={handleReturnHome} />}
       

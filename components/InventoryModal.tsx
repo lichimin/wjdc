@@ -42,16 +42,43 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   // Handle equipment click to show details
   const handleEquipmentClick = (item: LootItem) => {
     if (item.type === 'equipment') {
+      // Try to find original equipment data from API
       const originalData = getOriginalEquipmentData(item.id);
       
-      // Check if equipment data has the expected structure
       if (originalData && originalData.equipment && originalData.equipment.equipment_template) {
+        // Use API data if available
         setSelectedEquipment(originalData);
+        setShowDetails(true);
+      } else {
+        // Fallback to using the item itself for generated loot
+        // Create a mock equipment structure that matches what the details modal expects
+        const slots = ['Weapon', 'Armor', 'Helmet', 'Shield', 'Boots'];
+        const mockEquipmentData = {
+          ...item,
+          type: 'equipment',
+          equipment: {
+            id: item.id,
+            equipment_template: {
+              name: item.name,
+              level: Math.floor(Math.random() * 5) + 1, // Random level 1-5
+              slot: slots[Math.floor(Math.random() * slots.length)], // Random slot
+              attack: Math.floor(Math.random() * 20) + 5, // Random attack 5-25
+              defense: Math.floor(Math.random() * 15) + 3, // Random defense 3-18
+              hp: Math.floor(Math.random() * 100) + 50, // Health
+              attack_speed: Math.random() * 0.5 + 0.5, // Attack speed
+              move_speed: Math.random() * 0.3 + 0.7, // Move speed
+              bullet_speed: Math.random() * 3 + 5, // Bullet speed
+              drain: Math.random() * 0.1, // Life drain
+              critical: Math.random() * 0.2, // Critical chance
+              dodge: Math.random() * 0.15, // Dodge chance
+              instant_kill: Math.random() * 0.05, // Instant kill
+              recovery: Math.random() * 2 + 1 // Health recovery
+            }
+          }
+        };
         
-        // Use setTimeout to ensure state updates are applied
-        setTimeout(() => {
-          setShowDetails(true);
-        }, 0);
+        setSelectedEquipment(mockEquipmentData);
+        setShowDetails(true);
       }
     }
   };
@@ -186,7 +213,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                 {selectedEquipment.equipment.equipment_template.name}
               </h3>
               <p className={`text-sm font-mono ${getLevelColor(selectedEquipment.equipment.equipment_template.level)}`}>
-                Level {selectedEquipment.equipment.equipment_template.level} - {selectedEquipment.equipment.equipment_template.slot}
+                Level {selectedEquipment.equipment.equipment_template.level} - {selectedEquipment.equipment.equipment_template.slot || 'Unknown'}
               </p>
             </div>
 
