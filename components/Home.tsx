@@ -118,7 +118,8 @@ export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenIn
   useEffect(() => {
     const fetchUserSkin = async () => {
       try {
-        const response = await fetch('/api/v1/user/skins?&is_active=1');
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+        const response = await fetch(`${apiBaseUrl}/api/v1/user/skins?&is_active=1`);
         const data = await response.json();
         
         if (data.success && data.data.length > 0) {
