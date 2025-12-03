@@ -14,7 +14,7 @@ import SimpleLogin from './components/SimpleLogin';
 import { DungeonData, Room, ItemType, InputState, PlayerState, Enemy, Projectile, FloatingText, LootItem, Rarity } from './types';
 import { GoogleGenAI } from "@google/genai";
 
-// --- CYBERPUNK JOYSTICK ---
+// --- CYBERPUNK JOYSTICK --- 
 const Joystick: React.FC<{ 
   onMove: (x: number, y: number) => void,
   onStop: () => void 
@@ -23,6 +23,7 @@ const Joystick: React.FC<{
   const [active, setActive] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const touchIdRef = useRef<number | null>(null); // Track specific touch ID
+  const isHandlingTouchRef = useRef(false); // Prevent multiple touch handlers
 
   const handleStart = (clientX: number, clientY: number, touchId?: number) => {
     if (!active) {
@@ -30,12 +31,13 @@ const Joystick: React.FC<{
       if (touchId !== undefined) {
         touchIdRef.current = touchId;
       }
+      isHandlingTouchRef.current = true;
     }
     handleMove(clientX, clientY);
   };
 
   const handleMove = (clientX: number, clientY: number) => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !active) return;
     const rect = containerRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
@@ -55,27 +57,28 @@ const Joystick: React.FC<{
     setActive(false);
     setPos({ x: 0, y: 0 });
     touchIdRef.current = null;
+    isHandlingTouchRef.current = false;
     onStop();
   };
 
   // Global listeners for drag outside
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => { 
-      if (active) {
+      if (active && !isHandlingTouchRef.current) {
         e.preventDefault();
         e.stopPropagation();
         handleMove(e.clientX, e.clientY); 
       } 
     };
     const onMouseUp = (e: MouseEvent) => { 
-      if (active) {
+      if (active && !isHandlingTouchRef.current) {
         e.preventDefault();
         e.stopPropagation();
         handleEnd(); 
       } 
     };
     const onTouchMove = (e: TouchEvent) => { 
-      if (active) {
+      if (active && isHandlingTouchRef.current) {
         e.preventDefault();
         e.stopPropagation();
         // Only handle the specific touch that started on the joystick
@@ -86,7 +89,7 @@ const Joystick: React.FC<{
       } 
     };
     const onTouchEnd = (e: TouchEvent) => { 
-      if (active) {
+      if (active && isHandlingTouchRef.current) {
         e.preventDefault();
         e.stopPropagation();
         // Only end if the specific touch that started on the joystick has ended
@@ -119,13 +122,25 @@ const Joystick: React.FC<{
       onMouseDown={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        handleStart(e.clientX, e.clientY);
+        if (!active) {
+          handleStart(e.clientX, e.clientY);
+        }
       }}
       onTouchStart={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        const touch = e.touches[0];
-        handleStart(touch.clientX, touch.clientY, touch.identifier);
+        // Only start handling if no touch is currently active
+        if (!active && e.touches.length === 1) {
+          const touch = e.touches[0];
+          handleStart(touch.clientX, touch.clientY, touch.identifier);
+        }
+      }}
+      onTouchCancel={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (active) {
+          handleEnd();
+        }
       }}
       style={{
         // Prevent text selection and touch highlighting
@@ -839,11 +854,60 @@ const App: React.FC = () => {
               {/* Attack Button */}
               <button 
                 className="w-12 h-12 bg-gradient-to-br from-red-900 to-red-800 border-2 border-red-700 rounded-full flex items-center justify-center text-white shadow-lg hover:from-red-800 hover:to-red-700 transition-all active:scale-95"
-                onMouseDown={() => { inputRef.current.attackPressed = true; }}
-                onMouseUp={() => { inputRef.current.isAttacking = false; inputRef.current.attackPressed = false; }}
-                onMouseLeave={() => { inputRef.current.isAttacking = false; inputRef.current.attackPressed = false; }}
-                onTouchStart={() => { inputRef.current.attackPressed = true; }}
-                onTouchEnd={() => { inputRef.current.isAttacking = false; inputRef.current.attackPressed = false; }}
+                onMouseDown={(e) => { 
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (inputRef.current) {
+                    // Set attack state only if it's not already attacking
+                    if (!inputRef.current.isAttacking) {
+                      inputRef.current.isAttacking = true;
+                      inputRef.current.attackPressed = true;
+                    }
+                  }
+                }}
+                onMouseUp={(e) => { 
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (inputRef.current) {
+                    inputRef.current.isAttacking = false;
+                    inputRef.current.attackPressed = false;
+                  }
+                }}
+                onMouseLeave={(e) => { 
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (inputRef.current) {
+                    inputRef.current.isAttacking = false;
+                    inputRef.current.attackPressed = false;
+                  }
+                }}
+                onTouchStart={(e) => { 
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (inputRef.current) {
+                    // Set attack state only if it's not already attacking
+                    if (!inputRef.current.isAttacking) {
+                      inputRef.current.isAttacking = true;
+                      inputRef.current.attackPressed = true;
+                    }
+                  }
+                }}
+                onTouchEnd={(e) => { 
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (inputRef.current) {
+                    inputRef.current.isAttacking = false;
+                    inputRef.current.attackPressed = false;
+                  }
+                }}
+                onTouchCancel={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (inputRef.current) {
+                    inputRef.current.isAttacking = false;
+                    inputRef.current.attackPressed = false;
+                  }
+                }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
