@@ -41,32 +41,16 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
 
   // Handle equipment click to show details
   const handleEquipmentClick = (item: LootItem) => {
-    console.log('========================================');
-    console.log('Equipment click event triggered!');
-    console.log('Clicked item:', item);
-    console.log('Item type:', item.type);
-    console.log('Item id:', item.id);
-    
     if (item.type === 'equipment') {
-      console.log('Item is equipment, proceeding to show details');
-      
       // Try to find original equipment data from API
       const originalData = getOriginalEquipmentData(item.id);
       
-      console.log('Original equipment data found:', originalData);
-      
       if (originalData && originalData.equipment && originalData.equipment.equipment_template) {
         // Use API data if available
-        console.log('Using API data for equipment details');
-        console.log('About to set selectedEquipment to API data');
         setSelectedEquipment(originalData);
-        console.log('About to set showDetails to true with API data');
-        setShowDetails(true);
-        console.log('Set showDetails to true with API data');
       } else {
         // Fallback to using the item itself for generated loot
         // Create a mock equipment structure that matches what the details modal expects
-        console.log('Using mock data for equipment details');
         const slots = ['Weapon', 'Armor', 'Helmet', 'Shield', 'Boots'];
         const mockEquipmentData = {
           ...item,
@@ -92,23 +76,11 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           }
         };
         
-        console.log('Created mock equipment data:', mockEquipmentData);
-        console.log('About to set selectedEquipment to mock data');
         setSelectedEquipment(mockEquipmentData);
-        console.log('About to set showDetails to true with mock data');
-        setShowDetails(true);
-        console.log('Set showDetails to true with mock data');
       }
-    } else {
-      console.log('Clicked item is not equipment:', item.type);
+      
+      setShowDetails(true);
     }
-    
-    // Log current state after click
-    setTimeout(() => {
-      console.log('After equipment click - showDetails:', showDetails, 'selectedEquipment:', selectedEquipment);
-      // Force re-render to see if that fixes the issue
-      console.log('State updated, component should re-render now');
-    }, 0);
   };
 
   // Get equipment level color based on level
@@ -175,7 +147,12 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                    <div 
                      key={item.id} 
                      className={`group relative bg-slate-950 p-2 rounded-lg border border-slate-800 transition-colors cursor-pointer ${item.type === 'equipment' ? 'hover:border-amber-500' : ''}`}
-                     onClick={() => item.type === 'equipment' && handleEquipmentClick(item)}
+                     onClick={(e) => {
+                       e.stopPropagation(); // Prevent event bubbling to parent backdrop
+                       if (item.type === 'equipment') {
+                         handleEquipmentClick(item);
+                       }
+                     }}
                    >
                       <div className={`
                          aspect-square mb-2 flex items-center justify-center bg-slate-900 rounded
@@ -227,7 +204,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           <div className="relative z-10 w-full max-w-md p-6 bg-slate-900/95 border border-slate-700 rounded-xl shadow-2xl overflow-hidden">
             {/* Close Button */}
             <button 
-              onClick={() => setShowDetails(false)}
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent event bubbling to parent backdrop
+                setShowDetails(false);
+              }}
               className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
