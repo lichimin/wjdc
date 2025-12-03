@@ -169,7 +169,7 @@ const getLevelColor = (level: number) => {
                               </div>
                             )}
                         </div>
-                          
+                           
                         <div className="text-center">
                           <div className={`text-[10px] font-bold truncate ${item.rarity === Rarity.GENESIS ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-yellow-400' : rarityClass.match(/text-\S+/)?.[0] || 'text-slate-300'}`}>
                             {item.name}
@@ -259,7 +259,7 @@ const getLevelColor = (level: number) => {
               <div>
                 <h4 className="text-lg font-bold text-white mb-3 border-b border-slate-700 pb-2">Additional Attributes</h4>
                 <div className="space-y-2">
-                  {selectedEquipment.equipment.additional_attrs.map((attr: any) => {
+                  {selectedEquipment?.equipment?.additional_attrs?.map((attr: any) => {
                     const isSin = isSevenDeadlySin(attr.attr_type);
                     const textColor = isSin ? 'text-red-400' : 'text-purple-400';
                     
@@ -274,7 +274,6 @@ const getLevelColor = (level: number) => {
               </div>
             )}
           </div>
-        </div>
       </div>
     </>
   );
