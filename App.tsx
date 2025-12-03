@@ -186,6 +186,11 @@ const App: React.FC = () => {
 
   // Check authentication status on mount
   useEffect(() => {
+    // 清除之前的认证数据以方便测试
+    console.log('清除之前的认证数据');
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_data');
+    
     const checkAuthStatus = async () => {
       setCheckingAuth(true);
       try {
@@ -536,19 +541,109 @@ const App: React.FC = () => {
       
       {/* 登录页面 - 覆盖整个应用 */}
       {!isAuthenticated && !checkingAuth && (
-        <SimpleLogin 
-          onLogin={(userData) => {
-            console.log('SimpleLogin onLogin callback', userData);
-            setUserData(userData);
-            setIsAuthenticated(true);
-            setUsername('');
-            setPassword('');
-            setLoginError('');
-            // 如果需要，这里可以添加游戏初始化逻辑
-          }}
-          setLoginError={setLoginError}
-          checkingAuth={checkingAuth}
-        />
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.95)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 999999,
+          pointerEvents: 'auto',
+          fontFamily: 'Arial, sans-serif'
+        }}>
+          <div style={{
+            backgroundColor: '#111',
+            border: '3px solid #00ffff',
+            borderRadius: '10px',
+            padding: '30px',
+            width: '400px',
+            boxShadow: '0 0 30px rgba(0, 255, 255, 0.5)'
+          }}>
+            <h1 style={{
+              color: '#00ffff',
+              fontSize: '28px',
+              fontWeight: 'bold',
+              textAlign: 'center',
+              marginBottom: '20px',
+              textShadow: '0 0 10px #00ffff'
+            }}>
+              赛博地牢登录
+            </h1>
+            
+            <div style={{ marginBottom: '15px' }}>
+              <input
+                type="text"
+                placeholder="用户名"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  fontSize: '16px',
+                  backgroundColor: '#222',
+                  border: '2px solid #444',
+                  borderRadius: '5px',
+                  color: '#fff',
+                  outline: 'none'
+                }}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+            
+            <div style={{ marginBottom: '15px' }}>
+              <input
+                type="password"
+                placeholder="密码"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  fontSize: '16px',
+                  backgroundColor: '#222',
+                  border: '2px solid #444',
+                  borderRadius: '5px',
+                  color: '#fff',
+                  outline: 'none'
+                }}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            
+            {loginError && (
+              <div style={{
+                color: '#ff0000',
+                fontSize: '14px',
+                marginBottom: '15px',
+                textAlign: 'center'
+              }}>
+                {loginError}
+              </div>
+            )}
+            
+            <button
+              onClick={() => {
+                console.log('Login button clicked directly in App.tsx');
+                alert('Login button clicked!');
+                handleLogin();
+              }}
+              style={{
+                width: '100%',
+                padding: '12px',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                backgroundColor: '#00ffff',
+                color: '#000',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                boxShadow: '0 0 15px rgba(0, 255, 255, 0.7)'
+              }}
+            >
+              登录
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

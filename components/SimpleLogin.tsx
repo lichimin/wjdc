@@ -12,6 +12,17 @@ const SimpleLogin: React.FC<SimpleLoginProps> = ({ onLogin, setLoginError, check
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // 组件挂载时的调试信息
+  React.useEffect(() => {
+    console.log('SimpleLogin component mounted');
+    const loginButton = document.querySelector('button[type="button"]');
+    if (loginButton) {
+      console.log('Login button found:', loginButton);
+    } else {
+      console.log('Login button not found');
+    }
+  }, []);
 
   const handleLogin = async () => {
     console.log('SimpleLogin handleLogin called');
@@ -131,7 +142,9 @@ const SimpleLogin: React.FC<SimpleLoginProps> = ({ onLogin, setLoginError, check
         {/* 错误信息显示将由App.tsx处理 */}
 
         <button
+          type="button"
           onClick={() => {
+            console.log('Login button onClick event fired!');
             alert('SimpleLogin button clicked!');
             handleLogin();
           }}
