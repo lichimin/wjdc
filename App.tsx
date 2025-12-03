@@ -535,7 +535,7 @@ const App: React.FC = () => {
       
       {/* 登录页面 - 覆盖整个应用 */}
       {!isAuthenticated && !checkingAuth && (
-        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center">
+        <div className="fixed inset-0 z-9999 bg-black/90 flex items-center justify-center">
           <div className="bg-slate-900 border border-cyan-500/30 rounded-lg p-8 w-full max-w-md">
             <h1 className="text-3xl font-bold text-cyan-400 mb-6 text-center">赛博地牢</h1>
             <div className="space-y-4">
@@ -561,16 +561,17 @@ const App: React.FC = () => {
                 <div className="text-red-500 text-sm mb-2">{loginError}</div>
               )}
               <button 
-                onClick={(e) => {
-                  console.log('Login button clicked', e);
+                onClick={() => {
+                  alert('Button clicked!');
+                  console.log('Login button clicked!');
                   handleLogin();
                 }}
                 disabled={checkingAuth}
-                className={`w-full font-bold py-2 px-4 rounded transition-all duration-300 shadow-lg hover:shadow-cyan-500/20 ${
-                  checkingAuth 
+                className={`w-full font-bold py-3 px-4 rounded transition-all duration-300 shadow-lg hover:shadow-cyan-500/20 cursor-pointer border-2 border-transparent hover:border-yellow-500 ${  checkingAuth 
                     ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
                     : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white'
                 }`}
+                style={{ zIndex: 1000, position: 'relative' }}
               >
                 {checkingAuth ? '登录中...' : '登录'}
               </button>
