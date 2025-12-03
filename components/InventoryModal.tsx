@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { LootItem, Rarity } from '../types';
 
 interface InventoryModalProps {
@@ -11,6 +11,8 @@ interface InventoryModalProps {
 export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, originalItems = [] }) => {
   const [selectedEquipment, setSelectedEquipment] = useState<any>(null);
   const [showDetails, setShowDetails] = useState(false);
+  // Add a ref to track the modal visibility independently
+  const detailsModalRef = useRef<HTMLDivElement>(null);
   const getRarityStyle = (rarity: Rarity) => {
     switch (rarity) {
       case Rarity.RARE: return 'border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)] text-blue-200';
@@ -51,6 +53,12 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       setShowDetails(true);
       // Log after setting - note: this will still show the old value due to state update batching
       console.log('After setShowDetails(true):', showDetails);
+      
+      // Also use direct DOM manipulation as a fallback
+      if (detailsModalRef.current) {
+        detailsModalRef.current.style.display = 'flex';
+        console.log('Modal displayed using direct DOM manipulation');
+      }
       
       // Use setTimeout to check the updated state
       setTimeout(() => {
@@ -173,8 +181,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       </div>
 
       {/* Equipment Details Modal - Placed at the top level */}
-      {showDetails && (
-        <div className="fixed inset-0 z-9999 flex items-center justify-center">
+      <div 
+        ref={detailsModalRef}
+        className={`fixed inset-0 z-9999 flex items-center justify-center ${showDetails ? 'block' : 'hidden'}`}
+      >
           {/* Backdrop */}
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowDetails(false)}></div>
 
