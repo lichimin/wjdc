@@ -168,6 +168,7 @@ const App: React.FC = () => {
   const [password, setPassword] = useState('');
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loginError, setLoginError] = useState('');
+  const [userSkin, setUserSkin] = useState<UserSkin | null>(null);
 
   // Game View State
   const [dungeon, setDungeon] = useState<DungeonData | null>(null);
@@ -557,6 +558,7 @@ const App: React.FC = () => {
               onStartAdventure={startGame} 
               onOpenInventory={() => setIsInventoryOpen(true)}
               onLogout={() => setIsAuthenticated(false)}
+              onSkinLoaded={setUserSkin}
             />
           )}
         {/* Inventory Overlay for Home */}
@@ -643,6 +645,7 @@ const App: React.FC = () => {
                onOpenChest={handleOpenChest}
                onExtract={handleExtract}
                onGameOver={handleGameOver}
+               skinData={userSkin?.skin || null}
              />
            ) : (
              <div className="absolute inset-0 flex items-center justify-center text-cyan-500 animate-pulse font-mono tracking-widest text-sm">

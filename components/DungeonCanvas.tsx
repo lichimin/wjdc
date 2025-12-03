@@ -1,7 +1,8 @@
 
 
-import React, { useRef, useEffect, useState, useMemo } from 'react';
+import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { DungeonData, TileType, ItemType, Room, InputState, PlayerState, Enemy, EnemyType, Projectile, FloatingText, Item } from '../types';
+import { SkinData } from '../App';
 
 interface DungeonCanvasProps {
   dungeon: DungeonData;
@@ -16,6 +17,7 @@ interface DungeonCanvasProps {
   onOpenChest: (chestId: string) => void;
   onExtract?: () => void;
   onGameOver?: () => void;
+  skinData: SkinData | null;
 }
 
 const TILE_SIZE = 32;
@@ -37,7 +39,7 @@ interface BlinkTrail {
   life: number; // Frames remaining
 }
 
-export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSelect, selectedRoomId, inputRef, playerRef, visitedRef, enemiesRef, projectilesRef, floatingTextsRef, onOpenChest, onExtract, onGameOver }) => {
+export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSelect, selectedRoomId, inputRef, playerRef, visitedRef, enemiesRef, projectilesRef, floatingTextsRef, onOpenChest, onExtract, onGameOver, skinData }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoverPos, setHoverPos] = useState<{x: number, y: number} | null>(null);
@@ -45,8 +47,13 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
   const [dpr, setDpr] = useState(1);
   
   const cameraRef = useRef({ x: 0, y: 0 });
-  const spritesRef = useRef<HTMLImageElement[]>([]);
+  const [skinSprites, setSkinSprites] = useState<{
+    idle: HTMLImageElement[];
+    attack: HTMLImageElement[];
+    move: HTMLImageElement[];
+  }>({ idle: [], attack: [], move: [] });
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const animationTimeRef = useRef<number>(0);
   
   // Visuals for Blink
   const blinkTrailsRef = useRef<BlinkTrail[]>([]);
@@ -80,26 +87,36 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     }
   }, [dungeon, viewport]); 
 
+  // 加载皮肤图片
   useEffect(() => {
-    const loadedImages: HTMLImageElement[] = [];
-    let loadCount = 0;
-    const totalImages = 10;
-    for (let i = 1; i <= totalImages; i++) {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.src = `https://czrimg.godqb.com/game/v2/play2/${i}.png`;
-      img.onload = () => {
-        loadCount++;
-        if (loadCount === totalImages) setImagesLoaded(true);
-      };
-      img.onerror = () => {
-         loadCount++;
-         if (loadCount === totalImages) setImagesLoaded(true);
-      };
-      loadedImages.push(img);
-    }
-    spritesRef.current = loadedImages;
-  }, []);
+    if (!skinData) return;
+
+    const loadImages = (urls: string[]): Promise<HTMLImageElement[]> => {
+      return Promise.all(
+        urls.map(url => {
+          return new Promise<HTMLImageElement>((resolve) => {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = url;
+            img.onload = () => resolve(img);
+            img.onerror = () => {
+              console.error(`Failed to load image: ${url}`);
+              resolve(img); // 即使加载失败也继续，避免动画中断
+            };
+          });
+        })
+      );
+    };
+
+    Promise.all([
+      loadImages(skinData.idle_image_urls),
+      loadImages(skinData.attack_image_urls),
+      loadImages(skinData.move_image_urls)
+    ]).then(([idleImages, attackImages, moveImages]) => {
+      setSkinSprites({ idle: idleImages, attack: attackImages, move: moveImages });
+      setImagesLoaded(true);
+    });
+  }, [skinData]);
 
   const floorNoise = useMemo(() => {
     const noise: number[][] = [];
@@ -490,6 +507,9 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // 更新动画时间
+    animationTimeRef.current = timestamp;
+
     updatePhysics(timestamp);
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -756,8 +776,10 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     ctx.globalAlpha = (t.life / 10) * 0.4;
     ctx.globalCompositeOperation = 'source-over'; // standard
     
-    if (imagesLoaded && spritesRef.current[t.frameIndex]) {
-       ctx.drawImage(spritesRef.current[t.frameIndex], -spriteSize/2, -spriteSize/2, spriteSize, spriteSize);
+    // 使用待机图片作为幽灵效果
+    if (imagesLoaded && skinSprites.idle.length > 0) {
+       const sprite = skinSprites.idle[t.frameIndex % skinSprites.idle.length];
+       ctx.drawImage(sprite, -spriteSize/2, -spriteSize/2, spriteSize, spriteSize);
        // Tint Cyan
        ctx.globalCompositeOperation = 'source-atop';
        ctx.fillStyle = '#22d3ee';
@@ -785,8 +807,26 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
 
     ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(0, 24, 10, 4, 0, 0, Math.PI*2); ctx.fill();
 
-    if (imagesLoaded && spritesRef.current[p.frameIndex]) {
-      const sprite = spritesRef.current[p.frameIndex];
+    if (imagesLoaded) {
+      // 根据玩家状态选择图片数组
+      let imageArray = skinSprites.idle;
+      if (isAttacking) {
+        imageArray = skinSprites.attack.length > 0 ? skinSprites.attack : skinSprites.idle;
+      } else if (p.isMoving) {
+        imageArray = skinSprites.move.length > 0 ? skinSprites.move : skinSprites.idle;
+      }
+      
+      // 如果没有合适的图片数组，使用默认绘制
+      if (imageArray.length === 0) {
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(-8, -12, 16, 24);
+        ctx.restore();
+        return;
+      }
+      
+      // 1秒内循环播放所有图片
+      const animationDuration = 1000; // 1秒
+      const frameIndex = Math.floor((animationTimeRef.current % animationDuration) / (animationDuration / imageArray.length));
+      const sprite = imageArray[frameIndex % imageArray.length];
       
       if (p.invincibilityTimer > 10 && p.rollCooldown > BLINK_COOLDOWN - 10) {
          ctx.drawImage(sprite, -spriteSize/2, -spriteSize/2, spriteSize, spriteSize);

@@ -6,6 +6,7 @@ interface HomeProps {
   onStartAdventure: (difficulty: number) => void;
   onOpenInventory: () => void;
   onLogout: () => void;
+  onSkinLoaded: (skin: UserSkin) => void;
 }
 
 interface SkinData {
@@ -130,6 +131,9 @@ export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenIn
         if (data.success && data.data.length > 0) {
           const activeSkin = data.data[0];
           setUserSkin(activeSkin);
+          
+          // Pass skin data to App
+          onSkinLoaded(activeSkin);
           
           // Log to console
           console.log('User skin data:', activeSkin);
