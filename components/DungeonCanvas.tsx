@@ -71,14 +71,14 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
   }, []);
 
   useEffect(() => {
-    if (dungeon.rooms.length > 0) {
+    if (dungeon && dungeon.rooms && dungeon.rooms.length > 0) {
       const startRoom = dungeon.rooms[0];
       playerRef.current.x = (startRoom.x + Math.floor(startRoom.w / 2)) * TILE_SIZE;
       playerRef.current.y = (startRoom.y + Math.floor(startRoom.h / 2)) * TILE_SIZE;
       cameraRef.current.x = playerRef.current.x - viewport.width / 2;
       cameraRef.current.y = playerRef.current.y - viewport.height / 2;
     }
-  }, [dungeon, playerRef, viewport]); 
+  }, [dungeon, viewport]); 
 
   useEffect(() => {
     const loadedImages: HTMLImageElement[] = [];

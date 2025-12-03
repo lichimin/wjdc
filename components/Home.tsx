@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
+import { UserData } from '../services/authService';
 
 interface HomeProps {
-  gold: number;
-  level: number;
+  userData: UserData;
   onStartAdventure: (difficulty: number) => void;
   onOpenInventory: () => void;
 }
@@ -77,7 +77,7 @@ const PixelIcon: React.FC<{ type: 'sword' | 'bag' | 'anvil' | 'shirt', scale?: n
   );
 };
 
-export const Home: React.FC<HomeProps> = ({ gold, level, onStartAdventure, onOpenInventory }) => {
+export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenInventory }) => {
   const [showDifficulty, setShowDifficulty] = useState(false);
 
   return (
@@ -95,18 +95,22 @@ export const Home: React.FC<HomeProps> = ({ gold, level, onStartAdventure, onOpe
         {/* Profile Badge */}
         <div className="flex items-center gap-3 bg-slate-900/80 border border-cyan-500/30 pl-1 pr-4 py-1 rounded-r-full shadow-[0_0_10px_rgba(6,182,212,0.2)] backdrop-blur-sm">
            <div className="w-10 h-10 rounded-full bg-cyan-900/50 border border-cyan-400 overflow-hidden relative">
-              <img src="https://czrimg.godqb.com/game/v2/play2/1.png" alt="P" className="w-full h-full object-cover" />
+              <img 
+                src={userData.avatarUrl || "https://czrimg.godqb.com/game/v2/play2/1.png"} 
+                alt={userData.nickname || "Player"} 
+                className="w-full h-full object-cover" 
+              />
            </div>
            <div className="flex flex-col">
-              <span className="text-[10px] text-cyan-400 font-bold tracking-widest uppercase font-['Press_Start_2P']">Player_01</span>
-              <span className="text-[8px] text-slate-400 font-mono">LV.{level} // WARRIOR</span>
+              <span className="text-[10px] text-cyan-400 font-bold tracking-widest uppercase font-['Press_Start_2P']">{userData.nickname || 'Player_01'}</span>
+              <span className="text-[8px] text-slate-400 font-mono">LV.{userData.level || 1} // {userData.className || 'WARRIOR'}</span>
            </div>
         </div>
 
         {/* Top Right Stats */}
         <div className="flex flex-col items-end gap-2">
            <div className="flex items-center gap-2 px-3 py-1 bg-black/60 border border-yellow-500/30 rounded skew-x-[-10deg]">
-              <span className="text-yellow-400 text-xs font-mono font-bold skew-x-[10deg]">{gold.toLocaleString()} G</span>
+              <span className="text-yellow-400 text-xs font-mono font-bold skew-x-[10deg]">{userData.gold.toLocaleString()} G</span>
            </div>
            <div className="text-[8px] text-slate-500 font-mono tracking-widest">VER 2.1.0</div>
         </div>
@@ -121,14 +125,14 @@ export const Home: React.FC<HomeProps> = ({ gold, level, onStartAdventure, onOpe
             
             {/* Character Sprite (Large) */}
             <img 
-              src="https://czrimg.godqb.com/game/v2/play2/1.png" 
+              src={userData.avatarUrl || "https://czrimg.godqb.com/game/v2/play2/1.png"} 
               className="w-32 h-32 object-contain image-pixelated drop-shadow-[0_0_20px_rgba(34,211,238,0.4)] animate-float"
-              alt="Hero"
+              alt={userData.nickname || "Hero"}
             />
             
             {/* Class Label */}
             <div className="absolute -bottom-4 bg-black/80 border border-cyan-500 px-4 py-1 rounded text-cyan-400 text-[10px] font-['Press_Start_2P'] shadow-[0_0_10px_rgba(6,182,212,0.5)]">
-               VOID WALKER
+               {userData.className || 'VOID WALKER'}
             </div>
          </div>
       </div>

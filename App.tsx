@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { generateDungeon } from './services/dungeonGenerator';
 import { generateRoomDescription } from './services/geminiService';
 import { generateLoot } from './services/lootService';
+import { authService, UserData } from './services/authService';
 import { DungeonCanvas } from './components/DungeonCanvas';
 import { MiniMap } from './components/MiniMap';
 import { ChestModal } from './components/ChestModal';
@@ -158,13 +159,13 @@ const CyberDashButton: React.FC<{
 const App: React.FC = () => {
   // Global App State
   const [gameState, setGameState] = useState<'HOME' | 'PLAYING'>('HOME');
-  const [gold, setGold] = useState(1000);
-  const [playerLevel, setPlayerLevel] = useState(1);
   const [difficulty, setDifficulty] = useState(1);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loginError, setLoginError] = useState('');
 
   // Game View State
   const [dungeon, setDungeon] = useState<DungeonData | null>(null);
@@ -174,10 +175,56 @@ const App: React.FC = () => {
   
   // Authentication functions
   const handleLogout = () => {
+    authService.logout();
     setIsAuthenticated(false);
+    setUserData(null);
     setUsername('');
     setPassword('');
     setGameState('HOME');
+  };
+
+  // Check authentication status on mount
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      setCheckingAuth(true);
+      try {
+        if (authService.isAuthenticated()) {
+          const user = authService.getCurrentUser();
+          if (user) {
+            setUserData(user);
+            setIsAuthenticated(true);
+          }
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+      } finally {
+        setCheckingAuth(false);
+      }
+    };
+    
+    checkAuthStatus();
+  }, []);
+
+  // Handle login
+  const handleLogin = async () => {
+    if (!username || !password) {
+      setLoginError('请输入用户名和密码');
+      return;
+    }
+    
+    setCheckingAuth(true);
+    setLoginError('');
+    
+    try {
+      const result = await authService.login(username, password);
+      setUserData(result.userData);
+      setIsAuthenticated(true);
+      setGameState('HOME');
+    } catch (error) {
+      setLoginError(error instanceof Error ? error.message : '登录失败，请重试');
+    } finally {
+      setCheckingAuth(false);
+    }
   };
   
   // Loot & Inventory State
@@ -361,12 +408,13 @@ const App: React.FC = () => {
               退出登录
             </button>
           </div>
-          <Home 
-            gold={gold} 
-            level={playerLevel} 
-            onStartAdventure={startGame} 
-            onOpenInventory={() => setIsInventoryOpen(true)}
-          />
+          {userData && (
+            <Home 
+              userData={userData}
+              onStartAdventure={startGame} 
+              onOpenInventory={() => setIsInventoryOpen(true)}
+            />
+          )}
         {/* Inventory Overlay for Home */}
         {isInventoryOpen && (
           <InventoryModal items={inventory} onClose={() => setIsInventoryOpen(false)} />
@@ -501,14 +549,19 @@ const App: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
+              {loginError && (
+                <div className="text-red-500 text-sm mb-2">{loginError}</div>
+              )}
               <button 
-                onClick={() => {
-                  setIsAuthenticated(true);
-                  setGameState('HOME');
-                }}
-                className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-2 px-4 rounded transition-all duration-300 shadow-lg hover:shadow-cyan-500/20"
+                onClick={handleLogin}
+                disabled={checkingAuth}
+                className={`w-full font-bold py-2 px-4 rounded transition-all duration-300 shadow-lg hover:shadow-cyan-500/20 ${
+                  checkingAuth 
+                    ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white'
+                }`}
               >
-                登录
+                {checkingAuth ? '登录中...' : '登录'}
               </button>
             </div>
           </div>
