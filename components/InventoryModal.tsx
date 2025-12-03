@@ -43,6 +43,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   const handleEquipmentClick = (item: LootItem) => {
     console.log('Equipment clicked:', item); // Debug log
     setSelectedEquipment(item);
+    console.log('Selected equipment set:', item.name);
   };
 
   const closeDetails = () => {
@@ -160,8 +161,8 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       </div>
 
       {/* Equipment Details Modal */}
-      {selectedEquipment && (
-        <div className="fixed inset-0 z-9999 flex items-center justify-center">
+      {console.log('Selected equipment in render:', selectedEquipment?.name)}{selectedEquipment && (
+        <div className="fixed inset-0 z-9999 flex items-center justify-center" style={{border: '2px solid red'}}>
           {/* Backdrop */}
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={closeDetails}></div>
 
