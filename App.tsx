@@ -264,7 +264,8 @@ const App: React.FC = () => {
       const token = authService.getAuthToken();
       if (!token) throw new Error('No authentication token found');
       
-      const response = await fetch(`https://api.example.com/api/v1/my-items?position=backpack`, {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+      const response = await fetch(`${apiBaseUrl}/api/v1/my-items?position=backpack`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
