@@ -370,10 +370,26 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                     const borderColor = isSin ? 'border-red-500/30' : 'border-purple-500/30';
                     const bgColor = isSin ? 'bg-red-500/5' : 'bg-purple-500/5';
                     
+                    // Map seven deadly sins to their descriptions
+                    const sinDescriptions: Record<string, string> = {
+                      'envy': '暴击伤害',
+                      'pride': '最大HP',
+                      'gluttony': '攻速',
+                      'greed': '秒杀',
+                      'lust': '自动回复',
+                      'wrath': '暴击率',
+                      'sloth': '攻击力'
+                    };
+                    
+                    // Format attribute name for seven deadly sins
+                    const formattedAttrName = isSin && sinDescriptions[attr.attr_type] 
+                      ? `${attr.attr_name}-${sinDescriptions[attr.attr_type]}` 
+                      : attr.attr_name;
+                    
                     return (
                       <div key={index} className={`${bgColor} p-3 rounded border ${borderColor}`}>
                         <div className="flex justify-between items-center">
-                          <div className={`text-sm font-bold ${textColor}`}>{attr.attr_name}</div>
+                          <div className={`text-sm font-bold ${textColor}`}>{formattedAttrName}</div>
                           <div className={`text-sm font-bold ${textColor}`}>{attr.attr_value}</div>
                         </div>
                       </div>
