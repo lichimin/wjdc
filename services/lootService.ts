@@ -33,12 +33,17 @@ export const generateLoot = (count: number): LootItem[] => {
     const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
     const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
     
+    // Determine if item is equipment or treasure based on noun
+    const equipmentNouns = ['Sword', 'Shield', 'Helmet', 'Ring', 'Amulet', 'Gem', 'Scroll'];
+    const isEquipment = equipmentNouns.includes(noun);
+    
     return {
       id: `loot-${uniqueBase}-${i}`,
       name: `${adj} ${noun}`,
       value: Math.floor((Math.random() * 50 + 10) * rarityConfig.multiplier),
       rarity: rarityConfig.type,
-      iconColor: rarityConfig.color
+      iconColor: rarityConfig.color,
+      type: isEquipment ? 'equipment' : 'treasure'
     };
   });
 };

@@ -41,14 +41,20 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
 
   // Handle equipment click to show details
   const handleEquipmentClick = (item: LootItem) => {
+    console.log('Equipment clicked:', item);
+    
     if (item.type === 'equipment') {
       // Try to find original equipment data from API
       const originalData = getOriginalEquipmentData(item.id);
       
+      console.log('Original equipment data found:', originalData);
+      
       if (originalData && originalData.equipment && originalData.equipment.equipment_template) {
         // Use API data if available
+        console.log('Using API data for equipment details');
         setSelectedEquipment(originalData);
         setShowDetails(true);
+        console.log('Set showDetails to true with API data');
       } else {
         // Fallback to using the item itself for generated loot
         // Create a mock equipment structure that matches what the details modal expects
@@ -77,10 +83,19 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           }
         };
         
+        console.log('Creating mock equipment data:', mockEquipmentData);
         setSelectedEquipment(mockEquipmentData);
         setShowDetails(true);
+        console.log('Set showDetails to true with mock data');
       }
+    } else {
+      console.log('Clicked item is not equipment:', item.type);
     }
+    
+    // Log current state after click
+    setTimeout(() => {
+      console.log('After equipment click - showDetails:', showDetails, 'selectedEquipment:', selectedEquipment);
+    }, 0);
   };
 
   // Get equipment level color based on level
