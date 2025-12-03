@@ -96,13 +96,13 @@ export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenIn
         <div className="flex items-center gap-3 bg-slate-900/80 border border-cyan-500/30 pl-1 pr-4 py-1 rounded-r-full shadow-[0_0_10px_rgba(6,182,212,0.2)] backdrop-blur-sm">
            <div className="w-10 h-10 rounded-full bg-cyan-900/50 border border-cyan-400 overflow-hidden relative">
               <img 
-                src={userData.avatarUrl || "https://czrimg.godqb.com/game/v2/play2/1.png"} 
-                alt={userData.nickname || "Player"} 
+                src={userData.img || "https://czrimg.godqb.com/game/v2/play2/1.png"} 
+                alt={userData.username || "Player"} 
                 className="w-full h-full object-cover" 
               />
            </div>
            <div className="flex flex-col">
-              <span className="text-[10px] text-cyan-400 font-bold tracking-widest uppercase font-['Press_Start_2P']">{userData.nickname || 'Player_01'}</span>
+              <span className="text-[10px] text-cyan-400 font-bold tracking-widest uppercase font-['Press_Start_2P']">{userData.username || 'Player_01'}</span>
               <span className="text-[8px] text-slate-400 font-mono">LV.{userData.level || 1} // {userData.className || 'WARRIOR'}</span>
            </div>
         </div>
@@ -125,9 +125,9 @@ export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenIn
             
             {/* Character Sprite (Large) */}
             <img 
-              src={userData.avatarUrl || "https://czrimg.godqb.com/game/v2/play2/1.png"} 
+              src={userData.img || "https://czrimg.godqb.com/game/v2/play2/1.png"} 
               className="w-32 h-32 object-contain image-pixelated drop-shadow-[0_0_20px_rgba(34,211,238,0.4)] animate-float"
-              alt={userData.nickname || "Hero"}
+              alt={userData.username || "Hero"}
             />
             
             {/* Class Label */}
