@@ -35,6 +35,11 @@ export enum Rarity {
   GENESIS = 'GENESIS'
 }
 
+export interface AdditionalAttribute {
+  attr_name: string;
+  attr_value: string;
+}
+
 export interface LootItem {
   id: string | number;
   name: string;
@@ -44,6 +49,10 @@ export interface LootItem {
   imageUrl?: string;
   quantity?: number;
   type?: string; // 'equipment' or 'treasure'
+  attack_power?: number;
+  defense_power?: number;
+  health?: number;
+  additional_attrs?: AdditionalAttribute[];
 }
 
 export interface Item {

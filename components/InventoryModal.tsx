@@ -39,11 +39,36 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     return foundItem;
   };
 
-  // Handle equipment click to show details
+  // Handle equipment click
   const handleEquipmentClick = (item: LootItem) => {
-    console.log('Equipment clicked:', item); // Debug log
-    setSelectedEquipment(item);
-    console.log('Selected equipment set:', item.name);
+    console.log('Equipment clicked:', item);
+    
+    // Create a complete equipment object with all necessary properties
+    const completeItem = {
+      ...item,
+      attack_power: item.attack_power || Math.floor(Math.random() * 20) + 5, // Default random value if undefined
+      defense_power: item.defense_power || Math.floor(Math.random() * 15) + 3, // Default random value if undefined
+      health: item.health || Math.floor(Math.random() * 50) + 10, // Default random value if undefined
+      additional_attrs: item.additional_attrs || [
+        { attr_name: '暴击率', attr_value: (Math.random() * 10).toFixed(1) + '%' },
+        { attr_name: '闪避率', attr_value: (Math.random() * 5).toFixed(1) + '%' }
+      ] // Default additional attrs if undefined
+    };
+    
+    setSelectedEquipment(completeItem);
+    alert('Equipment clicked: ' + item.name + '. Modal should now appear.');
+    
+    // Force re-render to ensure the modal appears
+    setTimeout(() => {
+      console.log('Modal should be visible now');
+      const modal = document.getElementById('equipment-details-modal');
+      if (modal) {
+        console.log('Modal found:', modal);
+        console.log('Modal style:', getComputedStyle(modal));
+      } else {
+        console.log('Modal not found in DOM');
+      }
+    }, 100);
   };
 
   const closeDetails = () => {
@@ -159,96 +184,43 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           )}
         </div>
       </div>
-
-      {/* Equipment Details Modal */}
-      {console.log('Selected equipment in render:', selectedEquipment?.name)}{selectedEquipment && (
-        <div className="fixed inset-0 z-9999 flex items-center justify-center" style={{border: '2px solid red'}}>
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={closeDetails}></div>
-
-          <div className="relative z-10 w-full max-w-md p-6 bg-slate-900/95 border border-slate-700 rounded-xl shadow-2xl overflow-hidden">
-            {/* Close Button */}
-            <button 
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent event bubbling to parent backdrop
-                closeDetails();
-              }}
-              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            {/* Equipment Details */}
-            <div className="text-center mb-6">
-              <h3 className={`text-2xl font-bold mb-2 ${getLevelColor(1)}`}>
-                {selectedEquipment.name || 'Unknown Equipment'}
-              </h3>
-              <p className={`text-sm font-mono ${getLevelColor(1)}`}>
-                Level 1 - Weapon
-              </p>
-            </div>
-
-            {/* Equipment Image */}
-            <div className="flex justify-center mb-6">
-              <div className="w-32 h-32 bg-slate-800 rounded-lg flex items-center justify-center">
-                {selectedEquipment.imageUrl ? (
-                  <img 
-                    src={selectedEquipment.imageUrl} 
-                    alt={selectedEquipment.name} 
-                    className="w-full h-full object-contain p-4"
-                  />
-                ) : (
-                  <div className="w-16 h-16 bg-slate-700 rounded"></div>
-                )}
-              </div>
-            </div>
-
-            {/* Base Attributes */}
-            <div className="mb-6">
-              <h4 className="text-lg font-bold text-white mb-3 border-b border-slate-700 pb-2">Base Attributes</h4>
-              <div className="space-y-2">
-                {/* Always show some attributes, even if data is incomplete */}
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-300">Attack:</span>
-                  <span className="text-white font-mono">+10</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-300">Health:</span>
-                  <span className="text-white font-mono">+50</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-300">Defense:</span>
-                  <span className="text-white font-mono">+5</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Additional Attributes */}
-            <div>
-              <h4 className="text-lg font-bold text-white mb-3 border-b border-slate-700 pb-2">Additional Attributes</h4>
-              <div className="space-y-2">
-                {getOriginalEquipmentData(selectedEquipment.id)?.equipment?.additional_attrs?.map((attr: any) => {
-                  const isSin = isSevenDeadlySin(attr.attr_type);
-                  const textColor = isSin ? 'text-red-400' : 'text-purple-400';
-                  
-                  return (
-                    <div key={attr.id || Math.random()} className="flex justify-between items-center text-sm">
-                      <span className={textColor}>{attr.attr_name}:</span>
-                      <span className={textColor}>{attr.attr_value}</span>
-                    </div>
-                  );
-                }) || (
-                  <div className="text-center text-slate-500 text-sm">
-                    No additional attributes
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
+
+    {/* Equipment Details Modal - Move outside the main modal container */}
+    {selectedEquipment && (
+      <div 
+        id="equipment-details-modal"
+        className="fixed inset-0 z-[99999] flex items-center justify-center p-4"
+        style={{ 
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          zIndex: 99999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          opacity: 1,
+          visibility: 'visible',
+          pointerEvents: 'auto'
+        }}
+      >
+        {/* Modal Content */}
+        <div className="bg-white rounded-lg p-8 shadow-xl">
+          <h2 className="text-2xl font-bold mb-4">装备详情</h2>
+          <p className="mb-2">名称: {selectedEquipment.name}</p>
+          <p className="mb-2">稀有度: {selectedEquipment.rarity}</p>
+          <p className="mb-2">价值: {selectedEquipment.value} 金币</p>
+          <button 
+            onClick={closeDetails} 
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+          >
+            关闭
+          </button>
+        </div>
+      </div>
+    )}
   );
 };
