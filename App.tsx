@@ -187,7 +187,6 @@ const App: React.FC = () => {
   // Check authentication status on mount
   useEffect(() => {
     // 清除之前的认证数据以方便测试
-    console.log('清除之前的认证数据');
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_data');
     
@@ -213,29 +212,16 @@ const App: React.FC = () => {
 
   // Handle login
   const handleLogin = async () => {
-    console.log('=====================================');
-    console.log('handleLogin function started!');
-    console.log('Function call time:', new Date().toISOString());
-    console.log('username:', username);
-    console.log('password:', password);
-    console.log('isAuthenticated:', isAuthenticated);
-    console.log('checkingAuth:', checkingAuth);
-    console.log('=====================================');
-    
     if (!username || !password) {
-      console.log('Username or password missing');
       setLoginError('请输入用户名和密码');
       return;
     }
     
-    console.log('Setting checkingAuth to true');
     setCheckingAuth(true);
     setLoginError('');
     
     try {
-      console.log('Calling authService.login');
       const result = await authService.login(username, password);
-      console.log('Login successful, result:', result);
       setUserData(result.userData);
       setIsAuthenticated(true);
       setGameState('HOME');
@@ -277,12 +263,8 @@ const App: React.FC = () => {
       const data = await response.json();
       if (!data.success) throw new Error(data.message || 'Failed to fetch items');
       
-      // Debug: Check API response structure
-      console.log('API response data:', data.data);
-      
       // Map API response to LootItem format with error handling
       const mappedItems = data.data.map((item: any, index: number) => {
-        console.log(`Item ${index} (${item.type}):`, item);
         let itemData: any;
         let itemType: string = item.type || 'treasure';
         
@@ -305,9 +287,8 @@ const App: React.FC = () => {
           itemValue = itemData.value || 0;
         }
         
-        // Generate ID with detailed logging
+        // Generate ID
         const generatedId = item.id || item.equipment?.id || itemData.id || Math.random().toString(36).substr(2, 9);
-        console.log(`Generated ID for ${itemType}: ${generatedId} from item.id: ${item.id}, item.equipment.id: ${item.equipment?.id}, itemData.id: ${itemData.id}`);
         
         return {
           id: generatedId,
@@ -492,20 +473,7 @@ const App: React.FC = () => {
               <div className="text-red-500 text-sm">{loginError}</div>
             )}
             <button
-              onClick={(e) => {
-                console.log('=====================================');
-                console.log('实际登录按钮被点击了！');
-                console.log('Event object:', e);
-                console.log('Event type:', e.type);
-                console.log('Button element:', e.target);
-                console.log('Current time:', new Date().toISOString());
-                console.log('Username:', username);
-                console.log('Password:', password);
-                console.log('=====================================');
-                
-                // 调用登录处理函数
-                handleLogin();
-              }}
+              onClick={handleLogin}
               className="w-full bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white py-3 rounded-md font-bold transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_25px_rgba(6,182,212,0.5)]"
             >
               登录
@@ -729,16 +697,6 @@ const App: React.FC = () => {
             
             <button
               onClick={(e) => {
-                console.log('=====================================');
-                console.log('Login button clicked!');
-                console.log('Event object:', e);
-                console.log('Event type:', e.type);
-                console.log('Button element:', e.target);
-                console.log('Current time:', new Date().toISOString());
-                console.log('Username:', username);
-                console.log('Password:', password);
-                console.log('=====================================');
-                
                 // 立即执行alert确保用户看到反馈
                 alert('登录按钮已点击！正在处理登录...');
                 

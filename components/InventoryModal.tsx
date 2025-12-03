@@ -26,44 +26,33 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
 
   // Get original equipment data from API response
   const getOriginalEquipmentData = (itemId: any) => {
-    console.log('Searching for equipment with ID:', itemId, 'Type:', typeof itemId);
-    console.log('Available original items:', originalItems);
-    
     const foundItem = originalItems.find((apiItem: any) => {
-      console.log(`Checking item type: ${apiItem.type}, id: ${apiItem.id} (${typeof apiItem.id}), equipment id: ${apiItem.equipment?.id} (${typeof apiItem.equipment?.id})`);
       const matchesType = apiItem.type === 'equipment';
       
       // Convert both to string for type-agnostic comparison
       const matchesItemId = apiItem.id?.toString() === String(itemId);
       const matchesEquipmentId = apiItem.equipment?.id?.toString() === String(itemId);
       
-      console.log(`Matches type: ${matchesType}, matches item id: ${matchesItemId}, matches equipment id: ${matchesEquipmentId}`);
-      
       return matchesType && (matchesItemId || matchesEquipmentId);
     });
     
-    console.log('Found equipment data:', foundItem);
     return foundItem;
   };
 
   // Handle equipment click to show details
   const handleEquipmentClick = (item: LootItem) => {
-    console.log('Equipment clicked:', item);
     if (item.type === 'equipment') {
-      console.log('Item type is equipment, searching for original data');
       const originalData = getOriginalEquipmentData(item.id);
-      console.log('Original equipment data found:', originalData);
-      if (originalData) {
-        console.log('Setting selected equipment:', originalData);
+      
+      // Check if equipment data has the expected structure
+      if (originalData && originalData.equipment && originalData.equipment.equipment_template) {
         setSelectedEquipment(originalData);
-        console.log('Setting showDetails to true');
-        setShowDetails(true);
-      } else {
-        console.log('No original equipment data found for item ID:', item.id);
-        console.log('Original items available:', originalItems);
+        
+        // Use setTimeout to ensure state updates are applied
+        setTimeout(() => {
+          setShowDetails(true);
+        }, 0);
       }
-    } else {
-      console.log('Item type is not equipment:', item.type);
     }
   };
 
@@ -91,6 +80,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={onClose}></div>
 
+      {/* Inventory Modal */}
       <div className="relative z-10 w-full max-w-4xl p-6 flex flex-col h-[80vh] bg-slate-900/90 border border-slate-700 rounded-xl shadow-2xl overflow-hidden">
         
         {/* Header */}
@@ -156,7 +146,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                             </div>
                           )}
                       </div>
-                      
+                       
                       <div className="text-center">
                         <div className={`text-[10px] font-bold truncate ${item.rarity === Rarity.GENESIS ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-yellow-400' : rarityClass.match(/text-\S+/)?.[0] || 'text-slate-300'}`}>
                           {item.name}
@@ -173,13 +163,13 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         </div>
       </div>
 
-      {/* Equipment Details Modal */}
+      {/* Equipment Details Modal - Placed at the same level as inventory modal */}
       {showDetails && selectedEquipment && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center">
+        <div className="fixed inset-0 z-9999 flex items-center justify-center">
           {/* Backdrop */}
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowDetails(false)}></div>
 
-          <div className="relative z-70 w-full max-w-md p-6 bg-slate-900/95 border border-slate-700 rounded-xl shadow-2xl overflow-hidden">
+          <div className="relative z-10 w-full max-w-md p-6 bg-slate-900/95 border border-slate-700 rounded-xl shadow-2xl overflow-hidden">
             {/* Close Button */}
             <button 
               onClick={() => setShowDetails(false)}
