@@ -487,8 +487,13 @@ const App: React.FC = () => {
     // Preload all treasure images
     await preloadImages(treasures);
     
+    // Delay to ensure loading overlay is visible
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     // Regenerate dungeon with new treasure data
     regenerate(selectedDifficulty);
+    
+    // Set game state to playing
     setGameState('PLAYING');
     
     // Close loading overlay once everything is ready
@@ -560,10 +565,47 @@ const App: React.FC = () => {
     setCurrentLoot([]);
   };
 
-  const handleExtract = useCallback(() => {
-    setSummaryType('success');
-    setIsSummaryOpen(true);
-  }, []);
+  const handleExtract = useCallback(async () => {
+    try {
+      // 准备请求参数
+      const requestData = runInventory.map(item => ({
+        item_id: item.id,
+        quantity: item.quantity || 1
+      }));
+      
+      // 获取认证token
+      const token = authService.getAuthToken();
+      if (!token) {
+        console.error('No authentication token found');
+        // 如果没有token，仍然返回主页
+        handleReturnHome();
+        return;
+      }
+      
+      // 发送请求到/api/v1/my-items接口
+      const response = await fetch('http://8.130.43.130:10005/api/v1/my-items', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(requestData)
+      });
+      
+      if (response.ok) {
+        console.log('Items sent successfully');
+      } else {
+        console.error('Failed to send items:', response.status, await response.text());
+      }
+      
+      // 请求成功后返回主页
+      handleReturnHome();
+    } catch (error) {
+      console.error('Error sending items:', error);
+      // 即使发生错误，也返回主页
+      handleReturnHome();
+    }
+  }, [runInventory]);
 
   const handleGameOver = useCallback(() => {
     setRunInventory([]); 

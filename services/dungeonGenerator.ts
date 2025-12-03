@@ -117,6 +117,7 @@ export const generateDungeon = (difficultyMultiplier: number = 1, difficultyLeve
   }
 
   // 4. Populate Items & Enemies
+  // First populate items by theme
   rooms.forEach(room => {
     populateItemsByTheme(room, difficultyLevel);
   });
@@ -240,7 +241,49 @@ export const generateDungeon = (difficultyMultiplier: number = 1, difficultyLeve
     }
   }
 
+  // Generate chests based on difficulty
+  generateChestsByDifficulty({ width: MAP_WIDTH, height: MAP_HEIGHT, grid, rooms, enemies }, difficultyLevel);
+  
+  // Return the generated dungeon data
   return { width: MAP_WIDTH, height: MAP_HEIGHT, grid, rooms, enemies };
+};
+
+// Generate chests based on difficulty level
+function generateChestsByDifficulty(dungeon: DungeonData, difficultyLevel: string) {
+  // Calculate total number of chests based on difficulty
+  const getTotalChestCount = (level: string): number => {
+    switch (level) {
+      case 'B': return randomInt(5, 6);
+      case 'A': return randomInt(6, 7);
+      case 'S': return randomInt(7, 8);
+      case 'SS': return randomInt(8, 9);
+      case 'SSS': return randomInt(10, 12);
+      default: return randomInt(5, 6);
+    }
+  };
+  
+  const totalChests = getTotalChestCount(difficultyLevel);
+  let chestsPlaced = 0;
+  let attempts = 0;
+  const maxAttempts = totalChests * 10; // Prevent infinite loop
+  
+  // Exclude start room (index 0) from chest placement
+  const roomsWithoutStart = dungeon.rooms.slice(1);
+  
+  while (chestsPlaced < totalChests && attempts < maxAttempts) {
+    attempts++;
+    
+    // Randomly select a room from roomsWithoutStart
+    const randomRoom = roomsWithoutStart[randomInt(0, roomsWithoutStart.length - 1)];
+    
+    // Try to place a chest in the selected room
+    const tx = randomInt(randomRoom.x + 1, randomRoom.x + randomRoom.w - 2);
+    const ty = randomInt(randomRoom.y + 1, randomRoom.y + randomRoom.h - 2);
+    
+    if (tryAddItem(randomRoom, tx, ty, ItemType.CHEST)) {
+      chestsPlaced++;
+    }
+  }
 };
 
 function tryAddItem(room: Room, x: number, y: number, type: ItemType): boolean {
@@ -258,27 +301,6 @@ function tryAddItem(room: Room, x: number, y: number, type: ItemType): boolean {
 }
 
 function populateItemsByTheme(room: Room, difficultyLevel: string) {
-  // 根据难度等级生成宝箱数量
-  const getChestCountByDifficulty = (level: string): number => {
-    switch (level) {
-      case 'B': return randomInt(5, 6);
-      case 'A': return randomInt(6, 7);
-      case 'S': return randomInt(7, 8);
-      case 'SS': return randomInt(8, 9);
-      case 'SSS': return randomInt(10, 12);
-      default: return randomInt(5, 6);
-    }
-  };
-  
-  // 生成宝箱
-  if (Math.random() > 0.7) { // 30%的概率不生成宝箱
-    const chestCount = getChestCountByDifficulty(difficultyLevel);
-    for (let i = 0; i < chestCount; i++) {
-      const tx = randomInt(room.x + 1, room.x + room.w - 2);
-      const ty = randomInt(room.y + 1, room.y + room.h - 2);
-      tryAddItem(room, tx, ty, ItemType.CHEST);
-    }
-  }
   const cx = room.x + Math.floor(room.w / 2);
   const cy = room.y + Math.floor(room.h / 2);
 
