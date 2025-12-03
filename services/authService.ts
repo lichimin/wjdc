@@ -28,15 +28,23 @@ class AuthService {
   // 登录方法
   async login(username: string, password: string): Promise<{ userData: UserData; token: string }> {
     try {
+      console.log('Login attempt started', { username, password });
+      console.log('API URL:', `${API_BASE_URL}/api/v1/login`);
+      
       const response = await fetch(`${API_BASE_URL}/api/v1/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ username, password }),
+        mode: 'cors',
+        credentials: 'omit',
       });
 
+      console.log('Response received:', response.status, response.statusText);
+      
       const data: ApiResponse<UserData> = await response.json();
+      console.log('Response data:', data);
       
       if (!response.ok || data.code !== 200) {
         throw new Error(data.message || '登录失败');
@@ -55,6 +63,10 @@ class AuthService {
       };
     } catch (error) {
       console.error('Login error:', error);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
       throw error;
     }
   }

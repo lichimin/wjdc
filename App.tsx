@@ -207,16 +207,24 @@ const App: React.FC = () => {
 
   // Handle login
   const handleLogin = async () => {
+    console.log('handleLogin called');
+    console.log('username:', username);
+    console.log('password:', password);
+    
     if (!username || !password) {
+      console.log('Username or password missing');
       setLoginError('请输入用户名和密码');
       return;
     }
     
+    console.log('Setting checkingAuth to true');
     setCheckingAuth(true);
     setLoginError('');
     
     try {
+      console.log('Calling authService.login');
       const result = await authService.login(username, password);
+      console.log('Login successful, result:', result);
       setUserData(result.userData);
       setIsAuthenticated(true);
       setGameState('HOME');
@@ -553,7 +561,10 @@ const App: React.FC = () => {
                 <div className="text-red-500 text-sm mb-2">{loginError}</div>
               )}
               <button 
-                onClick={handleLogin}
+                onClick={(e) => {
+                  console.log('Login button clicked', e);
+                  handleLogin();
+                }}
                 disabled={checkingAuth}
                 className={`w-full font-bold py-2 px-4 rounded transition-all duration-300 shadow-lg hover:shadow-cyan-500/20 ${
                   checkingAuth 

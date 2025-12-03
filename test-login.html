@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录API测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .container { border: 1px solid #ccc; padding: 20px; border-radius: 5px; }
+        input { width: 100%; padding: 10px; margin: 5px 0; box-sizing: border-box; }
+        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+        .log { margin-top: 20px; padding: 10px; background-color: #f5f5f5; border-radius: 5px; height: 300px; overflow-y: scroll; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>登录API测试</h1>
+        <div>
+            <label>用户名:</label>
+            <input type="text" id="username" placeholder="输入用户名">
+        </div>
+        <div>
+            <label>密码:</label>
+            <input type="password" id="password" placeholder="输入密码">
+        </div>
+        <button onclick="testLogin()">测试登录</button>
+        <button onclick="clearLog()">清空日志</button>
+    </div>
+    <div class="log" id="log"></div>
+
+    <script>
+        const API_URL = 'http://8.130.43.130:10005/api/v1/login';
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<p>[${timestamp}] ${message}</p>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+        
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                log('请输入用户名和密码');
+                return;
+            }
+            
+            log('开始测试登录...');
+            log(`用户名: ${username}`);
+            log(`密码: ${password}`);
+            log(`API地址: ${API_URL}`);
+            
+            try {
+                log('发送请求...');
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password }),
+                    mode: 'cors',
+                    credentials: 'omit',
+                });
+                
+                log(`响应状态: ${response.status} ${response.statusText}`);
+                log(`响应头: ${JSON.stringify([...response.headers.entries()], null, 2)}`);
+                
+                const data = await response.json();
+                log(`响应数据: ${JSON.stringify(data, null, 2)}`);
+                
+                if (response.ok) {
+                    log('✅ 登录成功！');
+                } else {
+                    log('❌ 登录失败');
+                }
+            } catch (error) {
+                log(`❌ 请求错误: ${error.message}`);
+                log(`错误详情: ${error.stack}`);
+            }
+        }
+    </script>
+</body>
+</html>
