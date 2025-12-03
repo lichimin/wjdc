@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { UserData } from '../services/authService';
 
 interface HomeProps {
@@ -6,6 +6,34 @@ interface HomeProps {
   onStartAdventure: (difficulty: number) => void;
   onOpenInventory: () => void;
   onLogout: () => void;
+}
+
+interface SkinData {
+  id: number;
+  name: string;
+  attack: number;
+  hp: number;
+  atk_type: number;
+  atk_speed: number;
+  critical_rate: number;
+  critical_damage: number;
+  background_url: string;
+  idle_image_urls: string[];
+  attack_image_urls: string[];
+  move_image_urls: string[];
+  created_at: number;
+  updated_at: number;
+}
+
+interface UserSkin {
+  id: number;
+  user_id: number;
+  skin_id: number;
+  is_active: boolean;
+  created_at: number;
+  updated_at: number;
+  user: any;
+  skin: SkinData;
 }
 
 const DIFFICULTIES = [
@@ -76,11 +104,88 @@ const PixelIcon: React.FC<{ type: 'sword' | 'bag' | 'anvil' | 'shirt', scale?: n
       )))}
     </div>
   );
+
+  // Fetch user skin data on component mount
+  useEffect(() => {
+    const fetchUserSkin = async () => {
+      try {
+        const response = await fetch('/api/v1/user/skins?&is_active=1');
+        const data = await response.json();
+        
+        if (data.success && data.data.length > 0) {
+          const activeSkin = data.data[0];
+          setUserSkin(activeSkin);
+          
+          // Log to console
+          console.log('User skin data:', activeSkin);
+          
+          // Cache all images
+          await cacheSkinImages(activeSkin.skin);
+          
+          // Close loading screen
+          setIsLoading(false);
+        } else {
+          // No active skin found, close loading screen
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error fetching user skin:', error);
+        // Close loading screen even if there's an error
+        setIsLoading(false);
+      }
+    };
+    
+    fetchUserSkin();
+  }, []);
+
+  // Cache all skin images
+  const cacheSkinImages = async (skin: SkinData): Promise<void> => {
+    const allImages = [
+      skin.background_url,
+      ...skin.idle_image_urls,
+      ...skin.attack_image_urls,
+      ...skin.move_image_urls
+    ];
+    
+    const imagePromises = allImages.map(url => {
+      return new Promise<void>((resolve) => {
+        const img = new Image();
+        img.src = url;
+        img.onload = () => resolve();
+        img.onerror = () => resolve(); // Ignore errors, continue with loading
+      });
+    });
+    
+    await Promise.all(imagePromises);
+  };
+
+  // Animate idle images if multiple exist
+  useEffect(() => {
+    if (userSkin && userSkin.skin.idle_image_urls.length > 1) {
+      const interval = 1000 / userSkin.skin.idle_image_urls.length;
+      
+      animationRef.current = setInterval(() => {
+        setCurrentIdleImageIndex((prev) => 
+          prev === userSkin.skin.idle_image_urls.length - 1 ? 0 : prev + 1
+        );
+      }, interval);
+    }
+    
+    return () => {
+      if (animationRef.current) {
+        clearInterval(animationRef.current);
+      }
+    };
+  }, [userSkin]);
 };
 
 export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenInventory, onLogout }) => {
   const [showDifficulty, setShowDifficulty] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userSkin, setUserSkin] = useState<UserSkin | null>(null);
+  const [currentIdleImageIndex, setCurrentIdleImageIndex] = useState(0);
+  const animationRef = useRef<NodeJS.Timeout | null>(null);
 
   return (
     <div className="h-screen w-full bg-[#020205] flex flex-col font-sans relative overflow-hidden text-gray-100 selection:bg-cyan-500 selection:text-black">
@@ -138,6 +243,29 @@ export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenIn
         </div>
       </header>
 
+      {/* --- LOADING SCREEN --- */}
+      {isLoading && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#020205] font-['Press_Start_2P']">
+          {/* Game Title */}
+          <div className="text-4xl text-cyan-400 mb-8 drop-shadow-[0_0_20px_rgba(34,211,238,0.5)] animate-pulse">
+            ovmaogame
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="w-64 h-4 bg-slate-900/80 border border-cyan-500 rounded overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-cyan-400 to-cyan-600 animate-[progress-bar_2s_ease-in-out_infinite]"
+              style={{ width: '70%' }}
+            ></div>
+          </div>
+          
+          {/* Loading Text */}
+          <div className="text-xs text-cyan-500 mt-4 animate-pulse">
+            INITIALIZING...
+          </div>
+        </div>
+      )}
+
       {/* --- HERO SECTION (Character) --- */}
       <div className="flex-1 flex flex-col items-center justify-center relative z-10 pointer-events-none">
          {/* Hologram Circle */}
@@ -146,11 +274,19 @@ export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenIn
             <div className="absolute inset-4 border border-cyan-500/10 rounded-full animate-[spin_5s_linear_infinite_reverse]"></div>
             
             {/* Character Sprite (Large) */}
-            <img 
-              src={userData.img || "https://czrimg.godqb.com/game/v2/play2/1.png"} 
-              className="w-32 h-32 object-contain image-pixelated drop-shadow-[0_0_20px_rgba(34,211,238,0.4)] animate-float"
-              alt={userData.username || "Hero"}
-            />
+            {userSkin && userSkin.skin.idle_image_urls.length > 0 ? (
+              <img 
+                src={userSkin.skin.idle_image_urls[currentIdleImageIndex]} 
+                className="w-32 h-32 object-contain image-pixelated drop-shadow-[0_0_20px_rgba(34,211,238,0.4)] animate-float"
+                alt={userData.username || "Hero"}
+              />
+            ) : (
+              <img 
+                src={userData.img || "https://czrimg.godqb.com/game/v2/play2/1.png"} 
+                className="w-32 h-32 object-contain image-pixelated drop-shadow-[0_0_20px_rgba(34,211,238,0.4)] animate-float"
+                alt={userData.username || "Hero"}
+              />
+            )}
             
             {/* Class Label */}
             <div className="absolute -bottom-4 bg-black/80 border border-cyan-500 px-4 py-1 rounded text-cyan-400 text-[10px] font-['Press_Start_2P'] shadow-[0_0_10px_rgba(6,182,212,0.5)]">
@@ -247,6 +383,10 @@ export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenIn
         .animate-float { animation: float 3s ease-in-out infinite; }
         .animate-fadeIn { animation: fadeIn 0.2s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes progress-bar {
+          0%, 100% { transform: translateX(0); }
+          50% { transform: translateX(100%); }
+        }
       `}</style>
     </div>
   );
