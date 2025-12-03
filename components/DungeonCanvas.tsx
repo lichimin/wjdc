@@ -776,7 +776,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
   const drawPlayer = (ctx: CanvasRenderingContext2D, p: PlayerState, isAttacking: boolean) => {
     const drawX = Math.floor(p.x + TILE_SIZE/2);
     const drawY = Math.floor(p.y + TILE_SIZE/2 - 16); 
-    const spriteSize = 64; 
+    const spriteSize = 38; // Reduced by 40% from original 64
     const barWidth = 24; const barHeight = 4; const barOffset = 42; 
 
     ctx.fillStyle = '#0f172a'; ctx.fillRect(drawX - barWidth / 2 - 1, drawY - barOffset - 1, barWidth + 2, barHeight + 2);
