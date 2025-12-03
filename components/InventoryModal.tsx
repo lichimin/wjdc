@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { LootItem, Rarity } from '../types';
 
 interface InventoryModalProps {
   items: LootItem[];
   onClose: () => void;
+  // Add original API data for equipment details
+  originalItems?: any[];
 }
 
-export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose }) => {
+export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, originalItems = [] }) => {
+  const [selectedEquipment, setSelectedEquipment] = useState<any>(null);
+  const [showDetails, setShowDetails] = useState(false);
   const getRarityStyle = (rarity: Rarity) => {
     switch (rarity) {
       case Rarity.RARE: return 'border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)] text-blue-200';
@@ -19,6 +23,45 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose }
   };
 
   const totalValue = items.reduce((sum, item) => sum + (item.value || 0), 0);
+
+  // Get original equipment data from API response
+  const getOriginalEquipmentData = (itemId: string) => {
+    return originalItems.find(apiItem => 
+      apiItem.type === 'equipment' && 
+      (apiItem.id?.toString() === itemId || 
+       apiItem.equipment?.id?.toString() === itemId)
+    );
+  };
+
+  // Handle equipment click to show details
+  const handleEquipmentClick = (item: LootItem) => {
+    if (item.type === 'equipment') {
+      const originalData = getOriginalEquipmentData(item.id);
+      if (originalData) {
+        setSelectedEquipment(originalData);
+        setShowDetails(true);
+      }
+    }
+  };
+
+  // Get equipment level color based on level
+  const getLevelColor = (level: number) => {
+    switch (level) {
+      case 1: return 'text-white'; // Common
+      case 2: return 'text-blue-400'; // Rare
+      case 3: return 'text-purple-400'; // Epic
+      case 4: return 'text-amber-400'; // Legendary
+      case 5: return 'text-red-400'; // Mythic
+      case 6: return 'bg-gradient-to-r from-pink-400 via-red-400 to-yellow-400 bg-clip-text text-transparent'; // Genesis
+      default: return 'text-white';
+    }
+  };
+
+  // Check if attribute is a seven deadly sin (rare attribute)
+  const isSevenDeadlySin = (attrType: string) => {
+    const sins = ['gluttony', 'greed', 'sloth', 'pride', 'lust', 'envy', 'wrath'];
+    return sins.includes(attrType);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -61,7 +104,11 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose }
                  const isGenesis = item.rarity === Rarity.GENESIS;
 
                  return (
-                   <div key={item.id} className="group relative bg-slate-950 p-2 rounded-lg border border-slate-800 hover:border-slate-600 transition-colors">
+                   <div 
+                     key={item.id} 
+                     className={`group relative bg-slate-950 p-2 rounded-lg border border-slate-800 transition-colors cursor-pointer ${item.type === 'equipment' ? 'hover:border-amber-500' : ''}`}
+                     onClick={() => item.type === 'equipment' && handleEquipmentClick(item)}
+                   >
                       <div className={`
                          aspect-square mb-2 flex items-center justify-center bg-slate-900 rounded
                          ${isGenesis ? '' : `border ${rarityClass.split(' ')[0]}`}
@@ -102,6 +149,106 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose }
           )}
         </div>
       </div>
+
+      {/* Equipment Details Modal */}
+      {showDetails && selectedEquipment && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowDetails(false)}></div>
+
+          <div className="relative z-70 w-full max-w-md p-6 bg-slate-900/95 border border-slate-700 rounded-xl shadow-2xl overflow-hidden">
+            {/* Close Button */}
+            <button 
+              onClick={() => setShowDetails(false)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Equipment Details */}
+            <div className="text-center mb-6">
+              <h3 className={`text-2xl font-bold mb-2 ${getLevelColor(selectedEquipment.equipment.equipment_template.level)}`}>
+                {selectedEquipment.equipment.equipment_template.name}
+              </h3>
+              <p className={`text-sm font-mono ${getLevelColor(selectedEquipment.equipment.equipment_template.level)}`}>
+                Level {selectedEquipment.equipment.equipment_template.level} - {selectedEquipment.equipment.equipment_template.slot}
+              </p>
+            </div>
+
+            {/* Equipment Image */}
+            <div className="flex justify-center mb-6">
+              <div className="w-32 h-32 bg-slate-800 rounded-lg flex items-center justify-center">
+                {selectedEquipment.equipment.equipment_template.image_url ? (
+                  <img 
+                    src={selectedEquipment.equipment.equipment_template.image_url} 
+                    alt={selectedEquipment.equipment.equipment_template.name} 
+                    className="w-full h-full object-contain p-4"
+                  />
+                ) : (
+                  <div className="w-16 h-16 bg-slate-700 rounded"></div>
+                )}
+              </div>
+            </div>
+
+            {/* Base Attributes */}
+            <div className="mb-6">
+              <h4 className="text-lg font-bold text-white mb-3 border-b border-slate-700 pb-2">Base Attributes</h4>
+              <div className="space-y-2">
+                {Object.entries(selectedEquipment.equipment.equipment_template).map(([key, value]) => {
+                  // Only show numeric attributes that are greater than 0
+                  if (typeof value === 'number' && value > 0) {
+                    // Map attribute keys to display names
+                    const attrNames: Record<string, string> = {
+                      hp: 'Health',
+                      attack: 'Attack',
+                      attack_speed: 'Attack Speed',
+                      move_speed: 'Move Speed',
+                      bullet_speed: 'Bullet Speed',
+                      drain: 'Life Drain',
+                      critical: 'Critical Chance',
+                      dodge: 'Dodge Chance',
+                      instant_kill: 'Instant Kill',
+                      recovery: 'Health Recovery'
+                    };
+                    
+                    if (attrNames[key]) {
+                      return (
+                        <div key={key} className="flex justify-between items-center text-sm">
+                          <span className="text-slate-300">{attrNames[key]}:</span>
+                          <span className="text-white font-mono">+{value}</span>
+                        </div>
+                      );
+                    }
+                  }
+                  return null;
+                }).filter(Boolean)}
+              </div>
+            </div>
+
+            {/* Additional Attributes */}
+            {selectedEquipment.equipment.additional_attrs && selectedEquipment.equipment.additional_attrs.length > 0 && (
+              <div>
+                <h4 className="text-lg font-bold text-white mb-3 border-b border-slate-700 pb-2">Additional Attributes</h4>
+                <div className="space-y-2">
+                  {selectedEquipment.equipment.additional_attrs.map((attr: any) => {
+                    const isSin = isSevenDeadlySin(attr.attr_type);
+                    const textColor = isSin ? 'text-red-400' : 'text-purple-400';
+                    
+                    return (
+                      <div key={attr.id} className="flex justify-between items-center text-sm">
+                        <span className={textColor}>{attr.attr_name}:</span>
+                        <span className={textColor}>{attr.attr_value}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -250,6 +250,7 @@ const App: React.FC = () => {
   const [isChestOpen, setIsChestOpen] = useState(false);
   const [currentLoot, setCurrentLoot] = useState<LootItem[]>([]);
   const [inventory, setInventory] = useState<LootItem[]>([]);
+  const [originalInventoryItems, setOriginalInventoryItems] = useState<any[]>([]);
   const [runInventory, setRunInventory] = useState<LootItem[]>([]);
   const [inventoryLoading, setInventoryLoading] = useState(false);
   
@@ -315,6 +316,8 @@ const App: React.FC = () => {
         };
       });
       
+      // Save original API data for equipment details
+      setOriginalInventoryItems(data.data);
       setInventory(mappedItems);
     } catch (error) {
       console.error('Failed to fetch backpack items:', error);
@@ -525,7 +528,11 @@ const App: React.FC = () => {
           )}
         {/* Inventory Overlay for Home */}
         {isInventoryOpen && (
-          <InventoryModal items={inventory} onClose={() => setIsInventoryOpen(false)} />
+          <InventoryModal 
+              items={inventory} 
+              onClose={() => setIsInventoryOpen(false)} 
+              originalItems={originalInventoryItems} 
+            />
         )}
       </>
     );
