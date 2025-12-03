@@ -135,11 +135,30 @@ export const ChestModal: React.FC<ChestModalProps> = ({ loot, onConfirm }) => {
                        ${isGenesis ? '' : `border-2 ${rarityClass}`}
                        ${isGenesis ? 'm-[2px] rounded-md' : 'rounded-lg'}
                     `}>
-                        {/* Icon */}
-                        <div 
-                          className="w-8 h-8 mb-2 rounded shadow-inner"
-                          style={{ backgroundColor: item.iconColor }}
-                        ></div>
+                        {/* Icon or Image */}
+                        {item.imageUrl ? (
+                          <div className="w-12 h-12 mb-2 rounded shadow-inner overflow-hidden flex items-center justify-center bg-black">
+                            <img 
+                              src={item.imageUrl} 
+                              alt={item.name} 
+                              className="w-full h-full object-cover" 
+                              onError={(e) => {
+                                // Fallback to color if image fails to load
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  parent.style.backgroundColor = item.iconColor;
+                                }
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div 
+                            className="w-8 h-8 mb-2 rounded shadow-inner"
+                            style={{ backgroundColor: item.iconColor }}
+                          ></div>
+                        )}
                         
                         {/* Name */}
                         <div className={`text-[9px] font-bold leading-tight mb-1 ${getRarityLabel(item.rarity)}`}>

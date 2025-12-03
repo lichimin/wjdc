@@ -53,22 +53,47 @@ const Joystick: React.FC<{
 
   // Global listeners for drag outside
   useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => { if (active) { e.preventDefault(); handleMove(e.clientX, e.clientY); } };
-    const onMouseUp = () => { if (active) handleEnd(); };
-    const onTouchMove = (e: TouchEvent) => { if (active) { handleMove(e.touches[0].clientX, e.touches[0].clientY); } };
-    const onTouchEnd = () => { if (active) handleEnd(); };
+    const onMouseMove = (e: MouseEvent) => { 
+      if (active) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleMove(e.clientX, e.clientY); 
+      } 
+    };
+    const onMouseUp = (e: MouseEvent) => { 
+      if (active) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleEnd(); 
+      } 
+    };
+    const onTouchMove = (e: TouchEvent) => { 
+      if (active) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleMove(e.touches[0].clientX, e.touches[0].clientY); 
+      } 
+    };
+    const onTouchEnd = (e: TouchEvent) => { 
+      if (active) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleEnd(); 
+      } 
+    };
 
     if (active) {
-      window.addEventListener('mousemove', onMouseMove);
-      window.addEventListener('mouseup', onMouseUp);
-      window.addEventListener('touchmove', onTouchMove, { passive: false });
-      window.addEventListener('touchend', onTouchEnd);
+      // Use capture phase to ensure we get events before other handlers
+      window.addEventListener('mousemove', onMouseMove, true);
+      window.addEventListener('mouseup', onMouseUp, true);
+      window.addEventListener('touchmove', onTouchMove, { passive: false, capture: true });
+      window.addEventListener('touchend', onTouchEnd, { capture: true });
     }
     return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-      window.removeEventListener('touchmove', onTouchMove);
-      window.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('mousemove', onMouseMove, true);
+      window.removeEventListener('mouseup', onMouseUp, true);
+      window.removeEventListener('touchmove', onTouchMove, { capture: true });
+      window.removeEventListener('touchend', onTouchEnd, { capture: true });
     };
   }, [active]);
 
@@ -76,8 +101,23 @@ const Joystick: React.FC<{
     <div 
       ref={containerRef} 
       className="w-32 h-32 relative touch-none select-none group"
-      onMouseDown={(e) => handleStart(e.clientX, e.clientY)}
-      onTouchStart={(e) => handleStart(e.touches[0].clientX, e.touches[0].clientY)}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleStart(e.clientX, e.clientY);
+      }}
+      onTouchStart={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleStart(e.touches[0].clientX, e.touches[0].clientY);
+      }}
+      style={{
+        // Prevent text selection and touch highlighting
+        userSelect: 'none',
+        touchAction: 'none',
+        // Ensure high z-index to capture events
+        zIndex: 1000
+      }}
     >
       {/* Outer Ring */}
       <div className={`
