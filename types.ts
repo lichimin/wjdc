@@ -43,6 +43,7 @@ export interface LootItem {
   iconColor: string;
   imageUrl?: string;
   quantity?: number;
+  type?: string; // 'equipment' or 'treasure'
 }
 
 export interface Item {

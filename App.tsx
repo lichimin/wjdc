@@ -281,16 +281,37 @@ const App: React.FC = () => {
       
       // Map API response to LootItem format with error handling
       const mappedItems = data.data.map((item: any) => {
-        // Handle different possible data structures
-        const treasureData = item.treasure || item;
+        let itemData: any;
+        let itemType: string = item.type || 'treasure';
+        
+        // Handle different item types
+        if (itemType === 'equipment') {
+          // Equipment data structure
+          itemData = item.equipment?.equipment_template || {};
+        } else {
+          // Treasure data structure
+          itemData = item.treasure || item;
+        }
+        
+        // Calculate value based on item type
+        let itemValue = 0;
+        if (itemType === 'equipment') {
+          // For equipment, value can be based on level and attack power
+          itemValue = (itemData.level || 1) * 10 + (itemData.attack || 0);
+        } else {
+          // For treasure, use direct value
+          itemValue = itemData.value || 0;
+        }
+        
         return {
-          id: item.id || treasureData.id || Math.random().toString(36).substr(2, 9),
-          name: treasureData.name || 'Unknown Item',
-          value: treasureData.value || 0,
-          iconColor: '#ffd700', // Default gold color for treasure
-          rarity: (treasureData.rarity || 'LEGENDARY') as Rarity,
-          imageUrl: treasureData.image_url || treasureData.imageUrl || '',
-          quantity: item.quantity || treasureData.quantity || 1
+          id: item.id || item.equipment?.id || itemData.id || Math.random().toString(36).substr(2, 9),
+          name: itemData.name || 'Unknown Item',
+          value: itemValue,
+          iconColor: itemType === 'equipment' ? '#4ade80' : '#ffd700', // Different color for equipment vs treasure
+          rarity: (itemData.rarity || 'LEGENDARY') as Rarity,
+          imageUrl: itemData.image_url || itemData.imageUrl || '',
+          quantity: itemType === 'equipment' ? 1 : (item.quantity || itemData.quantity || 1),
+          type: itemType // Store item type for future use
         };
       });
       
