@@ -18,7 +18,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose }
     }
   };
 
-  const totalValue = items.reduce((sum, item) => sum + item.value, 0);
+  const totalValue = items.reduce((sum, item) => sum + (item.value || 0), 0);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">

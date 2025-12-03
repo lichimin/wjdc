@@ -276,16 +276,23 @@ const App: React.FC = () => {
       const data = await response.json();
       if (!data.success) throw new Error(data.message || 'Failed to fetch items');
       
-      // Map API response to LootItem format
-      const mappedItems = data.data.map((item: any) => ({
-        id: item.id,
-        name: item.treasure.name,
-        value: item.treasure.value,
-        iconColor: '#ffd700', // Default gold color for treasure
-        rarity: 'LEGENDARY' as Rarity, // Default rarity
-        imageUrl: item.treasure.image_url,
-        quantity: item.quantity
-      }));
+      // Debug: Check API response structure
+      console.log('API response data:', data.data);
+      
+      // Map API response to LootItem format with error handling
+      const mappedItems = data.data.map((item: any) => {
+        // Handle different possible data structures
+        const treasureData = item.treasure || item;
+        return {
+          id: item.id || treasureData.id || Math.random().toString(36).substr(2, 9),
+          name: treasureData.name || 'Unknown Item',
+          value: treasureData.value || 0,
+          iconColor: '#ffd700', // Default gold color for treasure
+          rarity: (treasureData.rarity || 'LEGENDARY') as Rarity,
+          imageUrl: treasureData.image_url || treasureData.imageUrl || '',
+          quantity: item.quantity || treasureData.quantity || 1
+        };
+      });
       
       setInventory(mappedItems);
     } catch (error) {
