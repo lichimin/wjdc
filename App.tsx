@@ -213,9 +213,14 @@ const App: React.FC = () => {
 
   // Handle login
   const handleLogin = async () => {
-    console.log('handleLogin called');
+    console.log('=====================================');
+    console.log('handleLogin function started!');
+    console.log('Function call time:', new Date().toISOString());
     console.log('username:', username);
     console.log('password:', password);
+    console.log('isAuthenticated:', isAuthenticated);
+    console.log('checkingAuth:', checkingAuth);
+    console.log('=====================================');
     
     if (!username || !password) {
       console.log('Username or password missing');
