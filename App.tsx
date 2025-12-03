@@ -160,6 +160,7 @@ const CyberDashButton: React.FC<{
 const App: React.FC = () => {
   // Global App State
   const [gameState, setGameState] = useState<'HOME' | 'PLAYING'>('HOME');
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [difficulty, setDifficulty] = useState(1);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(false);
@@ -183,6 +184,60 @@ const App: React.FC = () => {
     setPassword('');
     setGameState('HOME');
   };
+
+  // Fullscreen functionality
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {
+        console.error(`Error attempting to enable fullscreen: ${err.message}`);
+      });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
+
+  // Handle fullscreen change events
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, []);
+
+  // Auto-fullscreen on mobile devices when game starts
+  useEffect(() => {
+    if (gameState === 'PLAYING' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+      // Only attempt auto-fullscreen on user interaction
+      const handleUserInteraction = () => {
+        if (!isFullscreen) {
+          toggleFullscreen();
+        }
+        window.removeEventListener('click', handleUserInteraction);
+        window.removeEventListener('touchstart', handleUserInteraction);
+      };
+
+      window.addEventListener('click', handleUserInteraction);
+      window.addEventListener('touchstart', handleUserInteraction);
+
+      return () => {
+        window.removeEventListener('click', handleUserInteraction);
+        window.removeEventListener('touchstart', handleUserInteraction);
+      };
+    }
+  }, [gameState, isFullscreen]);
 
   // Check authentication status on mount
   useEffect(() => {
@@ -555,6 +610,12 @@ const App: React.FC = () => {
           
           <button onClick={() => setIsStatsOpen(true)} className="p-2 bg-slate-900 border border-slate-700 rounded hover:border-slate-500 transition-colors text-slate-400 hover:text-white">
             <span className="font-serif italic font-bold">i</span>
+          </button>
+          <button 
+            onClick={toggleFullscreen} 
+            className="p-2 bg-slate-900 border border-cyan-800 rounded hover:border-cyan-600 transition-colors text-cyan-400 hover:text-cyan-300"
+          >
+            {isFullscreen ? '退出全屏' : '全屏'}
           </button>
           {isAuthenticated && (
             <button 

@@ -1,0 +1,90 @@
+/* 基础样式重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 全屏模式优化 */
+html, body {
+  height: 100%;
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
+  /* 处理iOS Safari安全区域 */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* 隐藏滚动条 */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* 全屏模式下的额外样式 */
+:fullscreen {
+  background-color: #020617;
+}
+
+:-webkit-full-screen {
+  background-color: #020617;
+}
+
+:-moz-full-screen {
+  background-color: #020617;
+}
+
+:-ms-fullscreen {
+  background-color: #020617;
+}
+
+/* 防止用户选择文本 */
+* {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* 防止点击高亮 */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 全屏切换过渡效果 */
+body {
+  transition: all 0.3s ease;
+}
+
+/* 确保内容在全屏模式下正确显示 */
+#root {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* iOS Safari 特定样式 */
+@supports (-webkit-touch-callout: none) {
+  /* 修复iOS Safari中固定元素的问题 */
+  header, footer, .fixed-element {
+    position: fixed;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+  
+  /* 确保输入元素在iOS上正常工作 */
+  input, textarea, button {
+    -webkit-appearance: none;
+    border-radius: 0;
+  }
+}
+
+/* Android 特定样式 */
+@supports not (-webkit-touch-callout: none) {
+  /* 修复Android设备上的性能问题 */
+  * {
+    transform: translateZ(0);
+  }
+}
