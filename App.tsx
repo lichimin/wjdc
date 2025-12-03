@@ -287,8 +287,8 @@ const App: React.FC = () => {
           itemValue = itemData.value || 0;
         }
         
-        // Generate ID
-        const generatedId = item.id || item.equipment?.id || itemData.id || Math.random().toString(36).substr(2, 9);
+        // Generate ID - prioritize the top-level item.id first
+        const generatedId = item.id || Math.random().toString(36).substr(2, 9);
         
         return {
           id: generatedId,
