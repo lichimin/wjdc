@@ -41,6 +41,8 @@ export interface LootItem {
   value: number;
   rarity: Rarity;
   iconColor: string;
+  imageUrl?: string;
+  quantity?: number;
 }
 
 export interface Item {

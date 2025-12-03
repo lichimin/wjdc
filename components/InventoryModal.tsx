@@ -66,11 +66,25 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose }
                          aspect-square mb-2 flex items-center justify-center bg-slate-900 rounded
                          ${isGenesis ? '' : `border ${rarityClass.split(' ')[0]}`}
                          ${isGenesis ? 'bg-gradient-to-br from-pink-500/20 via-red-500/20 to-yellow-500/20' : ''}
+                         relative
                       `}>
-                          <div 
-                            className="w-8 h-8 rounded shadow-sm"
-                            style={{ backgroundColor: item.iconColor }}
-                          ></div>
+                          {item.imageUrl ? (
+                            <img 
+                              src={item.imageUrl} 
+                              alt={item.name} 
+                              className="w-full h-full object-contain p-2"
+                            />
+                          ) : (
+                            <div 
+                              className="w-8 h-8 rounded shadow-sm"
+                              style={{ backgroundColor: item.iconColor }}
+                            ></div>
+                          )}
+                          {item.quantity && item.quantity > 1 && (
+                            <div className="absolute bottom-1 right-1 bg-black/70 text-white text-xs font-bold px-1 rounded-full">
+                              {item.quantity}
+                            </div>
+                          )}
                       </div>
                       
                       <div className="text-center">

@@ -11,7 +11,7 @@ import { StatsModal } from './components/StatsModal';
 import { SummaryModal } from './components/SummaryModal';
 import { Home } from './components/Home'; // Imported Home
 import SimpleLogin from './components/SimpleLogin';
-import { DungeonData, Room, ItemType, InputState, PlayerState, Enemy, Projectile, FloatingText, LootItem } from './types';
+import { DungeonData, Room, ItemType, InputState, PlayerState, Enemy, Projectile, FloatingText, LootItem, Rarity } from './types';
 import { GoogleGenAI } from "@google/genai";
 
 // --- CYBERPUNK JOYSTICK ---
@@ -251,8 +251,55 @@ const App: React.FC = () => {
   const [currentLoot, setCurrentLoot] = useState<LootItem[]>([]);
   const [inventory, setInventory] = useState<LootItem[]>([]);
   const [runInventory, setRunInventory] = useState<LootItem[]>([]);
+  const [inventoryLoading, setInventoryLoading] = useState(false);
   
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+  
+  // Fetch backpack items from API
+  const fetchBackpackItems = async () => {
+    if (!isAuthenticated) return;
+    
+    setInventoryLoading(true);
+    try {
+      const token = authService.getAuthToken();
+      if (!token) throw new Error('No authentication token found');
+      
+      const response = await fetch(`https://api.example.com/api/v1/my-items?position=backpack`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const data = await response.json();
+      if (!data.success) throw new Error(data.message || 'Failed to fetch items');
+      
+      // Map API response to LootItem format
+      const mappedItems = data.data.map((item: any) => ({
+        id: item.id,
+        name: item.treasure.name,
+        value: item.treasure.value,
+        iconColor: '#ffd700', // Default gold color for treasure
+        rarity: 'LEGENDARY' as Rarity, // Default rarity
+        imageUrl: item.treasure.image_url,
+        quantity: item.quantity
+      }));
+      
+      setInventory(mappedItems);
+    } catch (error) {
+      console.error('Failed to fetch backpack items:', error);
+    } finally {
+      setInventoryLoading(false);
+    }
+  };
+  
+  // Fetch backpack items when inventory is opened
+  useEffect(() => {
+    if (isInventoryOpen) {
+      fetchBackpackItems();
+    }
+  }, [isInventoryOpen]);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [summaryType, setSummaryType] = useState<'success' | 'failure'>('success');
