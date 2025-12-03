@@ -22,9 +22,15 @@ const Joystick: React.FC<{
   const containerRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
+  const touchIdRef = useRef<number | null>(null); // Track specific touch ID
 
-  const handleStart = (clientX: number, clientY: number) => {
-    setActive(true);
+  const handleStart = (clientX: number, clientY: number, touchId?: number) => {
+    if (!active) {
+      setActive(true);
+      if (touchId !== undefined) {
+        touchIdRef.current = touchId;
+      }
+    }
     handleMove(clientX, clientY);
   };
 
@@ -48,6 +54,7 @@ const Joystick: React.FC<{
   const handleEnd = () => {
     setActive(false);
     setPos({ x: 0, y: 0 });
+    touchIdRef.current = null;
     onStop();
   };
 
@@ -71,14 +78,22 @@ const Joystick: React.FC<{
       if (active) {
         e.preventDefault();
         e.stopPropagation();
-        handleMove(e.touches[0].clientX, e.touches[0].clientY); 
+        // Only handle the specific touch that started on the joystick
+        const touch = Array.from(e.touches).find(t => t.identifier === touchIdRef.current);
+        if (touch) {
+          handleMove(touch.clientX, touch.clientY);
+        }
       } 
     };
     const onTouchEnd = (e: TouchEvent) => { 
       if (active) {
         e.preventDefault();
         e.stopPropagation();
-        handleEnd(); 
+        // Only end if the specific touch that started on the joystick has ended
+        const touch = Array.from(e.changedTouches).find(t => t.identifier === touchIdRef.current);
+        if (touch) {
+          handleEnd();
+        }
       } 
     };
 
@@ -109,7 +124,8 @@ const Joystick: React.FC<{
       onTouchStart={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        handleStart(e.touches[0].clientX, e.touches[0].clientY);
+        const touch = e.touches[0];
+        handleStart(touch.clientX, touch.clientY, touch.identifier);
       }}
       style={{
         // Prevent text selection and touch highlighting
@@ -824,9 +840,10 @@ const App: React.FC = () => {
               <button 
                 className="w-12 h-12 bg-gradient-to-br from-red-900 to-red-800 border-2 border-red-700 rounded-full flex items-center justify-center text-white shadow-lg hover:from-red-800 hover:to-red-700 transition-all active:scale-95"
                 onMouseDown={() => { inputRef.current.attackPressed = true; }}
-                onMouseUp={() => { inputRef.current.isAttacking = false; }}
+                onMouseUp={() => { inputRef.current.isAttacking = false; inputRef.current.attackPressed = false; }}
+                onMouseLeave={() => { inputRef.current.isAttacking = false; inputRef.current.attackPressed = false; }}
                 onTouchStart={() => { inputRef.current.attackPressed = true; }}
-                onTouchEnd={() => { inputRef.current.isAttacking = false; }}
+                onTouchEnd={() => { inputRef.current.isAttacking = false; inputRef.current.attackPressed = false; }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
