@@ -224,6 +224,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           </div>
         </div>
       )}
-    )}
-  );
+  </>
+);
 };
