@@ -107,7 +107,7 @@ const PixelIcon: React.FC<{ type: 'sword' | 'bag' | 'anvil' | 'shirt', scale?: n
   );
 };
 
-export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenInventory, onLogout }) => {
+export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenInventory, onLogout, onSkinLoaded }) => {
   const [showDifficulty, setShowDifficulty] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [isLoading, setIsLoading] = useState(true);

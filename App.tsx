@@ -589,7 +589,7 @@ const App: React.FC = () => {
           <div className="flex flex-col gap-0.5">
              <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-cyan-400 tracking-wide font-['Press_Start_2P']">HERO</span>
-                <span className="text-[9px] bg-cyan-950 text-cyan-300 border border-cyan-800 px-1 rounded">LV.{playerLevel}</span>
+                <span className="text-[9px] bg-cyan-950 text-cyan-300 border border-cyan-800 px-1 rounded">LV.{userData?.level || 1}</span>
              </div>
              <div className="flex items-center gap-2">
                <div className="w-24 h-2 bg-slate-950 rounded-sm border border-slate-700 overflow-hidden relative">
