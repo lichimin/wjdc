@@ -129,6 +129,7 @@ export interface InputState {
   dx: number; // -1 to 1
   dy: number; // -1 to 1
   isAttacking: boolean;
+  attackPressed: boolean; // 标记攻击按钮是否被按下
   isDodging: boolean;
 }
 

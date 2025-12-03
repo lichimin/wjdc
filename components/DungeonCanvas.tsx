@@ -350,11 +350,14 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       p.isMoving = false;
     }
 
-    // Manual Fire Logic - Only fire when attack button is pressed
+    // Manual Fire Logic - Only fire when attack button is pressed once
     const pCenterX = p.x + TILE_SIZE / 2;
     const pCenterY = p.y + TILE_SIZE / 2;
 
-    if (p.fireCooldown <= 0 && input.isAttacking) {
+    if (p.fireCooldown <= 0 && input.attackPressed) {
+      // 立即重置attackPressed标志，确保只触发一次攻击
+      input.attackPressed = false;
+      input.isAttacking = true;
       // Find nearest enemy to lock onto
       let nearestEnemy: Enemy | null = null;
       let nearestDist = Infinity;

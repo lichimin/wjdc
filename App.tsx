@@ -452,7 +452,7 @@ const App: React.FC = () => {
   // Input State
   const [dashBtnActive, setDashBtnActive] = useState(false);
 
-  const inputRef = useRef<InputState>({ dx: 0, dy: 0, isAttacking: false, isDodging: false });
+  const inputRef = useRef<InputState>({ dx: 0, dy: 0, isAttacking: false, attackPressed: false, isDodging: false });
   const playerRef = useRef<PlayerState>({
     x: 0, y: 0, facingLeft: false, isMoving: false, frameIndex: 0, lastFrameTime: 0,
     health: 100, maxHealth: 100, attackCooldown: 0, fireCooldown: 0, invincibilityTimer: 0,
@@ -823,9 +823,9 @@ const App: React.FC = () => {
               {/* Attack Button */}
               <button 
                 className="w-12 h-12 bg-gradient-to-br from-red-900 to-red-800 border-2 border-red-700 rounded-full flex items-center justify-center text-white shadow-lg hover:from-red-800 hover:to-red-700 transition-all active:scale-95"
-                onMouseDown={() => { inputRef.current.isAttacking = true; }}
+                onMouseDown={() => { inputRef.current.attackPressed = true; }}
                 onMouseUp={() => { inputRef.current.isAttacking = false; }}
-                onTouchStart={() => { inputRef.current.isAttacking = true; }}
+                onTouchStart={() => { inputRef.current.attackPressed = true; }}
                 onTouchEnd={() => { inputRef.current.isAttacking = false; }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
