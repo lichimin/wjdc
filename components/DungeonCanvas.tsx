@@ -977,7 +977,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     };
     animationFrameId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationFrameId);
-  }, [dungeon, selectedRoomId, hoverPos, floorNoise, imagesLoaded, viewport, dpr]); 
+  }, [dungeon, selectedRoomId, hoverPos, floorNoise, imagesLoaded, viewport, dpr, onExtract, onGameOver]); 
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = canvasRef.current?.getBoundingClientRect();
