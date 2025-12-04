@@ -234,6 +234,7 @@ const App: React.FC = () => {
   const [gameState, setGameState] = useState<'HOME' | 'PLAYING'>('HOME');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [difficulty, setDifficulty] = useState(1);
+  const [difficultyLevel, setDifficultyLevel] = useState('B'); // 新增difficultyLevel状态
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(false);
   const [username, setUsername] = useState('');
@@ -614,9 +615,12 @@ const App: React.FC = () => {
       4: 'SS',
       5: 'SSS'
     };
-    const difficultyLevel = difficultyLevelMap[diff as keyof typeof difficultyLevelMap] || 'B';
+    const newDifficultyLevel = difficultyLevelMap[diff as keyof typeof difficultyLevelMap] || 'B';
     
-    const newData = generateDungeon(diff, difficultyLevel);
+    // 更新difficultyLevel状态
+    setDifficultyLevel(newDifficultyLevel);
+    
+    const newData = generateDungeon(diff, newDifficultyLevel);
     visitedRef.current = Array.from({ length: newData.height }, () => Array(newData.width).fill(false));
     enemiesRef.current = newData.enemies.map(e => ({ ...e }));
     projectilesRef.current = [];
