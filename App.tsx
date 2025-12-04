@@ -472,12 +472,12 @@ const App: React.FC = () => {
     }
   };
   
-  // Fetch backpack items when inventory is opened
+  // Fetch backpack items when Home inventory is opened
   useEffect(() => {
-    if (isInventoryOpen) {
+    if (isHomeInventoryOpen) {
       fetchBackpackItems();
     }
-  }, [isInventoryOpen]);
+  }, [isHomeInventoryOpen]);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [summaryType, setSummaryType] = useState<'success' | 'failure'>('success');
@@ -635,18 +635,34 @@ const App: React.FC = () => {
       ...item,
       id: `loot-${Date.now()}-${Math.random().toString(36).substring(2, 9)}-${index}`
     }));
-    setRunInventory(prev => [...prev, ...itemsWithUniqueIds]);
+    
+    // 更新临时背包并打印当前数据
+    const updatedRunInventory = [...runInventory, ...itemsWithUniqueIds];
+    setRunInventory(updatedRunInventory);
+    
+    // 打印临时背包中的数据
+    console.log('=== 临时背包数据 (获得新物品后) ===');
+    console.log(updatedRunInventory);
+    
     setIsChestOpen(false);
     setCurrentLoot([]);
   };
 
   const handleExtract = useCallback(async () => {
     try {
+      // 打印临时背包当前数据
+      console.log('=== 临时背包数据 (准备撤离时) ===');
+      console.log(runInventory);
+      
       // 准备请求参数：只包含item_id和quantity
       const requestData = runInventory.map(item => ({
         item_id: item.id, // 宝物id
         quantity: item.quantity || 1 // 数量
       }));
+      
+      // 打印请求保存物品接口的传参
+      console.log('=== 撤离保存接口传参 (api/v1/my-items) ===');
+      console.log(JSON.stringify(requestData, null, 2));
       
       // 获取认证token
       const token = authService.getAuthToken();
@@ -683,12 +699,20 @@ const App: React.FC = () => {
   }, [runInventory]);
 
   const handleGameOver = useCallback(() => {
+    // 打印对局失败前的临时背包数据
+    console.log('=== 临时背包数据 (对局失败前) ===');
+    console.log(runInventory);
+    
     setRunInventory([]); // 对局失败，清空临时背包
     setSummaryType('failure');
     setIsSummaryOpen(true);
-  }, []);
+  }, [runInventory]);
 
   const handleReturnHome = () => {
+    // 打印返回主页前的临时背包数据
+    console.log('=== 临时背包数据 (返回主页前) ===');
+    console.log(runInventory);
+    
     // 如果是成功撤离，不需要在这里处理物品保存，因为已经在handleExtract中处理过了
     // 如果是其他情况返回主页，清空临时背包
     setRunInventory([]);
