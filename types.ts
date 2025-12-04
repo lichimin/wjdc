@@ -42,6 +42,7 @@ export interface AdditionalAttribute {
 
 export interface LootItem {
   id: string | number;
+  item_id: string | number; // 宝物的唯一标识，用于物品合并和接口请求
   name: string;
   value: number;
   rarity: Rarity;

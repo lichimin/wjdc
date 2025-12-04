@@ -72,6 +72,7 @@ export const generateLoot = (count: number, treasureData: any[] = [], difficulty
       
       return {
         id: `loot-${uniqueBase}-${i}`,
+        item_id: randomTreasure.treasure_id || randomTreasure.id || `item-${Math.floor(Math.random() * 10000)}`,
         name: treasureName,
         value: Math.floor(treasureValue * rarityConfig.multiplier),
         rarity: rarityConfig.type,

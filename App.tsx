@@ -636,8 +636,28 @@ const App: React.FC = () => {
       id: `loot-${Date.now()}-${Math.random().toString(36).substring(2, 9)}-${index}`
     }));
     
-    // 更新临时背包并打印当前数据
-    const updatedRunInventory = [...runInventory, ...itemsWithUniqueIds];
+    // 创建临时背包的副本用于更新
+    const updatedRunInventory = [...runInventory];
+    
+    // 实现物品合并逻辑（相同item_id的物品合并，quantity+1）
+    itemsWithUniqueIds.forEach(newItem => {
+      // 检查临时背包中是否已有相同item_id的物品
+      const existingItemIndex = updatedRunInventory.findIndex(item => item.item_id === newItem.item_id);
+      
+      if (existingItemIndex !== -1) {
+        // 如果已有相同item_id的物品，合并数量
+        const existingItem = updatedRunInventory[existingItemIndex];
+        updatedRunInventory[existingItemIndex] = {
+          ...existingItem,
+          quantity: (existingItem.quantity || 1) + (newItem.quantity || 1)
+        };
+      } else {
+        // 如果没有相同item_id的物品，直接添加
+        updatedRunInventory.push(newItem);
+      }
+    });
+    
+    // 更新临时背包状态
     setRunInventory(updatedRunInventory);
     
     // 打印临时背包中的数据
@@ -656,7 +676,7 @@ const App: React.FC = () => {
       
       // 准备请求参数：只包含item_id和quantity
       const requestData = runInventory.map(item => ({
-        item_id: item.id, // 宝物id
+        item_id: item.item_id, // 使用宝物的item_id字段
         quantity: item.quantity || 1 // 数量
       }));
       
@@ -668,8 +688,9 @@ const App: React.FC = () => {
       const token = authService.getAuthToken();
       if (!token) {
         console.error('No authentication token found');
-        // 如果没有token，仍然返回主页
-        handleReturnHome();
+        // 如果没有token，返回主页但不清空临时背包
+        setIsSummaryOpen(false);
+        setGameState('HOME');
         return;
       }
       
@@ -685,16 +706,21 @@ const App: React.FC = () => {
       
       if (response.ok) {
         console.log('Items sent successfully:', requestData);
+        // 请求成功后清空临时背包并返回主页
+        setRunInventory([]);
+        setIsSummaryOpen(false);
+        setGameState('HOME');
       } else {
         console.error('Failed to send items:', response.status, await response.text());
+        // 请求失败时返回主页但不清空临时背包
+        setIsSummaryOpen(false);
+        setGameState('HOME');
       }
-      
-      // 请求成功后返回主页
-      handleReturnHome();
     } catch (error) {
       console.error('Error sending items:', error);
-      // 即使发生错误，也返回主页
-      handleReturnHome();
+      // 发生错误时返回主页但不清空临时背包
+      setIsSummaryOpen(false);
+      setGameState('HOME');
     }
   }, [runInventory]);
 
@@ -708,14 +734,16 @@ const App: React.FC = () => {
     setIsSummaryOpen(true);
   }, [runInventory]);
 
-  const handleReturnHome = () => {
+  const handleReturnHome = (shouldClearRunInventory: boolean = true) => {
     // 打印返回主页前的临时背包数据
     console.log('=== 临时背包数据 (返回主页前) ===');
     console.log(runInventory);
     
-    // 如果是成功撤离，不需要在这里处理物品保存，因为已经在handleExtract中处理过了
-    // 如果是其他情况返回主页，清空临时背包
-    setRunInventory([]);
+    // 根据传入的参数决定是否清空临时背包
+    if (shouldClearRunInventory) {
+      setRunInventory([]);
+    }
+    
     setIsSummaryOpen(false);
     setGameState('HOME');
   };
