@@ -369,10 +369,11 @@ const App: React.FC = () => {
   const [currentLoot, setCurrentLoot] = useState<LootItem[]>([]);
   const [inventory, setInventory] = useState<LootItem[]>([]);
   const [originalInventoryItems, setOriginalInventoryItems] = useState<any[]>([]);
-  const [runInventory, setRunInventory] = useState<LootItem[]>([]);
+  const [runInventory, setRunInventory] = useState<LootItem[]>([]); // 临时背包：保存本次对局获得的宝物
   const [inventoryLoading, setInventoryLoading] = useState(false);
   
-  const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+  const [isInventoryOpen, setIsInventoryOpen] = useState(false); // 控制临时背包的显示
+  const [isHomeInventoryOpen, setIsHomeInventoryOpen] = useState(false); // 控制home页面的inventory显示
   
   // Fetch backpack items from API
   const fetchBackpackItems = async () => {
@@ -605,7 +606,7 @@ const App: React.FC = () => {
     setDungeon(newData);
     setSelectedRoom(null);
     setLore("");
-    setRunInventory([]); 
+    setRunInventory([]); // 清空临时背包，准备新的对局
   };
 
   const handleRoomSelect = useCallback(async (room: Room | null) => {
@@ -641,10 +642,10 @@ const App: React.FC = () => {
 
   const handleExtract = useCallback(async () => {
     try {
-      // 准备请求参数
+      // 准备请求参数：只包含item_id和quantity
       const requestData = runInventory.map(item => ({
-        item_id: item.id,
-        quantity: item.quantity || 1
+        item_id: item.id, // 宝物id
+        quantity: item.quantity || 1 // 数量
       }));
       
       // 获取认证token
@@ -656,7 +657,7 @@ const App: React.FC = () => {
         return;
       }
       
-      // 发送请求到/api/v1/my-items接口
+      // 发送请求到/api/v1/my-items接口保存物品
       const response = await fetch('http://8.130.43.130:10005/api/v1/my-items', {
         method: 'POST',
         headers: {
@@ -667,7 +668,7 @@ const App: React.FC = () => {
       });
       
       if (response.ok) {
-        console.log('Items sent successfully');
+        console.log('Items sent successfully:', requestData);
       } else {
         console.error('Failed to send items:', response.status, await response.text());
       }
@@ -682,17 +683,15 @@ const App: React.FC = () => {
   }, [runInventory]);
 
   const handleGameOver = useCallback(() => {
-    setRunInventory([]); 
+    setRunInventory([]); // 对局失败，清空临时背包
     setSummaryType('failure');
     setIsSummaryOpen(true);
   }, []);
 
   const handleReturnHome = () => {
-    if (summaryType === 'success') {
-       setInventory(prev => [...prev, ...runInventory]);
-       const totalVal = runInventory.reduce((sum, i) => sum + i.value, 0);
-       setGold(prev => prev + totalVal);
-    }
+    // 如果是成功撤离，不需要在这里处理物品保存，因为已经在handleExtract中处理过了
+    // 如果是其他情况返回主页，清空临时背包
+    setRunInventory([]);
     setIsSummaryOpen(false);
     setGameState('HOME');
   };
@@ -746,16 +745,16 @@ const App: React.FC = () => {
             <Home 
               userData={userData}
               onStartAdventure={startGame} 
-              onOpenInventory={() => setIsInventoryOpen(true)}
+              onOpenInventory={() => setIsHomeInventoryOpen(true)}
               onLogout={() => setIsAuthenticated(false)}
               onSkinLoaded={setUserSkin}
             />
           )}
         {/* Inventory Overlay for Home */}
-        {isInventoryOpen && (
+        {isHomeInventoryOpen && (
           <InventoryModal 
               items={inventory} 
-              onClose={() => setIsInventoryOpen(false)} 
+              onClose={() => setIsHomeInventoryOpen(false)} 
               originalItems={originalInventoryItems} 
             />
         )}
@@ -793,10 +792,12 @@ const App: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-4">
+          {/* 右上角的临时背包（INVENTORY） */}
           <button onClick={() => setIsInventoryOpen(true)} className="relative p-2 bg-slate-900 border border-cyan-900 rounded hover:border-cyan-500 transition-colors group">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-cyan-500 group-hover:text-cyan-300 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
+            {/* 显示临时背包中的物品数量 */}
             <span className="absolute -top-1 -right-1 bg-slate-900 text-[8px] font-bold text-cyan-400 border border-cyan-800 rounded px-1">{runInventory.length}</span>
           </button>
           
@@ -835,6 +836,15 @@ const App: React.FC = () => {
            <div className="absolute top-4 right-4 z-20">
              {dungeon && <MiniMap dungeon={dungeon} playerRef={playerRef} visitedRef={visitedRef} onRegenerate={() => regenerate(difficulty)} />}
            </div>
+           
+           {/* 临时背包的模态窗口 */}
+           {isInventoryOpen && (
+             <InventoryModal 
+                 items={runInventory} 
+                 onClose={() => setIsInventoryOpen(false)} 
+                 // 临时背包不需要原始API数据，因为只是显示本次对局获得的物品
+               />
+           )}
 
            {/* Joystick (Bottom Left) */}
            <div className="absolute bottom-12 left-12 z-50">
