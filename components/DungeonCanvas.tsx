@@ -876,12 +876,12 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
           
           // Draw chest image
           if (chestImage.complete) {
-            const scale = 0.5; // Adjust scale if needed
-            const imgW = chestImage.width * scale;
-            const imgH = chestImage.height * scale;
-            const offsetX = (TILE_SIZE - imgW) / 2;
-            const offsetY = (TILE_SIZE - imgH) / 2;
-            ctx.drawImage(chestImage, px + offsetX, py + offsetY, imgW, imgH);
+            // Match the size of the original chest element
+            const targetWidth = TILE_SIZE - 8; // 24px
+            const targetHeight = 14;
+            const offsetX = (TILE_SIZE - targetWidth) / 2;
+            const offsetY = py + 12;
+            ctx.drawImage(chestImage, px + offsetX, offsetY, targetWidth, targetHeight);
           } else {
             // Fallback to default chest drawing if image not loaded yet
             const chX = px + 4;

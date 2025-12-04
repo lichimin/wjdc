@@ -667,9 +667,9 @@ const App: React.FC = () => {
   const handleOpenChest = (chestId: string) => {
     // Find the chest in the dungeon
     let chestType: 'normal' | 'large' = 'normal';
-    if (dungeonData) {
-      for (const room of dungeonData.rooms) {
-        const chest = room.items.find(item => item.id === chestId && item.type === 'CHEST');
+    if (dungeon) {
+      for (const room of dungeon.rooms) {
+        const chest = room.items.find(item => item.id === chestId && item.type === ItemType.CHEST);
         if (chest) {
           chestType = chest.chestType || 'normal';
           break;
