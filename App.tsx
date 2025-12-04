@@ -722,7 +722,7 @@ const App: React.FC = () => {
       setIsSummaryOpen(false);
       setGameState('HOME');
     }
-  }, [runInventory]);
+  }, [runInventory, authService]);
 
   const handleGameOver = useCallback(() => {
     // 打印对局失败前的临时背包数据

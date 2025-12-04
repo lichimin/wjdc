@@ -83,7 +83,7 @@ export const generateLoot = (count: number, treasureData: any[] = [], difficulty
         defense_power: type === 'equipment' ? Math.floor(5 * rarityConfig.multiplier) : undefined,
         health: type === 'equipment' ? Math.floor(20 * rarityConfig.multiplier) : undefined,
         additional_attrs: randomTreasure.additional_attrs || [],
-        quantity: Math.floor(Math.random() * 3) + 1
+        quantity: 1 // 默认数量为1
       };
     });
   }
