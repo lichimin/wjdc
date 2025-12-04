@@ -50,15 +50,93 @@ const getRandomRarityWithDifficulty = (difficulty: number = 1) => {
   return adjustedWeights[0];
 };
 
-export const generateLoot = (count: number, treasureData: any[] = [], difficulty: number = 1): LootItem[] => {
+export const generateLoot = (count: number, treasureData: any[] = [], difficulty: number = 1, difficultyLevel: string = 'B'): LootItem[] => {
   // Generate a unique base for this batch of loot
   const uniqueBase = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  
+  // Define level probabilities based on difficulty level
+  const getLevelProbabilities = (level: string) => {
+    switch (level) {
+      case 'B':
+        return [
+          { level: 1, probability: 0.59 },
+          { level: 2, probability: 0.30 },
+          { level: 3, probability: 0.10 },
+          { level: 6, probability: 0.01 }
+        ];
+      case 'A':
+        return [
+          { level: 1, probability: 0.39 },
+          { level: 2, probability: 0.30 },
+          { level: 3, probability: 0.20 },
+          { level: 4, probability: 0.10 },
+          { level: 6, probability: 0.01 }
+        ];
+      case 'S':
+        return [
+          { level: 1, probability: 0.30 },
+          { level: 2, probability: 0.34 },
+          { level: 3, probability: 0.20 },
+          { level: 4, probability: 0.10 },
+          { level: 5, probability: 0.05 },
+          { level: 6, probability: 0.01 }
+        ];
+      case 'SS':
+        return [
+          { level: 2, probability: 0.30 },
+          { level: 3, probability: 0.30 },
+          { level: 4, probability: 0.20 },
+          { level: 5, probability: 0.17 },
+          { level: 6, probability: 0.03 }
+        ];
+      case 'SSS':
+        return [
+          { level: 2, probability: 0.20 },
+          { level: 3, probability: 0.30 },
+          { level: 4, probability: 0.30 },
+          { level: 5, probability: 0.15 },
+          { level: 6, probability: 0.05 }
+        ];
+      default:
+        return [
+          { level: 1, probability: 0.59 },
+          { level: 2, probability: 0.30 },
+          { level: 3, probability: 0.10 },
+          { level: 6, probability: 0.01 }
+        ];
+    }
+  };
+  
+  // Function to get a random level based on probabilities
+  const getRandomLevel = (probabilities: { level: number; probability: number }[]) => {
+    const random = Math.random();
+    let cumulativeProbability = 0;
+    
+    for (const { level, probability } of probabilities) {
+      cumulativeProbability += probability;
+      if (random <= cumulativeProbability) {
+        return level;
+      }
+    }
+    
+    return 1; // Default to level 1 if no match
+  };
   
   // If treasure data is available, use it to generate loot
   if (treasureData && treasureData.length > 0) {
     return Array.from({ length: count }, (_, i) => {
-      // Randomly select a treasure from the data
-      const randomTreasure = treasureData[Math.floor(Math.random() * treasureData.length)];
+      // Get level probabilities based on difficulty level
+      const levelProbabilities = getLevelProbabilities(difficultyLevel);
+      const targetLevel = getRandomLevel(levelProbabilities);
+      
+      // Filter treasure data by target level
+      const levelTreasures = treasureData.filter(treasure => treasure.treasure_level === targetLevel);
+      
+      // If no treasures found for the target level, use all treasures
+      const availableTreasures = levelTreasures.length > 0 ? levelTreasures : treasureData;
+      
+      // Randomly select a treasure from the filtered data
+      const randomTreasure = availableTreasures[Math.floor(Math.random() * availableTreasures.length)];
       
       // Get rarity based on difficulty
       const rarityConfig = getRandomRarityWithDifficulty(difficulty);

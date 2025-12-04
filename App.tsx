@@ -653,8 +653,28 @@ const App: React.FC = () => {
   const handleJoystickStop = useCallback(() => { inputRef.current.dx = 0; inputRef.current.dy = 0; }, []);
 
   const handleOpenChest = (chestId: string) => {
-    const count = Math.floor(Math.random() * 6) + 3;
-    const loot = generateLoot(count, treasureData, difficulty);
+    // 根据难度等级生成不同数量的宝物
+    let count: number;
+    switch (difficultyLevel) {
+      case 'B':
+        count = Math.floor(Math.random() * 3) + 1; // 1-3件
+        break;
+      case 'A':
+        count = Math.floor(Math.random() * 3) + 2; // 2-4件
+        break;
+      case 'S':
+        count = Math.floor(Math.random() * 3) + 3; // 3-5件
+        break;
+      case 'SS':
+        count = Math.floor(Math.random() * 3) + 4; // 4-6件
+        break;
+      case 'SSS':
+        count = Math.floor(Math.random() * 4) + 5; // 5-8件
+        break;
+      default:
+        count = Math.floor(Math.random() * 3) + 1; // 默认1-3件
+    }
+    const loot = generateLoot(count, treasureData, difficulty, difficultyLevel);
     setCurrentLoot(loot);
     setIsChestOpen(true);
   };
