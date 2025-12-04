@@ -125,18 +125,8 @@ export const generateLoot = (count: number, treasureData: any[] = [], difficulty
   // If treasure data is available, use it to generate loot
   if (treasureData && treasureData.length > 0) {
     return Array.from({ length: count }, (_, i) => {
-      // Get level probabilities based on difficulty level
-      const levelProbabilities = getLevelProbabilities(difficultyLevel);
-      const targetLevel = getRandomLevel(levelProbabilities);
-      
-      // Filter treasure data by target level
-      const levelTreasures = treasureData.filter(treasure => treasure.treasure_level === targetLevel);
-      
-      // If no treasures found for the target level, use all treasures
-      const availableTreasures = levelTreasures.length > 0 ? levelTreasures : treasureData;
-      
-      // Randomly select a treasure from the filtered data
-      const randomTreasure = availableTreasures[Math.floor(Math.random() * availableTreasures.length)];
+      // Randomly select a treasure from all available treasures
+      const randomTreasure = treasureData[Math.floor(Math.random() * treasureData.length)];
       
       // Get rarity based on difficulty
       const rarityConfig = getRandomRarityWithDifficulty(difficulty);
@@ -147,6 +137,8 @@ export const generateLoot = (count: number, treasureData: any[] = [], difficulty
       // Extract treasure information with fallback values
       const treasureName = randomTreasure.treasure_name || randomTreasure.name || 'Mysterious Item';
       const treasureValue = randomTreasure.treasure_value || randomTreasure.value || 100;
+      // Get the actual level from the treasure data
+      const treasureLevel = randomTreasure.level || randomTreasure.treasure_level || 1;
       
       return {
         id: `loot-${uniqueBase}-${i}`,
@@ -157,7 +149,7 @@ export const generateLoot = (count: number, treasureData: any[] = [], difficulty
         iconColor: rarityConfig.color,
         imageUrl: randomTreasure.image_url || undefined,
         type: type,
-        level: targetLevel, // 添加宝物等级
+        level: treasureLevel, // 使用宝物自身的等级
         attack_power: type === 'equipment' ? Math.floor(10 * rarityConfig.multiplier) : undefined,
         defense_power: type === 'equipment' ? Math.floor(5 * rarityConfig.multiplier) : undefined,
         health: type === 'equipment' ? Math.floor(20 * rarityConfig.multiplier) : undefined,

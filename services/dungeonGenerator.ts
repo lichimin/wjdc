@@ -317,7 +317,7 @@ function populateItemsByTheme(room: Room, difficultyLevel: string) {
         if (Math.random() > 0.3) tryAddItem(room, room.x + 1, y, ItemType.WEAPON_RACK);
         if (Math.random() > 0.3) tryAddItem(room, room.x + room.w - 2, y, ItemType.WEAPON_RACK);
       }
-      tryAddItem(room, cx, room.y + 2, ItemType.CHEST);
+      // 移除军械库主题中固定添加的宝箱
       break;
     case 'Dining':
       const tableStart = Math.max(room.x + 2, cx - 2);
@@ -333,7 +333,8 @@ function populateItemsByTheme(room: Room, difficultyLevel: string) {
       for (let i = 0; i < count; i++) {
         const tx = randomInt(room.x + 1, room.x + room.w - 2);
         const ty = randomInt(room.y + 1, room.y + room.h - 2);
-        const type = Math.random() > 0.7 ? ItemType.CHEST : ItemType.DECORATION;
+        // 降低储藏室中宝箱的概率，从70%降至20%
+        const type = Math.random() > 0.8 ? ItemType.CHEST : ItemType.DECORATION;
         tryAddItem(room, tx, ty, type);
       }
       break;
