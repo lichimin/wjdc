@@ -157,6 +157,7 @@ export const generateLoot = (count: number, treasureData: any[] = [], difficulty
         iconColor: rarityConfig.color,
         imageUrl: randomTreasure.image_url || undefined,
         type: type,
+        level: targetLevel, // 添加宝物等级
         attack_power: type === 'equipment' ? Math.floor(10 * rarityConfig.multiplier) : undefined,
         defense_power: type === 'equipment' ? Math.floor(5 * rarityConfig.multiplier) : undefined,
         health: type === 'equipment' ? Math.floor(20 * rarityConfig.multiplier) : undefined,
@@ -176,13 +177,20 @@ export const generateLoot = (count: number, treasureData: any[] = [], difficulty
     const equipmentNouns = ['Sword', 'Shield', 'Helmet', 'Ring', 'Amulet', 'Gem', 'Scroll'];
     const isEquipment = equipmentNouns.includes(noun);
     
+    // 为回退生成的宝物也添加等级
+    const levelProbabilities = getLevelProbabilities(difficultyLevel);
+    const level = getRandomLevel(levelProbabilities);
+    
     return {
       id: `loot-${uniqueBase}-${i}`,
+      item_id: `item-${Math.floor(Math.random() * 10000)}`, // 添加item_id用于合并
       name: `${adj} ${noun}`,
       value: Math.floor((Math.random() * 50 + 10) * rarityConfig.multiplier),
       rarity: rarityConfig.type,
       iconColor: rarityConfig.color,
-      type: isEquipment ? 'equipment' : 'treasure'
+      type: isEquipment ? 'equipment' : 'treasure',
+      level: level, // 添加宝物等级
+      quantity: 1 // 添加数量默认值
     };
   });
 };

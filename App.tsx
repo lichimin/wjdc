@@ -641,6 +641,10 @@ const App: React.FC = () => {
     setSelectedRoom(null);
     setLore("");
     setRunInventory([]); // 清空临时背包，准备新的对局
+    
+    // 打印地图难度和宝箱数量
+    console.log(`地图难度: ${newDifficultyLevel} (数值: ${diff})`);
+    console.log(`当前地图宝箱数量: ${newData.chests.length}`);
   };
 
   const handleRoomSelect = useCallback(async (room: Room | null) => {
@@ -681,6 +685,12 @@ const App: React.FC = () => {
     const loot = generateLoot(count, treasureData, difficulty, difficultyLevel);
     setCurrentLoot(loot);
     setIsChestOpen(true);
+    
+    // 打印开启的宝物信息
+    console.log(`开启宝箱获得的宝物:`);
+    loot.forEach((item, index) => {
+      console.log(`${index + 1}. ${item.name} - 等级: ${item.level}, 数量: ${item.quantity}, 稀有度: ${item.rarity}`);
+    });
   };
 
   const handleConfirmLoot = (selectedItems: LootItem[]) => {

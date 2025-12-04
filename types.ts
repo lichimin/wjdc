@@ -50,6 +50,7 @@ export interface LootItem {
   imageUrl?: string;
   quantity?: number;
   type?: string; // 'equipment' or 'treasure'
+  level?: number; // 新增：宝物等级
   attack_power?: number;
   defense_power?: number;
   health?: number;
