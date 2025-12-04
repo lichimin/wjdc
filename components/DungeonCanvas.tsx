@@ -912,8 +912,9 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       } else {
          ctx.drawImage(sprite, -spriteSize/2, -spriteSize/2, spriteSize, spriteSize);
       }
-    } else {
-      ctx.fillStyle = '#ef4444'; ctx.fillRect(-8, -12, 16, 24);
+    } else if (!skinData) {
+      // 如果没有皮肤数据，不渲染角色，避免显示红色方块
+      // 或者可以显示一个更友好的占位符
     }
     ctx.restore();
   };

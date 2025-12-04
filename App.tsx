@@ -543,6 +543,34 @@ const App: React.FC = () => {
     return Promise.all(imagePromises);
   };
   
+  // Function to preload player skin images
+  const preloadSkinImages = async (skin: any) => {
+    if (!skin) return Promise.resolve();
+    
+    const loadImages = (urls: string[]): Promise<void[]> => {
+      return Promise.all(
+        urls.map(url => {
+          return new Promise<void>((resolve) => {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = url;
+            img.onload = () => resolve();
+            img.onerror = () => {
+              console.error(`Failed to load skin image: ${url}`);
+              resolve(); // 即使加载失败也继续，避免游戏中断
+            };
+          });
+        })
+      );
+    };
+    
+    return Promise.all([
+      loadImages(skin.idle_image_urls),
+      loadImages(skin.attack_image_urls),
+      loadImages(skin.move_image_urls)
+    ]);
+  };
+  
   const startGame = async (selectedDifficulty: number) => {
     if (!isAuthenticated) {
       // 如果未登录，可以选择跳转到登录页或者弹出提示
@@ -565,11 +593,13 @@ const App: React.FC = () => {
     // Preload all treasure images
     await preloadImages(treasures);
     
+    // Preload player skin images
+    if (userSkin?.skin) {
+      await preloadSkinImages(userSkin.skin);
+    }
+    
     // Regenerate dungeon with new treasure data
     regenerate(selectedDifficulty);
-    
-    // Delay to ensure loading overlay is visible
-    await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Close loading overlay once everything is ready
     setLoadingGame(false);
