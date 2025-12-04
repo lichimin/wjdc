@@ -665,6 +665,18 @@ const App: React.FC = () => {
   const handleJoystickStop = useCallback(() => { inputRef.current.dx = 0; inputRef.current.dy = 0; }, []);
 
   const handleOpenChest = (chestId: string) => {
+    // Find the chest in the dungeon
+    let chestType: 'normal' | 'large' = 'normal';
+    if (dungeonData) {
+      for (const room of dungeonData.rooms) {
+        const chest = room.items.find(item => item.id === chestId && item.type === 'CHEST');
+        if (chest) {
+          chestType = chest.chestType || 'normal';
+          break;
+        }
+      }
+    }
+    
     // 根据难度等级生成不同数量的宝物
     let count: number;
     switch (difficultyLevel) {
@@ -686,7 +698,7 @@ const App: React.FC = () => {
       default:
         count = Math.floor(Math.random() * 3) + 1; // 默认1-3件
     }
-    const loot = generateLoot(count, treasureData, difficulty, difficultyLevel);
+    const loot = generateLoot(count, treasureData, difficulty, difficultyLevel, chestType);
     setCurrentLoot(loot);
     setIsChestOpen(true);
     

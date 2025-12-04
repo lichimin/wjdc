@@ -50,7 +50,7 @@ const getRandomRarityWithDifficulty = (difficulty: number = 1) => {
   return adjustedWeights[0];
 };
 
-export const generateLoot = (count: number, treasureData: any[] = [], difficulty: number = 1, difficultyLevel: string = 'B'): LootItem[] => {
+export const generateLoot = (count: number, treasureData: any[] = [], difficulty: number = 1, difficultyLevel: string = 'B', chestType: 'normal' | 'large' = 'normal'): LootItem[] => {
   // Generate a unique base for this batch of loot
   const uniqueBase = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
   
@@ -140,21 +140,24 @@ export const generateLoot = (count: number, treasureData: any[] = [], difficulty
       // Get the actual level from the treasure data
       const treasureLevel = randomTreasure.level || randomTreasure.treasure_level || 1;
       
+      // Calculate multiplier based on chest type (large chest gives double rewards)
+      const chestMultiplier = chestType === 'large' ? 2 : 1;
+      
       return {
         id: `loot-${uniqueBase}-${i}`,
         item_id: randomTreasure.treasure_id || randomTreasure.id || `item-${Math.floor(Math.random() * 10000)}`,
         name: treasureName,
-        value: Math.floor(treasureValue * rarityConfig.multiplier),
+        value: Math.floor(treasureValue * rarityConfig.multiplier * chestMultiplier),
         rarity: rarityConfig.type,
         iconColor: rarityConfig.color,
         imageUrl: randomTreasure.image_url || undefined,
         type: type,
         level: treasureLevel, // 使用宝物自身的等级
-        attack_power: type === 'equipment' ? Math.floor(10 * rarityConfig.multiplier) : undefined,
-        defense_power: type === 'equipment' ? Math.floor(5 * rarityConfig.multiplier) : undefined,
-        health: type === 'equipment' ? Math.floor(20 * rarityConfig.multiplier) : undefined,
+        attack_power: type === 'equipment' ? Math.floor(10 * rarityConfig.multiplier * chestMultiplier) : undefined,
+        defense_power: type === 'equipment' ? Math.floor(5 * rarityConfig.multiplier * chestMultiplier) : undefined,
+        health: type === 'equipment' ? Math.floor(20 * rarityConfig.multiplier * chestMultiplier) : undefined,
         additional_attrs: randomTreasure.additional_attrs || [],
-        quantity: 1 // 默认数量为1
+        quantity: chestType === 'large' ? 2 : 1 // Large chest gives double quantity
       };
     });
   }
@@ -173,16 +176,19 @@ export const generateLoot = (count: number, treasureData: any[] = [], difficulty
     const levelProbabilities = getLevelProbabilities(difficultyLevel);
     const level = getRandomLevel(levelProbabilities);
     
+    // Calculate multiplier based on chest type (large chest gives double rewards)
+    const chestMultiplier = chestType === 'large' ? 2 : 1;
+    
     return {
       id: `loot-${uniqueBase}-${i}`,
       item_id: `item-${Math.floor(Math.random() * 10000)}`, // 添加item_id用于合并
       name: `${adj} ${noun}`,
-      value: Math.floor((Math.random() * 50 + 10) * rarityConfig.multiplier),
+      value: Math.floor((Math.random() * 50 + 10) * rarityConfig.multiplier * chestMultiplier),
       rarity: rarityConfig.type,
       iconColor: rarityConfig.color,
       type: isEquipment ? 'equipment' : 'treasure',
       level: level, // 添加宝物等级
-      quantity: 1 // 添加数量默认值
+      quantity: chestType === 'large' ? 2 : 1 // Large chest gives double quantity
     };
   });
 };

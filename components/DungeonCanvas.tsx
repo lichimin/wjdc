@@ -63,6 +63,17 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     attack: HTMLImageElement[];
     move: HTMLImageElement[];
   }>({ idle: [], attack: [], move: [] });
+  const [chestImages, setChestImages] = useState<{
+    normalClosed: HTMLImageElement;
+    normalOpen: HTMLImageElement;
+    largeClosed: HTMLImageElement;
+    largeOpen: HTMLImageElement;
+  }>({ 
+    normalClosed: new Image(), 
+    normalOpen: new Image(), 
+    largeClosed: new Image(), 
+    largeOpen: new Image() 
+  });
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const animationTimeRef = useRef<number>(0);
   
@@ -97,7 +108,48 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       cameraRef.current.x = playerRef.current.x - viewport.width / 2;
       cameraRef.current.y = playerRef.current.y - viewport.height / 2;
     }
-  }, [dungeon, viewport]); 
+  }, [dungeon, viewport]);
+  
+  // Preload chest images when dungeon changes
+  useEffect(() => {
+    if (!dungeon) return;
+    
+    let loadedCount = 0;
+    const totalImages = 4;
+    
+    const onImageLoad = () => {
+      loadedCount++;
+      if (loadedCount === totalImages) {
+        setImagesLoaded(prev => prev && true);
+      }
+    };
+    
+    // Set image sources
+    chestImages.normalClosed.src = 'https://czrimg.godqb.com/game/v2/scenes/b1-1.png';
+    chestImages.normalOpen.src = 'https://czrimg.godqb.com/game/v2/scenes/b1-2.png';
+    chestImages.largeClosed.src = 'https://czrimg.godqb.com/game/v2/scenes/b2-1.png';
+    chestImages.largeOpen.src = 'https://czrimg.godqb.com/game/v2/scenes/b2-2.png';
+    
+    // Add event listeners
+    chestImages.normalClosed.onload = onImageLoad;
+    chestImages.normalOpen.onload = onImageLoad;
+    chestImages.largeClosed.onload = onImageLoad;
+    chestImages.largeOpen.onload = onImageLoad;
+    
+    // Handle errors
+    const onImageError = (e: Event) => {
+      console.error('Failed to load image:', (e.target as HTMLImageElement).src);
+      loadedCount++;
+      if (loadedCount === totalImages) {
+        setImagesLoaded(prev => prev && true);
+      }
+    };
+    
+    chestImages.normalClosed.onerror = onImageError;
+    chestImages.normalOpen.onerror = onImageError;
+    chestImages.largeClosed.onerror = onImageError;
+    chestImages.largeOpen.onerror = onImageError;
+  }, [dungeon]); 
 
   // 加载皮肤图片
   useEffect(() => {
@@ -809,18 +861,42 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
           ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(cx, py + 6, 3, 0, Math.PI*2); ctx.fill();
           break;
         case ItemType.CHEST:
-          const chX = px + 4;
-          const chY = py + 12;
-          const chW = TILE_SIZE - 8;
-          const chH = 14;
-          ctx.fillStyle = '#78350f'; ctx.fillRect(chX, chY, chW, chH);
-          ctx.fillStyle = '#f59e0b'; ctx.fillRect(chX, chY + 4, chW, 1);
-          ctx.fillStyle = isInteracting ? '#3b82f6' : '#fcd34d'; 
-          ctx.fillRect(cx - 2, chY + 3, 4, 4);
+          // Determine which chest image to use based on chestType and isOpen status
+          const isOpen = item.isOpen || false;
+          const chestType = item.chestType || 'normal';
+          
+          let chestImage;
+          if (chestType === 'large') {
+            chestImage = isOpen ? chestImages.largeOpen : chestImages.largeClosed;
+          } else {
+            chestImage = isOpen ? chestImages.normalOpen : chestImages.normalClosed;
+          }
+          
+          // Draw chest image
+          if (chestImage.complete) {
+            const scale = 0.5; // Adjust scale if needed
+            const imgW = chestImage.width * scale;
+            const imgH = chestImage.height * scale;
+            const offsetX = (TILE_SIZE - imgW) / 2;
+            const offsetY = (TILE_SIZE - imgH) / 2;
+            ctx.drawImage(chestImage, px + offsetX, py + offsetY, imgW, imgH);
+          } else {
+            // Fallback to default chest drawing if image not loaded yet
+            const chX = px + 4;
+            const chY = py + 12;
+            const chW = TILE_SIZE - 8;
+            const chH = 14;
+            ctx.fillStyle = chestType === 'large' ? '#92400e' : '#78350f'; 
+            ctx.fillRect(chX, chY, chW, chH);
+            ctx.fillStyle = '#f59e0b'; ctx.fillRect(chX, chY + 4, chW, 1);
+            ctx.fillStyle = isInteracting ? '#3b82f6' : '#fcd34d'; 
+            ctx.fillRect(cx - 2, chY + 3, 4, 4);
+          }
           
           if (isInteracting) {
              ctx.shadowColor = '#3b82f6'; ctx.shadowBlur = 10;
-             ctx.fillStyle = 'rgba(59,130,246,0.5)'; ctx.fillRect(chX, chY, chW, chH);
+             ctx.fillStyle = 'rgba(59,130,246,0.5)'; 
+             ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
              ctx.shadowBlur = 0;
           }
           break;

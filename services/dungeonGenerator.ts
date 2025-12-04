@@ -197,6 +197,22 @@ export const generateDungeon = (difficultyMultiplier: number = 1, difficultyLeve
         abilities: ['shoot', 'dash', 'heal', 'ghost'],
         abilityCooldowns: { shoot: 0, dash: 0, heal: 0, ghost: 0 }
      });
+     
+     // Add a large chest near the BOSS
+     let largeChestPlaced = false;
+     let attempts = 0;
+     const maxAttempts = 50;
+     
+     while (!largeChestPlaced && attempts < maxAttempts) {
+       attempts++;
+       // Try to place the large chest within 2 tiles of the BOSS
+       const chestX = bx + randomInt(-2, 2);
+       const chestY = by + randomInt(-2, 2);
+       
+       if (tryAddLargeChest(bossRoom, chestX, chestY)) {
+         largeChestPlaced = true;
+       }
+     }
   }
 
   // 5. Place Exits
@@ -290,12 +306,33 @@ function tryAddItem(room: Room, x: number, y: number, type: ItemType): boolean {
   if (x <= room.x || x >= room.x + room.w - 1 || y <= room.y || y >= room.y + room.h - 1) return false;
   if (room.items.some(i => i.x === x && i.y === y)) return false;
   
-  room.items.push({
+  const item: Item = {
     id: `item-${room.id}-${room.items.length}`,
     x,
     y,
     type,
     variant: randomInt(0, 2)
+  };
+  
+  if (type === ItemType.CHEST) {
+    item.chestType = 'normal';
+  }
+  
+  room.items.push(item);
+  return true;
+}
+
+function tryAddLargeChest(room: Room, x: number, y: number): boolean {
+  if (x <= room.x || x >= room.x + room.w - 1 || y <= room.y || y >= room.y + room.h - 1) return false;
+  if (room.items.some(i => i.x === x && i.y === y)) return false;
+  
+  room.items.push({
+    id: `item-${room.id}-${room.items.length}`,
+    x,
+    y,
+    type: ItemType.CHEST,
+    variant: 0,
+    chestType: 'large'
   });
   return true;
 }

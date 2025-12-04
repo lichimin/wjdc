@@ -64,6 +64,7 @@ export interface Item {
   type: ItemType;
   variant?: number; // To vary the look slightly
   isOpen?: boolean; // For chests
+  chestType?: 'normal' | 'large'; // For chests: normal or large
 }
 
 export interface Enemy {
