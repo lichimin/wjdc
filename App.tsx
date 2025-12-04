@@ -23,7 +23,7 @@ const Joystick: React.FC<{
   const [active, setActive] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const touchIdRef = useRef<number | null>(null); // Track specific touch ID
-  const isHandlingTouchRef = useRef(false); // Prevent multiple touch handlers
+  const activeTouchCountRef = useRef(0); // Track active touches
 
   const handleStart = (clientX: number, clientY: number, touchId?: number) => {
     if (!active) {
@@ -31,7 +31,7 @@ const Joystick: React.FC<{
       if (touchId !== undefined) {
         touchIdRef.current = touchId;
       }
-      isHandlingTouchRef.current = true;
+      activeTouchCountRef.current = 1;
     }
     handleMove(clientX, clientY);
   };
@@ -57,41 +57,34 @@ const Joystick: React.FC<{
     setActive(false);
     setPos({ x: 0, y: 0 });
     touchIdRef.current = null;
-    isHandlingTouchRef.current = false;
+    activeTouchCountRef.current = 0;
     onStop();
   };
 
   // Global listeners for drag outside
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => { 
-      if (active && !isHandlingTouchRef.current) {
-        e.preventDefault();
-        e.stopPropagation();
+      if (active) {
         handleMove(e.clientX, e.clientY); 
       } 
     };
     const onMouseUp = (e: MouseEvent) => { 
-      if (active && !isHandlingTouchRef.current) {
-        e.preventDefault();
-        e.stopPropagation();
+      if (active) {
         handleEnd(); 
       } 
     };
     const onTouchMove = (e: TouchEvent) => { 
-      if (active && isHandlingTouchRef.current) {
-        e.preventDefault();
-        e.stopPropagation();
+      if (active) {
         // Only handle the specific touch that started on the joystick
         const touch = Array.from(e.touches).find(t => t.identifier === touchIdRef.current);
         if (touch) {
+          e.preventDefault();
           handleMove(touch.clientX, touch.clientY);
         }
       } 
     };
     const onTouchEnd = (e: TouchEvent) => { 
-      if (active && isHandlingTouchRef.current) {
-        e.preventDefault();
-        e.stopPropagation();
+      if (active) {
         // Only end if the specific touch that started on the joystick has ended
         const touch = Array.from(e.changedTouches).find(t => t.identifier === touchIdRef.current);
         if (touch) {
@@ -101,17 +94,19 @@ const Joystick: React.FC<{
     };
 
     if (active) {
-      // Use capture phase to ensure we get events before other handlers
-      window.addEventListener('mousemove', onMouseMove, true);
-      window.addEventListener('mouseup', onMouseUp, true);
-      window.addEventListener('touchmove', onTouchMove, { passive: false, capture: true });
-      window.addEventListener('touchend', onTouchEnd, { capture: true });
+      // Use normal event listeners instead of capture phase to avoid conflicts
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+      window.addEventListener('touchmove', onTouchMove, { passive: false });
+      window.addEventListener('touchend', onTouchEnd);
+      window.addEventListener('touchcancel', onTouchEnd);
     }
     return () => {
-      window.removeEventListener('mousemove', onMouseMove, true);
-      window.removeEventListener('mouseup', onMouseUp, true);
-      window.removeEventListener('touchmove', onTouchMove, { capture: true });
-      window.removeEventListener('touchend', onTouchEnd, { capture: true });
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('touchcancel', onTouchEnd);
     };
   }, [active]);
 
@@ -120,26 +115,27 @@ const Joystick: React.FC<{
       ref={containerRef} 
       className="w-32 h-32 relative touch-none select-none group"
       onMouseDown={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        // Only prevent default for the initial click
         if (!active) {
+          e.preventDefault();
           handleStart(e.clientX, e.clientY);
         }
       }}
       onTouchStart={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        // Only start handling if no touch is currently active
+        // Only handle the first touch on the joystick
         if (!active && e.touches.length === 1) {
+          e.preventDefault();
           const touch = e.touches[0];
           handleStart(touch.clientX, touch.clientY, touch.identifier);
         }
       }}
       onTouchCancel={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
         if (active) {
-          handleEnd();
+          // Only cancel if it's the joystick touch
+          const touch = Array.from(e.changedTouches).find(t => t.identifier === touchIdRef.current);
+          if (touch) {
+            handleEnd();
+          }
         }
       }}
       style={{
@@ -191,7 +187,12 @@ const CyberDashButton: React.FC<{
         ${active ? 'scale-90' : 'scale-100 hover:scale-105'}
       `}
       onMouseDown={onPress} onMouseUp={onRelease} onMouseLeave={onRelease}
-      onTouchStart={(e) => { e.preventDefault(); onPress(); }} onTouchEnd={onRelease}
+      onTouchStart={onPress} onTouchEnd={onRelease}
+      // Prevent text selection but allow touch events to propagate
+      style={{
+        userSelect: 'none',
+        touchAction: 'manipulation'
+      }}
     >
       {/* Glow Backdrop */}
       <div className={`
@@ -855,8 +856,6 @@ const App: React.FC = () => {
               <button 
                 className="w-12 h-12 bg-gradient-to-br from-red-900 to-red-800 border-2 border-red-700 rounded-full flex items-center justify-center text-white shadow-lg hover:from-red-800 hover:to-red-700 transition-all active:scale-95"
                 onMouseDown={(e) => { 
-                  e.preventDefault();
-                  e.stopPropagation();
                   if (inputRef.current) {
                     // Set attack state only if it's not already attacking
                     if (!inputRef.current.isAttacking) {
@@ -866,24 +865,18 @@ const App: React.FC = () => {
                   }
                 }}
                 onMouseUp={(e) => { 
-                  e.preventDefault();
-                  e.stopPropagation();
                   if (inputRef.current) {
                     inputRef.current.isAttacking = false;
                     inputRef.current.attackPressed = false;
                   }
                 }}
                 onMouseLeave={(e) => { 
-                  e.preventDefault();
-                  e.stopPropagation();
                   if (inputRef.current) {
                     inputRef.current.isAttacking = false;
                     inputRef.current.attackPressed = false;
                   }
                 }}
                 onTouchStart={(e) => { 
-                  e.preventDefault();
-                  e.stopPropagation();
                   if (inputRef.current) {
                     // Set attack state only if it's not already attacking
                     if (!inputRef.current.isAttacking) {
@@ -893,20 +886,21 @@ const App: React.FC = () => {
                   }
                 }}
                 onTouchEnd={(e) => { 
-                  e.preventDefault();
-                  e.stopPropagation();
                   if (inputRef.current) {
                     inputRef.current.isAttacking = false;
                     inputRef.current.attackPressed = false;
                   }
                 }}
                 onTouchCancel={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
                   if (inputRef.current) {
                     inputRef.current.isAttacking = false;
                     inputRef.current.attackPressed = false;
                   }
+                }}
+                // Prevent text selection but allow touch events to propagate
+                style={{
+                  userSelect: 'none',
+                  touchAction: 'manipulation'
                 }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
