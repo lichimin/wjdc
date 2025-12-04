@@ -370,9 +370,8 @@ function populateItemsByTheme(room: Room, difficultyLevel: string) {
       for (let i = 0; i < count; i++) {
         const tx = randomInt(room.x + 1, room.x + room.w - 2);
         const ty = randomInt(room.y + 1, room.y + room.h - 2);
-        // 降低储藏室中宝箱的概率，从70%降至20%
-        const type = Math.random() > 0.8 ? ItemType.CHEST : ItemType.DECORATION;
-        tryAddItem(room, tx, ty, type);
+        // 储藏室不再生成宝箱，只生成装饰
+        tryAddItem(room, tx, ty, ItemType.DECORATION);
       }
       break;
     case 'Altar':

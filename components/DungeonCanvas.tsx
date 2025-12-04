@@ -681,7 +681,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
         room.items.forEach(item => {
           if (item.y === y) {
              const isInteracting = p.interactionTargetId === item.id;
-             drawItem(ctx, item.x * TILE_SIZE, item.y * TILE_SIZE, item.type, item.variant || 0, isInteracting, timestamp);
+             drawItem(ctx, item.x * TILE_SIZE, item.y * TILE_SIZE, item, isInteracting, timestamp);
              if (isInteracting) {
                 drawInteractionRing(ctx, item.x * TILE_SIZE, item.y * TILE_SIZE, p.interactionTimer);
              }
@@ -778,7 +778,9 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
      ctx.stroke();
   };
 
-  const drawItem = (ctx: CanvasRenderingContext2D, px: number, py: number, type: ItemType, variant: number, isInteracting: boolean, time: number) => {
+  const drawItem = (ctx: CanvasRenderingContext2D, px: number, py: number, item: Item, isInteracting: boolean, time: number) => {
+    const type = item.type;
+    const variant = item.variant || 0;
      const cx = px + TILE_SIZE / 2;
      const cy = py + TILE_SIZE / 2;
      const dy = -4; 
