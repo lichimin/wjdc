@@ -644,7 +644,11 @@ const App: React.FC = () => {
     
     // 打印地图难度和宝箱数量
     console.log(`地图难度: ${newDifficultyLevel} (数值: ${diff})`);
-    console.log(`当前地图宝箱数量: ${newData.chests.length}`);
+    // 统计所有房间中的宝箱数量
+    const chestCount = newData.rooms.flatMap(room => 
+      room.items.filter(item => item.type === 'CHEST').length
+    ).reduce((sum, count) => sum + count, 0);
+    console.log(`当前地图宝箱数量: ${chestCount}`);
   };
 
   const handleRoomSelect = useCallback(async (room: Room | null) => {
