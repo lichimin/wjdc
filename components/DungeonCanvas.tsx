@@ -842,7 +842,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
           e.vx = Math.cos(angle) * e.speed;
           e.vy = Math.sin(angle) * e.speed;
           if (e.vx < 0) e.facingLeft = true;
-          if (e.vx > 0) e.facingLeft = false;
+      if (e.vx > 0) e.facingLeft = false;
        } else {
           e.state = 'idle';
           e.vx *= 0.9; e.vy *= 0.9;
@@ -1425,7 +1425,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
 
     ctx.translate(drawX, drawY - bounce);
     if (e.hitFlash > 0) { ctx.globalCompositeOperation = 'source-over'; ctx.filter = 'brightness(200%)'; }
-    if (e.facingLeft) ctx.scale(-1, 1);
+    if (!e.facingLeft) ctx.scale(-1, 1);
     
     // Draw shadow
     if (e.state !== 'dying') {
