@@ -840,9 +840,11 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
           e.state = 'chase';
           const angle = Math.atan2(pdy, pdx);
           e.vx = Math.cos(angle) * e.speed;
-          e.vy = Math.sin(angle) * e.speed;
-          if (e.vx < 0) e.facingLeft = false;
-      if (e.vx > 0) e.facingLeft = true;
+            e.vy = Math.sin(angle) * e.speed;
+            // 设置怪物朝向，与玩家逻辑保持一致
+            // 原始图片默认朝右，当向左移动时需要翻转图片
+            if (e.vx < 0) e.facingLeft = true;  // 向左移动，朝左看（翻转图片）
+            if (e.vx > 0) e.facingLeft = false; // 向右移动，朝右看（不翻转图片）
        } else {
           e.state = 'idle';
           e.vx *= 0.9; e.vy *= 0.9;
@@ -1425,7 +1427,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
 
     ctx.translate(drawX, drawY - bounce);
     if (e.hitFlash > 0) { ctx.globalCompositeOperation = 'source-over'; ctx.filter = 'brightness(200%)'; }
-    if (e.facingLeft) ctx.scale(-1, 1);
+    if (e.facingLeft) ctx.scale(-1, 1);  // 向左移动时翻转图片朝左看，与玩家逻辑保持一致
     
     // Draw shadow
     if (e.state !== 'dying') {
