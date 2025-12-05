@@ -1018,7 +1018,7 @@ const App: React.FC = () => {
            <div className="absolute bottom-8 right-8 z-50 flex flex-col gap-4">
               {/* Attack Button - Large, Primary Button */}
               <button 
-                className="w-16 h-16 bg-gradient-to-br from-red-900 to-red-800 border-4 border-red-700 rounded-full flex items-center justify-center text-white shadow-[0_0_20px_rgba(220,38,38,0.6)] hover:from-red-800 hover:to-red-700 transition-all active:scale-95"
+                className="w-20 h-20 bg-gradient-to-br from-red-900/70 to-red-800/70 border-4 border-red-700/80 rounded-full flex items-center justify-center text-white shadow-[0_0_25px_rgba(220,38,38,0.6)] hover:from-red-800/80 hover:to-red-700/80 transition-all active:scale-95"
                 onMouseDown={(e) => { 
                   if (inputRef.current) {
                     if (!inputRef.current.isAttacking) {
@@ -1060,22 +1060,34 @@ const App: React.FC = () => {
                   }
                 }}
               >
-                <span className="text-3xl">⚔️</span>
+                <img 
+                  src="https://czrimg.godqb.com/game/weapon/1.png" 
+                  alt="Attack" 
+                  className="w-12 h-12 object-contain"
+                />
               </button>
               
               <div className="flex gap-4">
-                {/* Dodge Button - Smaller, Secondary */}
-                <div style={{ transform: 'scale(0.9)' }}>
-                  <CyberDashButton 
-                    active={dashBtnActive}
-                    onPress={() => { inputRef.current.isDodging = true; setDashBtnActive(true); }}
-                    onRelease={() => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
+                {/* Dodge Button - Same size as skill buttons */}
+                <button 
+                  className={`w-14 h-14 bg-gradient-to-br from-blue-900/70 to-blue-800/70 border-3 border-blue-700/80 rounded-full flex items-center justify-center text-white shadow-[0_0_15px_rgba(59,130,246,0.6)] transition-all active:scale-95 relative ${dashBtnActive ? 'from-blue-800/80 to-blue-700/80' : 'hover:from-blue-800/80 hover:to-blue-700/80 cursor-pointer'}`}
+                  onMouseDown={(e) => { inputRef.current.isDodging = true; setDashBtnActive(true); }}
+                  onMouseUp={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
+                  onMouseLeave={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
+                  onTouchStart={(e) => { inputRef.current.isDodging = true; setDashBtnActive(true); }}
+                  onTouchEnd={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
+                  onTouchCancel={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
+                >
+                  <img 
+                    src="https://czrimg.godqb.com/game/skill/dash.png" 
+                    alt="Dash" 
+                    className="w-8 h-8 object-contain"
                   />
-                </div>
+                </button>
                 
                 {/* Special Skill Button */}
                 <button 
-                  className={`w-12 h-12 bg-gradient-to-br from-purple-900 to-purple-800 border-3 border-purple-700 rounded-full flex items-center justify-center text-white shadow-[0_0_15px_rgba(168,85,247,0.6)] transition-all active:scale-95 relative ${skillCooldown > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 cursor-pointer'}`}
+                  className={`w-14 h-14 bg-gradient-to-br from-purple-900/70 to-purple-800/70 border-3 border-purple-700/80 rounded-full flex items-center justify-center text-white shadow-[0_0_15px_rgba(168,85,247,0.6)] transition-all active:scale-95 relative ${skillCooldown > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:from-purple-800/80 hover:to-purple-700/80 cursor-pointer'}`}
                   disabled={skillCooldown > 0}
                   onClick={() => {
                     if (skillCooldown === 0 && !skillActive) {
@@ -1108,7 +1120,7 @@ const App: React.FC = () => {
                 
                 {/* Heal Skill Button */}
                 <button 
-                  className={`w-12 h-12 bg-gradient-to-br from-green-900 to-green-800 border-3 border-green-700 rounded-full flex items-center justify-center text-white shadow-[0_0_15px_rgba(74,222,128,0.6)] transition-all active:scale-95 relative ${healSkillCooldown > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 cursor-pointer'}`}
+                  className={`w-14 h-14 bg-gradient-to-br from-green-900/70 to-green-800/70 border-3 border-green-700/80 rounded-full flex items-center justify-center text-white shadow-[0_0_15px_rgba(74,222,128,0.6)] transition-all active:scale-95 relative ${healSkillCooldown > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:from-green-800/80 hover:to-green-700/80 cursor-pointer'}`}
                   disabled={healSkillCooldown > 0}
                   onClick={() => {
                     if (healSkillCooldown === 0 && !healSkillActive) {
@@ -1126,7 +1138,7 @@ const App: React.FC = () => {
                   }}
                 >
                   <img 
-                    src="https://czrimg.godqb.com/game/skill/1/0110_00.png" 
+                    src="https://czrimg.godqb.com/game/skill/2/frame0.png" 
                     alt="Heal Skill" 
                     className="w-8 h-8 object-contain"
                   />
