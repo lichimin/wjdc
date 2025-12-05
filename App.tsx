@@ -174,7 +174,60 @@ const Joystick: React.FC<{
   );
 };
 
+// --- CYBER ACTION BUTTON (DASH ONLY) ---
+const CyberDashButton: React.FC<{ 
+  active: boolean,
+  onPress: () => void,
+  onRelease: () => void
+}> = ({ active, onPress, onRelease }) => {
+  return (
+    <button
+      className={`
+        relative w-20 h-20 flex items-center justify-center transition-all duration-100 touch-none select-none
+        ${active ? 'scale-90' : 'scale-100 hover:scale-105'}
+      `}
+      onMouseDown={onPress} onMouseUp={onRelease} onMouseLeave={onRelease}
+      onTouchStart={onPress} onTouchEnd={onRelease}
+      // Prevent text selection but allow touch events to propagate
+      style={{
+        userSelect: 'none',
+        touchAction: 'manipulation'
+      }}
+    >
+      {/* Glow Backdrop */}
+      <div className={`
+        absolute inset-0 rounded-xl bg-blue-600 blur-xl opacity-20 transition-opacity duration-300
+        ${active ? 'opacity-60' : ''}
+      `}></div>
 
+      {/* Main Button Body */}
+      <div className={`
+        absolute inset-0 bg-slate-900 border-2 rounded-xl backdrop-blur-md flex items-center justify-center
+        shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all
+        ${active ? 'border-blue-400 bg-blue-900/40 shadow-[0_0_25px_rgba(59,130,246,0.6)] translate-y-1' : 'border-blue-600/60'}
+      `}>
+         {/* Tech Lines */}
+         <div className="absolute top-1 left-1 w-2 h-2 border-t-2 border-l-2 border-blue-400 rounded-tl-sm"></div>
+         <div className="absolute top-1 right-1 w-2 h-2 border-t-2 border-r-2 border-blue-400 rounded-tr-sm"></div>
+         <div className="absolute bottom-1 left-1 w-2 h-2 border-b-2 border-l-2 border-blue-400 rounded-bl-sm"></div>
+         <div className="absolute bottom-1 right-1 w-2 h-2 border-b-2 border-r-2 border-blue-400 rounded-br-sm"></div>
+         
+         {/* Icon */}
+         <span className={`text-3xl transition-transform ${active ? 'scale-110 text-white' : 'text-blue-400'}`}>
+           ⚡
+         </span>
+      </div>
+
+      {/* Label */}
+      <span className={`
+        absolute -bottom-6 text-[10px] font-mono font-bold tracking-widest
+        ${active ? 'text-blue-300' : 'text-slate-500'}
+      `}>
+        FLASH
+      </span>
+    </button>
+  );
+};
 
 const App: React.FC = () => {
   // Global App State
@@ -946,55 +999,19 @@ const App: React.FC = () => {
            </div>
            
            {/* Action Buttons (Bottom Right) */}
-           <div className="absolute bottom-12 right-12 z-50 relative">
-              {/* Dodge Button - Half size, top left of attack button */}
-              <button 
-                className="absolute w-12 h-12 bg-blue-700 bg-opacity-70 border-2 border-blue-600 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-opacity-80 transition-all active:scale-95"
-                style={{ top: '-48px', right: '48px' }} // Position top-left relative to attack button
-                onMouseDown={(e) => { inputRef.current.isDodging = true; setDashBtnActive(true); }}
-                onMouseUp={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
-                onMouseLeave={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
-                onTouchStart={(e) => { inputRef.current.isDodging = true; setDashBtnActive(true); }}
-                onTouchEnd={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
-                onTouchCancel={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
-              >
-                {/* Pixel Art Dodge Icon - Blue Lightning */}
-                <svg className="w-8 h-8" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="4" y="4" width="2" height="2" fill="#3b82f6" />
-                  <rect x="6" y="3" width="2" height="2" fill="#3b82f6" />
-                  <rect x="8" y="2" width="2" height="2" fill="#3b82f6" />
-                  <rect x="10" y="3" width="2" height="2" fill="#3b82f6" />
-                  <rect x="12" y="4" width="2" height="2" fill="#3b82f6" />
-                  <rect x="11" y="6" width="2" height="2" fill="#3b82f6" />
-                  <rect x="12" y="8" width="2" height="2" fill="#3b82f6" />
-                  <rect x="11" y="10" width="2" height="2" fill="#3b82f6" />
-                  <rect x="10" y="12" width="2" height="2" fill="#3b82f6" />
-                  <rect x="8" y="13" width="2" height="2" fill="#3b82f6" />
-                  <rect x="6" y="12" width="2" height="2" fill="#3b82f6" />
-                  <rect x="4" y="10" width="2" height="2" fill="#3b82f6" />
-                  <rect x="3" y="8" width="2" height="2" fill="#3b82f6" />
-                  <rect x="4" y="6" width="2" height="2" fill="#3b82f6" />
-                  {/* Pixel details */}
-                  <rect x="5" y="5" width="1" height="1" fill="#2563eb" />
-                  <rect x="7" y="4" width="1" height="1" fill="#2563eb" />
-                  <rect x="9" y="3" width="1" height="1" fill="#2563eb" />
-                  <rect x="11" y="4" width="1" height="1" fill="#2563eb" />
-                  <rect x="12" y="5" width="1" height="1" fill="#2563eb" />
-                  <rect x="11" y="7" width="1" height="1" fill="#2563eb" />
-                  <rect x="12" y="9" width="1" height="1" fill="#2563eb" />
-                  <rect x="11" y="11" width="1" height="1" fill="#2563eb" />
-                  <rect x="10" y="13" width="1" height="1" fill="#2563eb" />
-                  <rect x="8" y="14" width="1" height="1" fill="#2563eb" />
-                  <rect x="6" y="13" width="1" height="1" fill="#2563eb" />
-                  <rect x="4" y="11" width="1" height="1" fill="#2563eb" />
-                  <rect x="3" y="9" width="1" height="1" fill="#2563eb" />
-                  <rect x="4" y="7" width="1" height="1" fill="#2563eb" />
-                </svg>
-              </button>
+           <div className="absolute bottom-12 right-12 z-50 flex gap-4">
+              {/* Dodge Button */}
+              <div style={{ transform: 'scale(0.8)' }}>
+                <CyberDashButton 
+                  active={dashBtnActive}
+                  onPress={() => { inputRef.current.isDodging = true; setDashBtnActive(true); }}
+                  onRelease={() => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
+                />
+              </div>
               
-              {/* Attack Button - Largest, bottom right */}
+              {/* Attack Button */}
               <button 
-                className="absolute w-24 h-24 bg-red-700 bg-opacity-70 border-2 border-red-600 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-opacity-80 transition-all active:scale-95"
+                className="w-12 h-12 bg-gradient-to-br from-red-900 to-red-800 border-2 border-red-700 rounded-full flex items-center justify-center text-white shadow-lg hover:from-red-800 hover:to-red-700 transition-all active:scale-95"
                 onMouseDown={(e) => { 
                   if (inputRef.current) {
                     // Set attack state only if it's not already attacking
@@ -1038,25 +1055,12 @@ const App: React.FC = () => {
                   }
                 }}
               >
-                {/* Pixel Art Attack Icon - Red Sword */}
-                <svg className="w-16 h-16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="7" y="0" width="2" height="8" fill="#ef4444" />
-                  <rect x="5" y="8" width="6" height="2" fill="#b91c1c" />
-                  <rect x="4" y="10" width="8" height="2" fill="#7f1d1d" />
-                  <rect x="6" y="12" width="4" height="2" fill="#4c1d95" />
-                  <rect x="7" y="14" width="2" height="2" fill="#4c1d95" />
-                  {/* Pixel details */}
-                  <rect x="6" y="0" width="1" height="1" fill="#dc2626" />
-                  <rect x="9" y="0" width="1" height="1" fill="#dc2626" />
-                  <rect x="6" y="7" width="1" height="1" fill="#991b1b" />
-                  <rect x="10" y="7" width="1" height="1" fill="#991b1b" />
-                </svg>
+                <span className="text-2xl">⚔️</span>
               </button>
               
-              {/* Skill Button - Half size, top right of attack button */}
+              {/* New Skill Button */}
               <button 
-                className={`absolute w-12 h-12 bg-purple-700 bg-opacity-70 border-2 border-purple-600 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-opacity-80 transition-all active:scale-95 relative ${skillCooldown > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 cursor-pointer'}`}
-                style={{ top: '-48px', left: '48px' }} // Position top-right relative to attack button
+                className={`w-12 h-12 ${skillCooldown > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 cursor-pointer'} bg-gradient-to-br from-purple-900 to-purple-800 border-2 border-purple-700 rounded-full flex items-center justify-center text-white shadow-lg transition-all active:scale-95 relative`}
                 disabled={skillCooldown > 0}
                 onClick={() => {
                   if (skillCooldown === 0 && !skillActive) {
@@ -1073,22 +1077,11 @@ const App: React.FC = () => {
                   }
                 }}
               >
-                {/* Pixel Art Skill Icon - Purple Star */}
-                <svg className="w-8 h-8" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="7" y="2" width="2" height="4" fill="#9333ea" />
-                  <rect x="6" y="4" width="4" height="2" fill="#9333ea" />
-                  <rect x="2" y="7" width="4" height="2" fill="#9333ea" />
-                  <rect x="10" y="7" width="4" height="2" fill="#9333ea" />
-                  <rect x="7" y="10" width="2" height="4" fill="#9333ea" />
-                  <rect x="6" y="12" width="4" height="2" fill="#9333ea" />
-                  {/* Pixel details */}
-                  <rect x="7" y="1" width="2" height="1" fill="#7e22ce" />
-                  <rect x="6" y="3" width="4" height="1" fill="#7e22ce" />
-                  <rect x="1" y="7" width="1" height="2" fill="#7e22ce" />
-                  <rect x="14" y="7" width="1" height="2" fill="#7e22ce" />
-                  <rect x="7" y="14" width="2" height="1" fill="#7e22ce" />
-                  <rect x="6" y="14" width="4" height="1" fill="#7e22ce" />
-                </svg>
+                <img 
+                  src="https://czrimg.godqb.com/game/skill/1/0479_00.png" 
+                  alt="Skill" 
+                  className="w-8 h-8 object-contain"
+                />
                 {skillCooldown > 0 && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-xs font-bold">{skillCooldown}</span>
