@@ -842,9 +842,9 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
           e.vx = Math.cos(angle) * e.speed;
             e.vy = Math.sin(angle) * e.speed;
             // 设置怪物朝向，与玩家逻辑保持一致
-            // 原始图片默认朝右，当向左移动时需要翻转图片
-            if (e.vx < 0) e.facingLeft = true;  // 向左移动，朝左看（翻转图片）
-            if (e.vx > 0) e.facingLeft = false; // 向右移动，朝右看（不翻转图片）
+            // 原始图片默认朝左，当向右移动时需要翻转图片
+            if (e.vx < 0) e.facingLeft = false; // 向左移动，朝左看（不翻转图片）
+            if (e.vx > 0) e.facingLeft = true;  // 向右移动，朝右看（翻转图片）
        } else {
           e.state = 'idle';
           e.vx *= 0.9; e.vy *= 0.9;
@@ -1352,9 +1352,9 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     const drawX = Math.floor(p.x + TILE_SIZE/2);
     const drawY = Math.floor(p.y + TILE_SIZE/2); // Moved down by 16 pixels to match reduced size
     const spriteSize = 38; // Reduced by 40% from original 64
-    // Calculate bar offset to position at top third of player size
-    const topThirdOffset = spriteSize / 3;
-    const barWidth = 24; const barHeight = 4; const barOffset = topThirdOffset;
+    // Calculate bar offset to position at top of player image
+    const barWidth = 24; const barHeight = 4; 
+    const barOffset = spriteSize / 2 + barHeight / 2; // 血条位于图片顶部
 
     ctx.fillStyle = '#0f172a'; ctx.fillRect(drawX - barWidth / 2 - 1, drawY - barOffset - 1, barWidth + 2, barHeight + 2);
     ctx.fillStyle = '#334155'; ctx.fillRect(drawX - barWidth / 2, drawY - barOffset, barWidth, barHeight);
