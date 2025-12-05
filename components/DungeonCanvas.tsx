@@ -1352,9 +1352,9 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     const drawX = Math.floor(p.x + TILE_SIZE/2);
     const drawY = Math.floor(p.y + TILE_SIZE/2); // Moved down by 16 pixels to match reduced size
     const spriteSize = 38; // Reduced by 40% from original 64
-    const originalBarOffset = 42;
-    const sizeBasedOffset = originalBarOffset + spriteSize * 0.3; // 30% lower than original
-    const barWidth = 24; const barHeight = 4; const barOffset = sizeBasedOffset;
+    // Calculate bar offset to position at top third of player size
+    const topThirdOffset = spriteSize / 3;
+    const barWidth = 24; const barHeight = 4; const barOffset = topThirdOffset;
 
     ctx.fillStyle = '#0f172a'; ctx.fillRect(drawX - barWidth / 2 - 1, drawY - barOffset - 1, barWidth + 2, barHeight + 2);
     ctx.fillStyle = '#334155'; ctx.fillRect(drawX - barWidth / 2, drawY - barOffset, barWidth, barHeight);
@@ -1424,7 +1424,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     let targetSize = 20; // Base size (diameter) based on fallback shapes
     
     if (drawType === EnemyType.BAT) {
-      targetSize = 12; // Bat is smaller in fallback
+      targetSize = 24; // Bat is doubled in size (was 12)
     } else if (drawType === EnemyType.SKELETON) {
       targetSize = 44; // Skeleton is doubled in size
     } else if (drawType === EnemyType.ELEPHANT) {
@@ -1442,11 +1442,11 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
 
     const bounce = Math.sin(time / 200) * 2;
     if (e.state !== 'dying') {
-      // Calculate new bar offset that is 30% of character size lower than original
-      const originalBarOffset = e.type === EnemyType.BAT ? 35 : 25;
-      const sizeBasedOffset = originalBarOffset + targetSize * 0.3;
+      // Calculate bar offset to position at top third of monster size
+      const topThirdOffset = targetSize / 3;
+      const barOffset = topThirdOffset;
       
-      const barWidth = 20; const barHeight = 3; const barOffset = sizeBasedOffset;
+      const barWidth = 20; const barHeight = 3;
       ctx.fillStyle = '#0f172a'; ctx.fillRect(drawX - barWidth/2 - 1, drawY - barOffset - 1 - bounce, barWidth + 2, barHeight + 2);
       ctx.fillStyle = '#334155'; ctx.fillRect(drawX - barWidth/2, drawY - barOffset - bounce, barWidth, barHeight);
       const ratio = e.health / e.maxHealth; ctx.fillStyle = '#ef4444'; ctx.fillRect(drawX - barWidth/2, drawY - barOffset - bounce, barWidth * ratio, barHeight);
