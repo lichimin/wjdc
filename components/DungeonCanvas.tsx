@@ -1352,7 +1352,9 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     const drawX = Math.floor(p.x + TILE_SIZE/2);
     const drawY = Math.floor(p.y + TILE_SIZE/2); // Moved down by 16 pixels to match reduced size
     const spriteSize = 38; // Reduced by 40% from original 64
-    const barWidth = 24; const barHeight = 4; const barOffset = 42; 
+    const originalBarOffset = 42;
+    const sizeBasedOffset = originalBarOffset + spriteSize * 0.3; // 30% lower than original
+    const barWidth = 24; const barHeight = 4; const barOffset = sizeBasedOffset;
 
     ctx.fillStyle = '#0f172a'; ctx.fillRect(drawX - barWidth / 2 - 1, drawY - barOffset - 1, barWidth + 2, barHeight + 2);
     ctx.fillStyle = '#334155'; ctx.fillRect(drawX - barWidth / 2, drawY - barOffset, barWidth, barHeight);
@@ -1408,6 +1410,27 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     const drawX = Math.floor(e.x + TILE_SIZE/2);
     const drawY = Math.floor(e.y + TILE_SIZE/2 - 4);
     
+    // Determine which type of monster to draw (BOSS uses one of the regular types)
+    let drawType = e.type;
+    if (e.type === EnemyType.BOSS) {
+      // For BOSS, use one of the regular monster types based on the boss's appearance
+      // Since we don't have specific boss type data, we'll randomly select one for now
+      // In a real game, this would be determined by the boss's configuration
+      const bossTypes = [EnemyType.SLIME, EnemyType.BAT, EnemyType.SKELETON, EnemyType.ELEPHANT];
+      drawType = bossTypes[Math.floor(Math.random() * bossTypes.length)];
+    }
+    
+    // Set consistent monster size based on fallback dimensions (used for both image scaling and health bar positioning)
+    let targetSize = 20; // Base size (diameter) based on fallback shapes
+    
+    if (drawType === EnemyType.BAT) {
+      targetSize = 12; // Bat is smaller in fallback
+    } else if (drawType === EnemyType.SKELETON) {
+      targetSize = 44; // Skeleton is doubled in size
+    } else if (drawType === EnemyType.ELEPHANT) {
+      targetSize = 52; // Elephant is doubled in size (was 26)
+    }
+    
     ctx.save();
     if (e.state === 'dying' && e.deathTimer !== undefined) {
       const deathRatio = e.deathTimer / 20;
@@ -1419,7 +1442,11 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
 
     const bounce = Math.sin(time / 200) * 2;
     if (e.state !== 'dying') {
-      const barWidth = 20; const barHeight = 3; const barOffset = e.type === EnemyType.BAT ? 35 : 25;
+      // Calculate new bar offset that is 30% of character size lower than original
+      const originalBarOffset = e.type === EnemyType.BAT ? 35 : 25;
+      const sizeBasedOffset = originalBarOffset + targetSize * 0.3;
+      
+      const barWidth = 20; const barHeight = 3; const barOffset = sizeBasedOffset;
       ctx.fillStyle = '#0f172a'; ctx.fillRect(drawX - barWidth/2 - 1, drawY - barOffset - 1 - bounce, barWidth + 2, barHeight + 2);
       ctx.fillStyle = '#334155'; ctx.fillRect(drawX - barWidth/2, drawY - barOffset - bounce, barWidth, barHeight);
       const ratio = e.health / e.maxHealth; ctx.fillStyle = '#ef4444'; ctx.fillRect(drawX - barWidth/2, drawY - barOffset - bounce, barWidth * ratio, barHeight);
@@ -1432,16 +1459,6 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     // Draw shadow
     if (e.state !== 'dying') {
       ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.beginPath(); const shadowY = e.type === EnemyType.BAT ? 20 + bounce : 8 + bounce; ctx.ellipse(0, shadowY, 10, 3, 0, 0, Math.PI*2); ctx.fill();
-    }
-
-    // Determine which type of monster to draw (BOSS uses one of the regular types)
-    let drawType = e.type;
-    if (e.type === EnemyType.BOSS) {
-      // For BOSS, use one of the regular monster types based on the boss's appearance
-      // Since we don't have specific boss type data, we'll randomly select one for now
-      // In a real game, this would be determined by the boss's configuration
-      const bossTypes = [EnemyType.SLIME, EnemyType.BAT, EnemyType.SKELETON, EnemyType.ELEPHANT];
-      drawType = bossTypes[Math.floor(Math.random() * bossTypes.length)];
     }
 
     // Get the current monster image - only use attack animation when touching player
@@ -1467,17 +1484,6 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       }
       
       const img = images[currentFrame % images.length];
-      
-      // Set consistent monster size based on fallback dimensions
-      let targetSize = 20; // Base size (diameter) based on fallback shapes
-      
-      if (drawType === EnemyType.BAT) {
-        targetSize = 12; // Bat is smaller in fallback
-      } else if (drawType === EnemyType.SKELETON) {
-        targetSize = 22; // Skeleton is slightly larger
-      } else if (drawType === EnemyType.ELEPHANT) {
-        targetSize = 26; // Elephant is larger
-      }
       
       // Apply boss scaling if needed
       if (e.type === EnemyType.BOSS) {
