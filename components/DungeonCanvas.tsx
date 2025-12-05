@@ -158,7 +158,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     
     // Apply damage to enemies in range
     const damage = (playerRef.current.equipment?.attack_power || 50) * 3;
-    const skillRange = TILE_SIZE * 2; // Character size * 2
+    const skillRange = TILE_SIZE * 4; // Character size * 4 (double range)
     
     enemiesRef.current.forEach((enemy, index) => {
       const dx = enemy.x - playerRef.current.x;
@@ -178,7 +178,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
           x: enemy.x,
           y: enemy.y - 20,
           text: `-${damage}`,
-          color: '#ff4444',
+          color: '#aa44ff',
           life: 60,
           opacity: 1,
           scale: 1.0
