@@ -19,6 +19,7 @@ interface DungeonCanvasProps {
   onGameOver?: () => void;
   skinData: SkinData | null;
   onActivateSkill?: (activate: (direction: 'left' | 'right') => void) => void;
+  onActivateHealSkill?: (activate: () => void) => void;
 }
 
 const TILE_SIZE = 32;
@@ -59,7 +60,7 @@ interface SkillAnimation {
   y: number;
 } // SkillAnimation interface
 
-export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSelect, selectedRoomId, inputRef, playerRef, visitedRef, enemiesRef, projectilesRef, floatingTextsRef, onOpenChest, onExtract, onGameOver, skinData, onActivateSkill }) => {
+export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSelect, selectedRoomId, inputRef, playerRef, visitedRef, enemiesRef, projectilesRef, floatingTextsRef, onOpenChest, onExtract, onGameOver, skinData, onActivateSkill, onActivateHealSkill }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoverPos, setHoverPos] = useState<{x: number, y: number} | null>(null);
@@ -101,6 +102,18 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
   
   // Skill animation images
   const skillImagesRef = useRef<HTMLImageElement[]>([]);
+  
+  // Heal skill animation
+  const healSkillAnimationRef = useRef({
+    active: false,
+    startTime: 0,
+    duration: 10000, // 10 seconds total duration
+    x: 0,
+    y: 0
+  });
+  
+  // Heal skill animation images
+  const healSkillImagesRef = useRef<HTMLImageElement[]>([]);
   
   // Preload skill images
   useEffect(() => {
@@ -145,6 +158,60 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     
     skillImagesRef.current = images;
   }, []);
+  
+  // Preload heal skill images
+  useEffect(() => {
+    const healSkillImageUrls = [
+      "https://czrimg.godqb.com/game/skill/2/frame0.png",
+      "https://czrimg.godqb.com/game/skill/2/frame1.png",
+      "https://czrimg.godqb.com/game/skill/2/frame2.png",
+      "https://czrimg.godqb.com/game/skill/2/frame3.png",
+      "https://czrimg.godqb.com/game/skill/2/frame4.png",
+      "https://czrimg.godqb.com/game/skill/2/frame5.png",
+      "https://czrimg.godqb.com/game/skill/2/frame6.png",
+      "https://czrimg.godqb.com/game/skill/2/frame7.png",
+      "https://czrimg.godqb.com/game/skill/2/frame8.png",
+      "https://czrimg.godqb.com/game/skill/2/frame9.png",
+      "https://czrimg.godqb.com/game/skill/2/frame10.png",
+      "https://czrimg.godqb.com/game/skill/2/frame11.png",
+      "https://czrimg.godqb.com/game/skill/2/frame12.png",
+      "https://czrimg.godqb.com/game/skill/2/frame13.png",
+      "https://czrimg.godqb.com/game/skill/2/frame14.png",
+      "https://czrimg.godqb.com/game/skill/2/frame15.png",
+      "https://czrimg.godqb.com/game/skill/2/frame16.png",
+      "https://czrimg.godqb.com/game/skill/2/frame17.png",
+      "https://czrimg.godqb.com/game/skill/2/frame18.png",
+      "https://czrimg.godqb.com/game/skill/2/frame19.png"
+    ];
+    
+    const images: HTMLImageElement[] = [];
+    let loadedCount = 0;
+    
+    healSkillImageUrls.forEach((url, index) => {
+      const img = new Image();
+      img.src = url;
+      img.onload = () => {
+        loadedCount++;
+        if (loadedCount === healSkillImageUrls.length) {
+          // All images loaded
+        }
+      };
+      images.push(img);
+    });
+    
+    healSkillImagesRef.current = images;
+  }, []);
+  
+  // Heal skill activation method
+  const activateHealSkill = useCallback(() => {
+    healSkillAnimationRef.current = {
+      active: true,
+      startTime: performance.now(),
+      duration: 10000, // 10 seconds total duration
+      x: playerRef.current.x,
+      y: playerRef.current.y
+    };
+  }, [playerRef]);
   
   // Skill activation method
   const activateSkill = useCallback((direction: 'left' | 'right') => {
@@ -198,6 +265,13 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       onActivateSkill(activateSkill);
     }
   }, [onActivateSkill, activateSkill]);
+  
+  // Expose activateHealSkill to parent component
+  useEffect(() => {
+    if (onActivateHealSkill) {
+      onActivateHealSkill(activateHealSkill);
+    }
+  }, [onActivateHealSkill, activateHealSkill]);
 
   useEffect(() => {
     setDpr(window.devicePixelRatio || 1);
@@ -455,6 +529,43 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     if (p.invincibilityTimer > 0) p.invincibilityTimer--;
     if (p.fireCooldown > 0) p.fireCooldown--;
     if (p.rollCooldown > 0) p.rollCooldown--;
+    
+    // Heal skill life regeneration
+    const healAnim = healSkillAnimationRef.current;
+    if (healAnim.active) {
+      const elapsed = timestamp - healAnim.startTime;
+      const totalDuration = healAnim.duration;
+      
+      // Check if it's time for a heal tick (every second)
+      const healInterval = 1000; // 1 second
+      const tickCount = Math.floor(elapsed / healInterval);
+      const previousTickCount = Math.floor((elapsed - 16) / healInterval); // Assuming ~60fps
+      
+      if (tickCount > previousTickCount) {
+        // Heal 1% of max health
+        const healAmount = Math.max(1, Math.floor(p.maxHealth * 0.01));
+        if (p.health < p.maxHealth) {
+          p.health = Math.min(p.maxHealth, p.health + healAmount);
+          
+          // Add floating text for heal
+          floatingTextsRef.current.push({
+            id: `heal-${Date.now()}-${Math.random()}`,
+            x: p.x + TILE_SIZE / 2,
+            y: p.y - 10,
+            text: `+${healAmount}`,
+            color: '#4ade80', // Green color for healing
+            life: 60,
+            opacity: 1,
+            scale: 1.0
+          });
+        }
+      }
+      
+      // Check if heal skill duration has ended
+      if (elapsed >= totalDuration) {
+        healAnim.active = false;
+      }
+    }
 
     // --- INSTANT BLINK LOGIC ---
     if (input.isDodging && p.rollCooldown <= 0) {
@@ -865,12 +976,53 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       }
       
       // Deactivate animation after it completes
-      if (elapsed >= totalDuration) {
-        skillAnim.active = false;
-      }
+    if (elapsed >= totalDuration) {
+      skillAnim.active = false;
     }
+  }
+  
+  // Draw heal skill animation if active
+  const healAnim = healSkillAnimationRef.current;
+  if (healAnim.active) {
+    const elapsed = performance.now() - healAnim.startTime;
+    const totalDuration = 10000; // 10 seconds total
+    const loopDuration = 1000; // 1 second per loop
+    const frameCount = healSkillImagesRef.current.length;
     
-    // Draw projectiles with trails
+    // Calculate frame index - each loop completes all frames in 1 second
+    const currentLoop = elapsed % loopDuration;
+    const frameIndex = Math.min(
+      Math.floor((currentLoop / loopDuration) * frameCount),
+      frameCount - 1
+    );
+    
+    const healImage = healSkillImagesRef.current[frameIndex];
+    if (healImage) {
+      ctx.save();
+      
+      // Draw on top of the player
+      const drawX = healAnim.x + TILE_SIZE / 2;
+      const drawY = healAnim.y + TILE_SIZE / 2;
+      
+      // Draw at character size * 2
+      const scale = 2;
+      const width = TILE_SIZE * scale;
+      const height = TILE_SIZE * scale;
+      
+      // Center the animation on the player
+      ctx.drawImage(
+        healImage,
+        drawX - width / 2,
+        drawY - height / 2,
+        width,
+        height
+      );
+      
+      ctx.restore();
+    }
+  }
+  
+  // Draw projectiles with trails
     projectilesRef.current.forEach(proj => {
        // Create pixel art bullet with trail
        ctx.save();

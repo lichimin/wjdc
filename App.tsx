@@ -489,6 +489,11 @@ const App: React.FC = () => {
   const [skillActive, setSkillActive] = useState(false);
   const [skillDirection, setSkillDirection] = useState<'left' | 'right'>('right');
   const activateSkillRef = useRef<((direction: 'left' | 'right') => void) | null>(null);
+  
+  // Heal Skill State
+  const [healSkillCooldown, setHealSkillCooldown] = useState(0);
+  const [healSkillActive, setHealSkillActive] = useState(false);
+  const activateHealSkillRef = useRef<(() => void) | null>(null);
   const inputRef = useRef<InputState>({ dx: 0, dy: 0, isAttacking: false, attackPressed: false, isDodging: false });
   const playerRef = useRef<PlayerState>({
     x: 0, y: 0, facingLeft: false, isMoving: false, frameIndex: 0, lastFrameTime: 0,
@@ -537,6 +542,16 @@ const App: React.FC = () => {
       return () => clearInterval(timer);
     }
   }, [skillCooldown]);
+  
+  // Heal skill cooldown timer
+  useEffect(() => {
+    if (healSkillCooldown > 0) {
+      const timer = setInterval(() => {
+        setHealSkillCooldown(prev => Math.max(0, prev - 1));
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [healSkillCooldown]);
 
   // Function to preload all treasure images
   const preloadImages = async (treasures: any[]) => {
@@ -970,6 +985,7 @@ const App: React.FC = () => {
                onGameOver={handleGameOver}
                skinData={userSkin?.skin || null}
                onActivateSkill={(skillFn) => { activateSkillRef.current = skillFn; }}
+               onActivateHealSkill={(healSkillFn) => { activateHealSkillRef.current = healSkillFn; }}
              />
            ) : (
              <div className="absolute inset-0 flex items-center justify-center text-cyan-500 animate-pulse font-mono tracking-widest text-sm">
@@ -1090,6 +1106,39 @@ const App: React.FC = () => {
                 {skillCooldown > 0 && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-xs font-bold">{skillCooldown}</span>
+                  </div>
+                )}
+              </button>
+              
+              {/* Heal Skill Button */}
+              <button 
+                className={`w-12 h-12 ${healSkillCooldown > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 cursor-pointer'} bg-gradient-to-br from-green-900 to-green-800 border-2 border-green-700 rounded-full flex items-center justify-center text-white shadow-lg transition-all active:scale-95 relative ml-4`}
+                disabled={healSkillCooldown > 0}
+                onClick={() => {
+                  if (healSkillCooldown === 0 && !healSkillActive) {
+                    setHealSkillActive(true);
+                    setHealSkillCooldown(60); // 60 seconds cooldown
+                    
+                    // Call the heal skill activation method from ref
+                    if (activateHealSkillRef.current) {
+                      activateHealSkillRef.current();
+                    }
+                    
+                    // Reset healSkillActive after the skill duration (10 seconds)
+                    setTimeout(() => {
+                      setHealSkillActive(false);
+                    }, 10000);
+                  }
+                }}
+              >
+                <img 
+                  src="https://czrimg.godqb.com/game/skill/1/0110_00.png" 
+                  alt="Heal Skill" 
+                  className="w-8 h-8 object-contain"
+                />
+                {healSkillCooldown > 0 && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xs font-bold">{healSkillCooldown}</span>
                   </div>
                 )}
               </button>
