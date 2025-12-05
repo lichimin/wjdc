@@ -126,7 +126,7 @@ export const generateDungeon = (difficultyMultiplier: number = 1, difficultyLeve
   rooms.forEach((room, index) => {
     if (index === 0) return;
 
-    const enemyCount = randomInt(0, 2);
+    const enemyCount = randomInt(0, 4);
     for(let e = 0; e < enemyCount; e++) {
        const ex = randomInt(room.x + 1, room.x + room.w - 2);
        const ey = randomInt(room.y + 1, room.y + room.h - 2);
@@ -136,18 +136,18 @@ export const generateDungeon = (difficultyMultiplier: number = 1, difficultyLeve
           const roll = Math.random();
           let type = EnemyType.SLIME;
           let hp = 30;
-          let speed = 1.5;
+          let speed = 0.75; // 降低50%
           let damage = 10;
 
           if (roll < 0.3) {
             type = EnemyType.BAT;
             hp = 15;
-            speed = 2.5; 
+            speed = 1.25; // 降低50%
             damage = 5;  
           } else if (roll < 0.6) {
             type = EnemyType.SKELETON;
             hp = 50;
-            speed = 1.0; 
+            speed = 0.5; // 降低50%
             damage = 15; 
           }
 
