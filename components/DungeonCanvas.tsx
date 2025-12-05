@@ -1442,15 +1442,29 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       drawType = bossTypes[Math.floor(Math.random() * bossTypes.length)];
     }
 
-    // Calculate current animation frame
-    const frameCount = monsterFrameCounts[drawType];
-    const frameDuration = 1000 / frameCount; // Time per frame (ms)
-    const currentFrame = Math.floor(time / frameDuration) % frameCount;
-
-    // Get the current monster image
+    // Get the current monster image - only use attack animation when touching player
     const images = monsterImagesRef.current[drawType];
-    if (images.length > 0 && currentFrame < images.length) {
-      const img = images[currentFrame];
+    if (images.length > 0) {
+      // Calculate distance to player for attack detection
+      const playerX = playerRef.current.x + TILE_SIZE/2;
+      const playerY = playerRef.current.y + TILE_SIZE/2;
+      const enemyX = e.x + TILE_SIZE/2;
+      const enemyY = e.y + TILE_SIZE/2;
+      const dist = Math.sqrt(Math.pow(playerX - enemyX, 2) + Math.pow(playerY - enemyY, 2));
+      
+      // Check if enemy is touching player (attacking)
+      const isAttackingPlayer = dist < 20;
+      
+      // Determine which frame to use
+      let currentFrame = 0; // Default frame for idle/moving
+      if (isAttackingPlayer) {
+        // For attack animation, cycle through frames
+        const frameCount = monsterFrameCounts[drawType];
+        const frameDuration = 1000 / frameCount;
+        currentFrame = Math.floor(time / frameDuration) % frameCount;
+      }
+      
+      const img = images[currentFrame % images.length];
       
       // Determine scaling factor based on monster type
       let scale = 1.0;
