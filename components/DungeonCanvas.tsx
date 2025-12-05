@@ -18,6 +18,7 @@ interface DungeonCanvasProps {
   onExtract?: () => void;
   onGameOver?: () => void;
   skinData: SkinData | null;
+  onActivateSkill?: (activate: (direction: 'left' | 'right') => void) => void;
 }
 
 const TILE_SIZE = 32;
@@ -48,6 +49,15 @@ interface Particle {
   life: number;
   alpha: number;
   color: string;
+}
+
+interface SkillAnimation {
+  active: boolean;
+  startTime: number;
+  direction: 'left' | 'right';
+  x: number;
+  y: number;
+}
 } // Frames remaining
 
 export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSelect, selectedRoomId, inputRef, playerRef, visitedRef, enemiesRef, projectilesRef, floatingTextsRef, onOpenChest, onExtract, onGameOver, skinData }) => {
@@ -80,6 +90,116 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
   // Visuals for Blink
   const blinkTrailsRef = useRef<BlinkTrail[]>([]);
   const particlesRef = useRef<Particle[]>([]);
+  
+  // Skill Animation
+  const skillAnimationRef = useRef<SkillAnimation>({
+    active: false,
+    startTime: 0,
+    direction: 'right',
+    x: 0,
+    y: 0
+  });
+  
+  // Skill animation images
+  const skillImagesRef = useRef<HTMLImageElement[]>([]);
+  
+  // Preload skill images
+  useEffect(() => {
+    const skillImageUrls = [
+      "https://czrimg.godqb.com/game/skill/1/0479_00.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_01.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_02.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_03.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_04.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_05.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_06.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_07.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_08.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_09.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_10.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_11.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_12.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_13.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_14.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_15.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_16.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_17.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_18.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_19.png",
+      "https://czrimg.godqb.com/game/skill/1/0479_20.png"
+    ];
+    
+    const images: HTMLImageElement[] = [];
+    let loadedCount = 0;
+    
+    skillImageUrls.forEach((url, index) => {
+      const img = new Image();
+      img.src = url;
+      img.onload = () => {
+        loadedCount++;
+        if (loadedCount === skillImageUrls.length) {
+          // All images loaded
+        }
+      };
+      images.push(img);
+    });
+    
+    skillImagesRef.current = images;
+  }, []);
+  
+  // Skill activation method
+  const activateSkill = useCallback((direction: 'left' | 'right') => {
+    skillAnimationRef.current = {
+      active: true,
+      startTime: performance.now(),
+      direction,
+      x: playerRef.current.x,
+      y: playerRef.current.y
+    };
+    
+    // Apply damage to enemies in range
+    const damage = (playerRef.current.equipment?.attack_power || 50) * 3;
+    const skillRange = TILE_SIZE * 2; // Character size * 2
+    
+    enemiesRef.current.forEach((enemy, index) => {
+      const dx = enemy.x - playerRef.current.x;
+      const dy = enemy.y - playerRef.current.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      // Check if enemy is in front of the player in the direction of the skill
+      const isInFront = direction === 'left' ? dx < 0 : dx > 0;
+      
+      if (distance <= skillRange && isInFront) {
+        // Apply damage
+        enemy.hp -= damage;
+        
+        // Add floating text
+        floatingTextsRef.current.push({
+          id: `damage-${Date.now()}-${index}`,
+          x: enemy.x,
+          y: enemy.y - 20,
+          text: `-${damage}`,
+          color: '#ff4444',
+          life: 60,
+          opacity: 1,
+          scale: 1.0
+        });
+        
+        // Check if enemy is dead
+        if (enemy.hp <= 0) {
+          // Handle enemy death
+        }
+      }
+    });
+  }, [playerRef, enemiesRef, floatingTextsRef]);
+  
+  // Expose activateSkill to parent component
+  const { onActivateSkill } = props;
+  useEffect(() => {
+    if (onActivateSkill) {
+      onActivateSkill(activateSkill);
+    }
+  }, [onActivateSkill, activateSkill]);
 
   useEffect(() => {
     setDpr(window.devicePixelRatio || 1);
@@ -709,12 +829,85 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
        ctx.restore();
     });
 
-    // Draw projectiles
+    // Draw skill animation if active
+    const skillAnim = skillAnimationRef.current;
+    if (skillAnim.active) {
+      const elapsed = performance.now() - skillAnim.startTime;
+      const totalDuration = 1000; // 1 second
+      const frameCount = skillImagesRef.current.length;
+      const frameIndex = Math.min(
+        Math.floor((elapsed / totalDuration) * frameCount),
+        frameCount - 1
+      );
+      
+      const skillImage = skillImagesRef.current[frameIndex];
+      if (skillImage) {
+        ctx.save();
+        
+        // Calculate position: player left or right based on direction
+        const offsetX = skillAnim.direction === 'left' ? -TILE_SIZE : TILE_SIZE;
+        const drawX = skillAnim.x + offsetX;
+        const drawY = skillAnim.y;
+        
+        // Draw at character size * 2
+        const scale = 2;
+        const width = TILE_SIZE * scale;
+        const height = TILE_SIZE * scale;
+        
+        // Center the animation on the player
+        ctx.drawImage(
+          skillImage,
+          drawX - width / 2,
+          drawY - height / 2,
+          width,
+          height
+        );
+        
+        ctx.restore();
+      }
+      
+      // Deactivate animation after it completes
+      if (elapsed >= totalDuration) {
+        skillAnim.active = false;
+      }
+    }
+    
+    // Draw projectiles with trails
     projectilesRef.current.forEach(proj => {
+       // Create pixel art bullet with trail
+       ctx.save();
+       
+       // Create trail effect
+       const trailLength = 15; // Increased trail length for more dramatic effect
+       for (let i = trailLength; i > 0; i--) {
+          const trailOpacity = i / trailLength * 0.4;
+          const trailScale = i / trailLength * 0.3 + 0.2;
+          const trailOffset = i * 1.5;
+          
+          ctx.fillStyle = `rgba(253, 224, 71, ${trailOpacity})`;
+          // Use square for pixel art trail
+          const trailSize = 1 * trailScale;
+          ctx.fillRect(
+             proj.x - proj.vx * trailOffset - trailSize/2,
+             proj.y - proj.vy * trailOffset - trailSize/2,
+             trailSize,
+             trailSize
+          );
+       }
+       
+       // Draw main bullet (half size, pixel art style)
        ctx.fillStyle = '#fde047';
-       ctx.beginPath(); ctx.arc(proj.x, proj.y, 4, 0, Math.PI * 2); ctx.fill();
-       ctx.fillStyle = 'rgba(253, 224, 71, 0.4)';
-       ctx.beginPath(); ctx.arc(proj.x, proj.y, 8, 0, Math.PI * 2); ctx.fill();
+       // Use 1x1 pixel square for main bullet
+       ctx.fillRect(proj.x - 0.5, proj.y - 0.5, 1, 1);
+       
+       // Add pixel art glow effect
+       ctx.fillStyle = 'rgba(253, 224, 71, 0.5)';
+       ctx.fillRect(proj.x - 1, proj.y - 1, 3, 1);
+       ctx.fillRect(proj.x - 1, proj.y + 1, 3, 1);
+       ctx.fillRect(proj.x - 1, proj.y - 1, 1, 3);
+       ctx.fillRect(proj.x + 1, proj.y - 1, 1, 3);
+       
+       ctx.restore();
     });
 
     ctx.font = '10px "Press Start 2P"';

@@ -485,7 +485,10 @@ const App: React.FC = () => {
 
   // Input State
   const [dashBtnActive, setDashBtnActive] = useState(false);
-
+  const [skillCooldown, setSkillCooldown] = useState(0);
+  const [skillActive, setSkillActive] = useState(false);
+  const [skillDirection, setSkillDirection] = useState<'left' | 'right'>('right');
+  const activateSkillRef = useRef<((direction: 'left' | 'right') => void) | null>(null);
   const inputRef = useRef<InputState>({ dx: 0, dy: 0, isAttacking: false, attackPressed: false, isDodging: false });
   const playerRef = useRef<PlayerState>({
     x: 0, y: 0, facingLeft: false, isMoving: false, frameIndex: 0, lastFrameTime: 0,
@@ -518,6 +521,22 @@ const App: React.FC = () => {
     };
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+  
+  // Skill cooldown timer
+  useEffect(() => {
+    if (skillCooldown > 0) {
+      const timer = setInterval(() => {
+        setSkillCooldown(prev => Math.max(0, prev - 1));
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [skillCooldown]);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
@@ -955,6 +974,7 @@ const App: React.FC = () => {
                onExtract={handleExtract}
                onGameOver={handleGameOver}
                skinData={userSkin?.skin || null}
+               onActivateSkill={(skillFn) => { activateSkillRef.current = skillFn; }}
              />
            ) : (
              <div className="absolute inset-0 flex items-center justify-center text-cyan-500 animate-pulse font-mono tracking-widest text-sm">
@@ -1039,6 +1059,40 @@ const App: React.FC = () => {
                     inputRef.current.attackPressed = false;
                   }
                 }}
+              >
+                <span className="text-2xl">⚔️</span>
+              </button>
+              
+              {/* New Skill Button */}
+              <button 
+                className={`w-12 h-12 ${skillCooldown > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 cursor-pointer'} bg-gradient-to-br from-purple-900 to-purple-800 border-2 border-purple-700 rounded-full flex items-center justify-center text-white shadow-lg transition-all active:scale-95 relative`}
+                disabled={skillCooldown > 0}
+                onClick={() => {
+                  if (skillCooldown === 0 && !skillActive) {
+                    // Determine direction based on input or default to right
+                    const direction = inputRef.current.dx < 0 ? 'left' : 'right';
+                    setSkillDirection(direction);
+                    setSkillActive(true);
+                    setSkillCooldown(30); // 30 seconds cooldown
+                    
+                    // Call the skill activation method from ref
+                    if (activateSkillRef.current) {
+                      activateSkillRef.current(direction);
+                    }
+                  }
+                }}
+              >
+                <img 
+                  src="https://czrimg.godqb.com/game/skill/1/0479_00.png" 
+                  alt="Skill" 
+                  className="w-8 h-8 object-contain"
+                />
+                {skillCooldown > 0 && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xs font-bold">{skillCooldown}</span>
+                  </div>
+                )}
+              </button>
                 // Prevent text selection but allow touch events to propagate
                 style={{
                   userSelect: 'none',
