@@ -537,11 +537,6 @@ const App: React.FC = () => {
       return () => clearInterval(timer);
     }
   }, [skillCooldown]);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, []);
 
   // Function to preload all treasure images
   const preloadImages = async (treasures: any[]) => {
