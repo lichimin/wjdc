@@ -841,8 +841,8 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
           const angle = Math.atan2(pdy, pdx);
           e.vx = Math.cos(angle) * e.speed;
           e.vy = Math.sin(angle) * e.speed;
-          if (e.vx < 0) e.facingLeft = true;
-      if (e.vx > 0) e.facingLeft = false;
+          if (e.vx < 0) e.facingLeft = false;
+      if (e.vx > 0) e.facingLeft = true;
        } else {
           e.state = 'idle';
           e.vx *= 0.9; e.vy *= 0.9;
