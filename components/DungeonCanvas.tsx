@@ -57,8 +57,7 @@ interface SkillAnimation {
   direction: 'left' | 'right';
   x: number;
   y: number;
-}
-} // Frames remaining
+} // SkillAnimation interface
 
 export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSelect, selectedRoomId, inputRef, playerRef, visitedRef, enemiesRef, projectilesRef, floatingTextsRef, onOpenChest, onExtract, onGameOver, skinData }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
