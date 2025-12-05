@@ -23,6 +23,7 @@ export enum EnemyType {
   SLIME = 'SLIME',
   BAT = 'BAT',
   SKELETON = 'SKELETON',
+  ELEPHANT = 'ELEPHANT',
   BOSS = 'BOSS',
 }
 

@@ -139,16 +139,21 @@ export const generateDungeon = (difficultyMultiplier: number = 1, difficultyLeve
           let speed = 0.75; // 降低50%
           let damage = 10;
 
-          if (roll < 0.3) {
+          if (roll < 0.25) {
             type = EnemyType.BAT;
             hp = 15;
             speed = 1.25; // 降低50%
             damage = 5;  
-          } else if (roll < 0.6) {
+          } else if (roll < 0.5) {
             type = EnemyType.SKELETON;
             hp = 50;
             speed = 0.5; // 降低50%
             damage = 15; 
+          } else if (roll < 0.75) {
+            type = EnemyType.ELEPHANT;
+            hp = 100; // 骷髅的两倍
+            speed = 0.4; // 比骷髅稍快一点
+            damage = 30; // 骷髅的两倍
           }
 
           enemies.push({

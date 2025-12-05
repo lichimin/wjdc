@@ -102,6 +102,32 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
   
   // Skill animation images
   const skillImagesRef = useRef<HTMLImageElement[]>([]);
+
+  // Monster animation images
+  const monsterImagesRef = useRef<Record<string, HTMLImageElement[]>>({
+    [EnemyType.SLIME]: [],
+    [EnemyType.BAT]: [],
+    [EnemyType.SKELETON]: [],
+    [EnemyType.ELEPHANT]: [],
+    [EnemyType.BOSS]: []
+  });
+
+  // Monster animation frame counts
+  const monsterFrameCounts = {
+    [EnemyType.SLIME]: 11, // frame0-frame10
+    [EnemyType.BAT]: 14,   // frame0-frame13
+    [EnemyType.SKELETON]: 13, // frame0-frame12
+    [EnemyType.ELEPHANT]: 11, // frame0-frame10
+    [EnemyType.BOSS]: 0    // Will be set dynamically based on selected type
+  };
+
+  // Monster animation base URLs
+  const monsterImageBaseUrls = {
+    [EnemyType.SLIME]: "https://czrimg.godqb.com/game/monsters/cz/frame",
+    [EnemyType.BAT]: "https://czrimg.godqb.com/game/monsters/bf/frame",
+    [EnemyType.SKELETON]: "https://czrimg.godqb.com/game/monsters/wolf/frame",
+    [EnemyType.ELEPHANT]: "https://czrimg.godqb.com/game/monsters/dx/frame"
+  };
   
   // Heal skill animation
   const healSkillAnimationRef = useRef({
@@ -200,6 +226,38 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     });
     
     healSkillImagesRef.current = images;
+  }, []);
+
+  // Preload monster images
+  useEffect(() => {
+    const enemyTypes = [EnemyType.SLIME, EnemyType.BAT, EnemyType.SKELETON, EnemyType.ELEPHANT];
+    let totalLoaded = 0;
+    let totalToLoad = 0;
+
+    // Calculate total number of images to load
+    enemyTypes.forEach(type => {
+      totalToLoad += monsterFrameCounts[type];
+    });
+
+    enemyTypes.forEach(type => {
+      const baseUrl = monsterImageBaseUrls[type];
+      const frameCount = monsterFrameCounts[type];
+      const images: HTMLImageElement[] = [];
+      let loadedCount = 0;
+
+      for (let i = 0; i < frameCount; i++) {
+        const img = new Image();
+        img.src = `${baseUrl}${i}.png`;
+        img.onload = () => {
+          loadedCount++;
+          totalLoaded++;
+          if (loadedCount === frameCount) {
+            monsterImagesRef.current[type] = images;
+          }
+        };
+        images.push(img);
+      }
+    });
   }, []);
   
   // Heal skill activation method
@@ -1369,29 +1427,70 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     if (e.hitFlash > 0) { ctx.globalCompositeOperation = 'source-over'; ctx.filter = 'brightness(200%)'; }
     if (e.facingLeft) ctx.scale(-1, 1);
     
+    // Draw shadow
     if (e.state !== 'dying') {
       ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.beginPath(); const shadowY = e.type === EnemyType.BAT ? 20 + bounce : 8 + bounce; ctx.ellipse(0, shadowY, 10, 3, 0, 0, Math.PI*2); ctx.fill();
     }
 
-    if (e.type === EnemyType.SLIME) {
-      ctx.fillStyle = '#4ade80'; ctx.beginPath(); ctx.arc(0, 0, 10, Math.PI, 0); ctx.lineTo(10, 8); ctx.lineTo(-10, 8); ctx.fill();
-      ctx.fillStyle = '#86efac'; ctx.beginPath(); ctx.ellipse(-4, -4, 2, 4, -0.5, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = e.state === 'dying' ? '#333' : '#064e3b'; ctx.beginPath(); ctx.arc(-4, 0, 2, 0, Math.PI*2); ctx.arc(4, 0, 2, 0, Math.PI*2); ctx.fill();
-    } else if (e.type === EnemyType.BAT) {
-      const wingFlap = e.state === 'dying' ? 0 : Math.sin(time / 50) * 5;
-      ctx.fillStyle = '#581c87'; ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#7e22ce'; ctx.beginPath(); ctx.moveTo(4, 0); ctx.quadraticCurveTo(12, -8 - wingFlap, 16, -2); ctx.quadraticCurveTo(10, 4, 4, 2); ctx.moveTo(-4, 0); ctx.quadraticCurveTo(-12, -8 - wingFlap, -16, -2); ctx.quadraticCurveTo(-10, 4, -4, 2); ctx.fill();
-      ctx.fillStyle = e.state === 'dying' ? '#333' : '#facc15'; ctx.beginPath(); ctx.arc(-2, -1, 1, 0, Math.PI*2); ctx.arc(2, -1, 1, 0, Math.PI*2); ctx.fill();
-    } else if (e.type === EnemyType.SKELETON) {
-      ctx.fillStyle = '#e2e8f0'; ctx.beginPath(); ctx.arc(0, -4, 7, 0, Math.PI*2); ctx.fillRect(-4, 0, 8, 6); ctx.fill();
-      ctx.fillStyle = '#cbd5e1'; ctx.fillRect(-2, 6, 4, 8); ctx.fillRect(-5, 8, 10, 2); ctx.fillRect(-4, 11, 8, 2);
-      ctx.fillStyle = '#0f172a'; ctx.beginPath(); ctx.arc(-2.5, -4, 2, 0, Math.PI*2); ctx.arc(2.5, -4, 2, 0, Math.PI*2); ctx.fill();
+    // Determine which type of monster to draw (BOSS uses one of the regular types)
+    let drawType = e.type;
+    if (e.type === EnemyType.BOSS) {
+      // For BOSS, use one of the regular monster types based on the boss's appearance
+      // Since we don't have specific boss type data, we'll randomly select one for now
+      // In a real game, this would be determined by the boss's configuration
+      const bossTypes = [EnemyType.SLIME, EnemyType.BAT, EnemyType.SKELETON, EnemyType.ELEPHANT];
+      drawType = bossTypes[Math.floor(Math.random() * bossTypes.length)];
+    }
+
+    // Calculate current animation frame
+    const frameCount = monsterFrameCounts[drawType];
+    const frameDuration = 1000 / frameCount; // Time per frame (ms)
+    const currentFrame = Math.floor(time / frameDuration) % frameCount;
+
+    // Get the current monster image
+    const images = monsterImagesRef.current[drawType];
+    if (images.length > 0 && currentFrame < images.length) {
+      const img = images[currentFrame];
+      
+      // Determine scaling factor based on monster type
+      let scale = 1.0;
+      if (e.type === EnemyType.BOSS) {
+        scale = 1.5; // Bosses are larger
+      } else if (drawType === EnemyType.ELEPHANT) {
+        scale = 1.3; // Elephants are slightly larger
+      }
+
+      // Calculate draw position to center the image
+      const imgWidth = img.width * scale;
+      const imgHeight = img.height * scale;
+      const xPos = -imgWidth / 2;
+      const yPos = -imgHeight / 2;
+
+      // Draw the monster image
+      ctx.drawImage(img, xPos, yPos, imgWidth, imgHeight);
+    } else {
+      // Fallback to basic shapes if images aren't loaded yet
+      if (drawType === EnemyType.SLIME) {
+        ctx.fillStyle = '#4ade80'; ctx.beginPath(); ctx.arc(0, 0, 10, Math.PI, 0); ctx.lineTo(10, 8); ctx.lineTo(-10, 8); ctx.fill();
+        ctx.fillStyle = '#86efac'; ctx.beginPath(); ctx.ellipse(-4, -4, 2, 4, -0.5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = e.state === 'dying' ? '#333' : '#064e3b'; ctx.beginPath(); ctx.arc(-4, 0, 2, 0, Math.PI*2); ctx.arc(4, 0, 2, 0, Math.PI*2); ctx.fill();
+      } else if (drawType === EnemyType.BAT) {
+        const wingFlap = e.state === 'dying' ? 0 : Math.sin(time / 50) * 5;
+        ctx.fillStyle = '#581c87'; ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#7e22ce'; ctx.beginPath(); ctx.moveTo(4, 0); ctx.quadraticCurveTo(12, -8 - wingFlap, 16, -2); ctx.quadraticCurveTo(10, 4, 4, 2); ctx.moveTo(-4, 0); ctx.quadraticCurveTo(-12, -8 - wingFlap, -16, -2); ctx.quadraticCurveTo(-10, 4, -4, 2); ctx.fill();
+        ctx.fillStyle = e.state === 'dying' ? '#333' : '#facc15'; ctx.beginPath(); ctx.arc(-2, -1, 1, 0, Math.PI*2); ctx.arc(2, -1, 1, 0, Math.PI*2); ctx.fill();
+      } else if (drawType === EnemyType.SKELETON) {
+        ctx.fillStyle = '#e2e8f0'; ctx.beginPath(); ctx.arc(0, -4, 7, 0, Math.PI*2); ctx.fillRect(-4, 0, 8, 6); ctx.fill();
+        ctx.fillStyle = '#cbd5e1'; ctx.fillRect(-2, 6, 4, 8); ctx.fillRect(-5, 8, 10, 2); ctx.fillRect(-4, 11, 8, 2);
+        ctx.fillStyle = '#0f172a'; ctx.beginPath(); ctx.arc(-2.5, -4, 2, 0, Math.PI*2); ctx.arc(2.5, -4, 2, 0, Math.PI*2); ctx.fill();
+      } else if (drawType === EnemyType.ELEPHANT) {
+        // Fallback for elephant
+        ctx.fillStyle = '#8b4513'; ctx.beginPath(); ctx.arc(0, 0, 12, Math.PI, 0); ctx.lineTo(12, 10); ctx.lineTo(-12, 10); ctx.fill();
+        ctx.fillStyle = '#a0522d'; ctx.beginPath(); ctx.arc(-8, -4, 4, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(-6, -5, 1, 0, Math.PI*2); ctx.arc(-2, -5, 1, 0, Math.PI*2); ctx.fill();
+      }
     }
     
-    if (e.state === 'chase' && e.type !== EnemyType.BAT) { 
-      ctx.strokeStyle = e.type === EnemyType.SKELETON ? '#000' : '#064e3b'; ctx.lineWidth = 1; ctx.beginPath();
-      const yOff = e.type === EnemyType.SKELETON ? -7 : -3; ctx.moveTo(-6, yOff); ctx.lineTo(-2, yOff + 2); ctx.moveTo(6, yOff); ctx.lineTo(2, yOff + 2); ctx.stroke();
-    }
     ctx.restore();
   };
 
