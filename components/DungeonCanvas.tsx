@@ -1466,14 +1466,25 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       
       const img = images[currentFrame % images.length];
       
-      // Determine scaling factor based on monster type
-      let scale = 1.0;
-      if (e.type === EnemyType.BOSS) {
-        scale = 1.5; // Bosses are larger
+      // Set consistent monster size based on fallback dimensions
+      let targetSize = 20; // Base size (diameter) based on fallback shapes
+      
+      if (drawType === EnemyType.BAT) {
+        targetSize = 12; // Bat is smaller in fallback
+      } else if (drawType === EnemyType.SKELETON) {
+        targetSize = 22; // Skeleton is slightly larger
       } else if (drawType === EnemyType.ELEPHANT) {
-        scale = 1.3; // Elephants are slightly larger
+        targetSize = 26; // Elephant is larger
       }
-
+      
+      // Apply boss scaling if needed
+      if (e.type === EnemyType.BOSS) {
+        targetSize *= 1.5; // Bosses are 50% larger
+      }
+      
+      // Calculate scale to match target size
+      const scale = targetSize / Math.max(img.width, img.height);
+      
       // Calculate draw position to center the image
       const imgWidth = img.width * scale;
       const imgHeight = img.height * scale;

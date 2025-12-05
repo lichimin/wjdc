@@ -1060,11 +1060,12 @@ const App: React.FC = () => {
                   }
                 }}
               >
-                <img 
-                  src="https://czrimg.godqb.com/game/weapon/1.png" 
-                  alt="Attack" 
-                  className="w-12 h-12 object-contain"
-                />
+                {/* Pixel Attack Icon */}
+                <svg width="48" height="48" viewBox="0 0 8 8" className="w-12 h-12">
+                  <rect x="0" y="3" width="3" height="2" fill="white" />
+                  <rect x="1" y="2" width="1" height="4" fill="white" />
+                  <path d="M3,2 L7,6 M7,2 L3,6" stroke="white" stroke-width="1" fill="none" />
+                </svg>
               </button>
               
               <div className="flex gap-4">
@@ -1078,11 +1079,12 @@ const App: React.FC = () => {
                   onTouchEnd={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
                   onTouchCancel={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
                 >
-                  <img 
-                    src="https://czrimg.godqb.com/game/skill/dash.png" 
-                    alt="Dash" 
-                    className="w-8 h-8 object-contain"
-                  />
+                  {/* Pixel Dash Icon */}
+                  <svg width="32" height="32" viewBox="0 0 8 8" className="w-8 h-8">
+                    <path d="M1,4 L6,4" stroke="white" stroke-width="1" stroke-dasharray="1,1" />
+                    <path d="M4,2 L7,5 L4,8" stroke="white" stroke-width="1" fill="none" />
+                    <circle cx="1" cy="4" r="1" fill="white" />
+                  </svg>
                 </button>
                 
                 {/* Special Skill Button */}
@@ -1106,11 +1108,13 @@ const App: React.FC = () => {
                     }
                   }}
                 >
-                  <img 
-                    src="https://czrimg.godqb.com/game/skill/1/0479_00.png" 
-                    alt="Skill" 
-                    className="w-8 h-8 object-contain"
-                  />
+                  {/* Pixel Skill Icon */}
+                  <svg width="32" height="32" viewBox="0 0 8 8" className="w-8 h-8">
+                    <rect x="2" y="0" width="4" height="2" fill="white" />
+                    <rect x="1" y="2" width="6" height="4" fill="white" />
+                    <rect x="0" y="6" width="8" height="2" fill="white" />
+                  </svg>
+                  
                   {skillCooldown > 0 && (
                     <div className="absolute inset-0 flex items-center justify-center font-pixel text-xs font-bold text-white">
                       {skillCooldown}
@@ -1137,11 +1141,14 @@ const App: React.FC = () => {
                     }
                   }}
                 >
-                  <img 
-                    src="https://czrimg.godqb.com/game/skill/2/frame0.png" 
-                    alt="Heal Skill" 
-                    className="w-8 h-8 object-contain"
-                  />
+                  {/* Pixel Heal Icon */}
+                  <svg width="32" height="32" viewBox="0 0 8 8" className="w-8 h-8">
+                    <circle cx="4" cy="2" r="1" fill="white" />
+                    <path d="M4,3 L4,6" stroke="white" stroke-width="1" />
+                    <path d="M2,5 L6,5" stroke="white" stroke-width="1" />
+                    <path d="M1,6 L3,8 M5,8 L7,6" stroke="white" stroke-width="1" />
+                  </svg>
+                  
                   {healSkillCooldown > 0 && (
                     <div className="absolute inset-0 flex items-center justify-center font-pixel text-xs font-bold text-white">
                       {healSkillCooldown}
