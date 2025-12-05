@@ -1074,6 +1074,11 @@ const App: React.FC = () => {
                     if (activateSkillRef.current) {
                       activateSkillRef.current(direction);
                     }
+                    
+                    // Reset skillActive after the skill duration (1 second)
+                    setTimeout(() => {
+                      setSkillActive(false);
+                    }, 1000);
                   }
                 }}
               >
