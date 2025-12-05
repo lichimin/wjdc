@@ -59,7 +59,7 @@ interface SkillAnimation {
   y: number;
 } // SkillAnimation interface
 
-export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSelect, selectedRoomId, inputRef, playerRef, visitedRef, enemiesRef, projectilesRef, floatingTextsRef, onOpenChest, onExtract, onGameOver, skinData }) => {
+export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSelect, selectedRoomId, inputRef, playerRef, visitedRef, enemiesRef, projectilesRef, floatingTextsRef, onOpenChest, onExtract, onGameOver, skinData, onActivateSkill }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoverPos, setHoverPos] = useState<{x: number, y: number} | null>(null);
@@ -193,7 +193,6 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
   }, [playerRef, enemiesRef, floatingTextsRef]);
   
   // Expose activateSkill to parent component
-  const { onActivateSkill } = props;
   useEffect(() => {
     if (onActivateSkill) {
       onActivateSkill(activateSkill);
