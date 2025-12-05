@@ -876,23 +876,23 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
           
           // Draw chest image
           if (chestImage.complete) {
-            // Match the size of the original chest element
-            const targetWidth = TILE_SIZE - 8; // 24px
-            const targetHeight = 14;
+            // Set chest image size to 30px x 30px
+            const targetWidth = 30;
+            const targetHeight = 30;
             const offsetX = (TILE_SIZE - targetWidth) / 2;
-            const offsetY = py + 12;
-            ctx.drawImage(chestImage, px + offsetX, offsetY, targetWidth, targetHeight);
+            const offsetY = (TILE_SIZE - targetHeight) / 2;
+            ctx.drawImage(chestImage, px + offsetX, py + offsetY, targetWidth, targetHeight);
           } else {
             // Fallback to default chest drawing if image not loaded yet
-            const chX = px + 4;
-            const chY = py + 12;
-            const chW = TILE_SIZE - 8;
-            const chH = 14;
+            const chX = px + (TILE_SIZE - 30) / 2;
+            const chY = py + (TILE_SIZE - 30) / 2;
+            const chW = 30;
+            const chH = 30;
             ctx.fillStyle = chestType === 'large' ? '#92400e' : '#78350f'; 
             ctx.fillRect(chX, chY, chW, chH);
-            ctx.fillStyle = '#f59e0b'; ctx.fillRect(chX, chY + 4, chW, 1);
+            ctx.fillStyle = '#f59e0b'; ctx.fillRect(chX, chY + 10, chW, 2);
             ctx.fillStyle = isInteracting ? '#3b82f6' : '#fcd34d'; 
-            ctx.fillRect(cx - 2, chY + 3, 4, 4);
+            ctx.fillRect(px + TILE_SIZE / 2 - 2, py + TILE_SIZE / 2 - 2, 4, 4);
           }
           
           if (isInteracting) {

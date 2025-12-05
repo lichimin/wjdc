@@ -137,8 +137,8 @@ export const generateLoot = (count: number, treasureData: any[] = [], difficulty
       // Extract treasure information with fallback values
       const treasureName = randomTreasure.treasure_name || randomTreasure.name || 'Mysterious Item';
       const treasureValue = randomTreasure.treasure_value || randomTreasure.value || 100;
-      // Get the actual level from the treasure data
-      const treasureLevel = randomTreasure.level || randomTreasure.treasure_level || 1;
+      // Use the actual level from the treasure data, no fallback to generated level
+      const treasureLevel = randomTreasure.level;
       
       // Calculate multiplier based on chest type (large chest gives double rewards)
       const chestMultiplier = chestType === 'large' ? 2 : 1;
@@ -152,7 +152,7 @@ export const generateLoot = (count: number, treasureData: any[] = [], difficulty
         iconColor: rarityConfig.color,
         imageUrl: randomTreasure.image_url || undefined,
         type: type,
-        level: treasureLevel, // 使用宝物自身的等级
+        level: treasureLevel, // 使用接口返回的宝物等级
         attack_power: type === 'equipment' ? Math.floor(10 * rarityConfig.multiplier * chestMultiplier) : undefined,
         defense_power: type === 'equipment' ? Math.floor(5 * rarityConfig.multiplier * chestMultiplier) : undefined,
         health: type === 'equipment' ? Math.floor(20 * rarityConfig.multiplier * chestMultiplier) : undefined,
