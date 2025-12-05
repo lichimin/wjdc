@@ -1425,7 +1425,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
 
     ctx.translate(drawX, drawY - bounce);
     if (e.hitFlash > 0) { ctx.globalCompositeOperation = 'source-over'; ctx.filter = 'brightness(200%)'; }
-    if (!e.facingLeft) ctx.scale(-1, 1);
+    if (e.facingLeft) ctx.scale(-1, 1);
     
     // Draw shadow
     if (e.state !== 'dying') {
