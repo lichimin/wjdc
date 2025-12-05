@@ -1010,27 +1010,17 @@ const App: React.FC = () => {
            )}
 
            {/* Joystick (Bottom Left) */}
-           <div className="absolute bottom-12 left-12 z-50">
+           <div className="absolute bottom-8 left-8 z-50">
               <Joystick onMove={handleJoystickMove} onStop={handleJoystickStop} />
            </div>
            
            {/* Action Buttons (Bottom Right) */}
-           <div className="absolute bottom-12 right-12 z-50 flex gap-4">
-              {/* Dodge Button */}
-              <div style={{ transform: 'scale(0.8)' }}>
-                <CyberDashButton 
-                  active={dashBtnActive}
-                  onPress={() => { inputRef.current.isDodging = true; setDashBtnActive(true); }}
-                  onRelease={() => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
-                />
-              </div>
-              
-              {/* Attack Button */}
+           <div className="absolute bottom-8 right-8 z-50 flex flex-col gap-4">
+              {/* Attack Button - Large, Primary Button */}
               <button 
-                className="w-12 h-12 bg-gradient-to-br from-red-900 to-red-800 border-2 border-red-700 rounded-full flex items-center justify-center text-white shadow-lg hover:from-red-800 hover:to-red-700 transition-all active:scale-95"
+                className="w-16 h-16 bg-gradient-to-br from-red-900 to-red-800 border-4 border-red-700 rounded-full flex items-center justify-center text-white shadow-[0_0_20px_rgba(220,38,38,0.6)] hover:from-red-800 hover:to-red-700 transition-all active:scale-95"
                 onMouseDown={(e) => { 
                   if (inputRef.current) {
-                    // Set attack state only if it's not already attacking
                     if (!inputRef.current.isAttacking) {
                       inputRef.current.isAttacking = true;
                       inputRef.current.attackPressed = true;
@@ -1051,7 +1041,6 @@ const App: React.FC = () => {
                 }}
                 onTouchStart={(e) => { 
                   if (inputRef.current) {
-                    // Set attack state only if it's not already attacking
                     if (!inputRef.current.isAttacking) {
                       inputRef.current.isAttacking = true;
                       inputRef.current.attackPressed = true;
@@ -1071,77 +1060,83 @@ const App: React.FC = () => {
                   }
                 }}
               >
-                <span className="text-2xl">⚔️</span>
+                <span className="text-3xl">⚔️</span>
               </button>
               
-              {/* New Skill Button */}
-              <button 
-                className={`w-12 h-12 ${skillCooldown > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 cursor-pointer'} bg-gradient-to-br from-purple-900 to-purple-800 border-2 border-purple-700 rounded-full flex items-center justify-center text-white shadow-lg transition-all active:scale-95 relative`}
-                disabled={skillCooldown > 0}
-                onClick={() => {
-                  if (skillCooldown === 0 && !skillActive) {
-                    // Determine direction based on input or default to right
-                    const direction = inputRef.current.dx < 0 ? 'left' : 'right';
-                    setSkillDirection(direction);
-                    setSkillActive(true);
-                    setSkillCooldown(30); // 30 seconds cooldown
-                    
-                    // Call the skill activation method from ref
-                    if (activateSkillRef.current) {
-                      activateSkillRef.current(direction);
+              <div className="flex gap-4">
+                {/* Dodge Button - Smaller, Secondary */}
+                <div style={{ transform: 'scale(0.9)' }}>
+                  <CyberDashButton 
+                    active={dashBtnActive}
+                    onPress={() => { inputRef.current.isDodging = true; setDashBtnActive(true); }}
+                    onRelease={() => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
+                  />
+                </div>
+                
+                {/* Special Skill Button */}
+                <button 
+                  className={`w-12 h-12 bg-gradient-to-br from-purple-900 to-purple-800 border-3 border-purple-700 rounded-full flex items-center justify-center text-white shadow-[0_0_15px_rgba(168,85,247,0.6)] transition-all active:scale-95 relative ${skillCooldown > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 cursor-pointer'}`}
+                  disabled={skillCooldown > 0}
+                  onClick={() => {
+                    if (skillCooldown === 0 && !skillActive) {
+                      const direction = inputRef.current.dx < 0 ? 'left' : 'right';
+                      setSkillDirection(direction);
+                      setSkillActive(true);
+                      setSkillCooldown(30); // 30 seconds cooldown
+                      
+                      if (activateSkillRef.current) {
+                        activateSkillRef.current(direction);
+                      }
+                      
+                      setTimeout(() => {
+                        setSkillActive(false);
+                      }, 1500);
                     }
-                    
-                    // Reset skillActive after the skill duration (1.5 seconds)
-                    setTimeout(() => {
-                      setSkillActive(false);
-                    }, 1500);
-                  }
-                }}
-              >
-                <img 
-                  src="https://czrimg.godqb.com/game/skill/1/0479_00.png" 
-                  alt="Skill" 
-                  className="w-8 h-8 object-contain"
-                />
-                {skillCooldown > 0 && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-xs font-bold">{skillCooldown}</span>
-                  </div>
-                )}
-              </button>
-              
-              {/* Heal Skill Button */}
-              <button 
-                className={`w-12 h-12 ${healSkillCooldown > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 cursor-pointer'} bg-gradient-to-br from-green-900 to-green-800 border-2 border-green-700 rounded-full flex items-center justify-center text-white shadow-lg transition-all active:scale-95 relative ml-4`}
-                disabled={healSkillCooldown > 0}
-                onClick={() => {
-                  if (healSkillCooldown === 0 && !healSkillActive) {
-                    setHealSkillActive(true);
-                    setHealSkillCooldown(60); // 60 seconds cooldown
-                    
-                    // Call the heal skill activation method from ref
-                    if (activateHealSkillRef.current) {
-                      activateHealSkillRef.current();
+                  }}
+                >
+                  <img 
+                    src="https://czrimg.godqb.com/game/skill/1/0479_00.png" 
+                    alt="Skill" 
+                    className="w-8 h-8 object-contain"
+                  />
+                  {skillCooldown > 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center font-pixel text-xs font-bold text-white">
+                      {skillCooldown}
+                    </div>
+                  )}
+                </button>
+                
+                {/* Heal Skill Button */}
+                <button 
+                  className={`w-12 h-12 bg-gradient-to-br from-green-900 to-green-800 border-3 border-green-700 rounded-full flex items-center justify-center text-white shadow-[0_0_15px_rgba(74,222,128,0.6)] transition-all active:scale-95 relative ${healSkillCooldown > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 cursor-pointer'}`}
+                  disabled={healSkillCooldown > 0}
+                  onClick={() => {
+                    if (healSkillCooldown === 0 && !healSkillActive) {
+                      setHealSkillActive(true);
+                      setHealSkillCooldown(60); // 60 seconds cooldown
+                      
+                      if (activateHealSkillRef.current) {
+                        activateHealSkillRef.current();
+                      }
+                      
+                      setTimeout(() => {
+                        setHealSkillActive(false);
+                      }, 10000);
                     }
-                    
-                    // Reset healSkillActive after the skill duration (10 seconds)
-                    setTimeout(() => {
-                      setHealSkillActive(false);
-                    }, 10000);
-                  }
-                }}
-              >
-                <img 
-                  src="https://czrimg.godqb.com/game/skill/1/0110_00.png" 
-                  alt="Heal Skill" 
-                  className="w-8 h-8 object-contain"
-                />
-                {healSkillCooldown > 0 && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-xs font-bold">{healSkillCooldown}</span>
-                  </div>
-                )}
-              </button>
+                  }}
+                >
+                  <img 
+                    src="https://czrimg.godqb.com/game/skill/1/0110_00.png" 
+                    alt="Heal Skill" 
+                    className="w-8 h-8 object-contain"
+                  />
+                  {healSkillCooldown > 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center font-pixel text-xs font-bold text-white">
+                      {healSkillCooldown}
+                    </div>
+                  )}
+                </button>
+              </div>
            </div>
         </div>
       </main>

@@ -237,7 +237,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       
       if (distance <= skillRange && isInFront) {
         // Apply damage
-        enemy.hp -= damage;
+        enemy.health -= damage;
         
         // Add floating text
         floatingTextsRef.current.push({
@@ -252,7 +252,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
         });
         
         // Check if enemy is dead
-        if (enemy.hp <= 0) {
+        if (enemy.health <= 0) {
           // Handle enemy death
         }
       }
@@ -533,6 +533,10 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     // Heal skill life regeneration
     const healAnim = healSkillAnimationRef.current;
     if (healAnim.active) {
+      // Update animation position to follow player
+      healAnim.x = p.x;
+      healAnim.y = p.y;
+      
       const elapsed = timestamp - healAnim.startTime;
       const totalDuration = healAnim.duration;
       
