@@ -917,6 +917,7 @@ const App: React.FC = () => {
               items={inventory} 
               onClose={() => setIsHomeInventoryOpen(false)} 
               originalItems={originalInventoryItems} 
+              skinData={userSkin?.skin || null}
             />
         )}
       </>
@@ -1006,6 +1007,7 @@ const App: React.FC = () => {
                  items={runInventory} 
                  onClose={() => setIsInventoryOpen(false)} 
                  // 临时背包不需要原始API数据，因为只是显示本次对局获得的物品
+                 skinData={userSkin?.skin || null}
                />
            )}
 
@@ -1179,6 +1181,7 @@ const App: React.FC = () => {
         items={runInventory} 
         onClose={() => setIsInventoryOpen(false)} 
         originalItems={originalInventoryItems} 
+        skinData={userSkin?.skin || null}
       />}
       {isStatsOpen && <StatsModal playerState={playerRef.current} onClose={() => setIsStatsOpen(false)} />}
       {isSummaryOpen && <SummaryModal type={summaryType} inventory={runInventory} onRestart={handleReturnHome} />}
