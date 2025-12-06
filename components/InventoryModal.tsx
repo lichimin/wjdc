@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { authService } from '../services/authService';
 import { LootItem, Rarity } from '../types';
 
 // 定义皮肤数据接口
@@ -49,10 +50,12 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   // 获取已装备物品
   const fetchEquippedItems = async () => {
     try {
+      const token = authService.getAuthToken();
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/my-items/equipped`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }),
         },
       });
       
@@ -73,10 +76,12 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   // 装备物品
   const equipItem = async (itemId: string | number) => {
     try {
+      const token = authService.getAuthToken();
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/equipments/${itemId}/equip`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }),
         },
       });
       
@@ -92,10 +97,12 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   // 卸下物品
   const unequipItem = async (itemId: string | number) => {
     try {
+      const token = authService.getAuthToken();
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/equipments/${itemId}/unequip`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }),
         },
       });
       
@@ -229,8 +236,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           </div>
 
           {/* Equipment Bar */}
-          <div className="p-4 bg-slate-950/50 rounded-xl border border-slate-800">
-            <h3 className="text-lg font-bold text-amber-500 mb-4 text-center">装备栏</h3>
+          <div className="p-2 pt-0 bg-slate-950/50 rounded-xl border border-slate-800">
             <div className="flex items-center justify-center gap-8">
               {/* Left 4 slots */}
               <div className="flex flex-col gap-4">
