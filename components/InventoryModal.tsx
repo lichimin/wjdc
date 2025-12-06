@@ -49,7 +49,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   // 获取已装备物品
   const fetchEquippedItems = async () => {
     try {
-      const response = await fetch('/api/v1/my-items/equipped', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/my-items/equipped`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   // 装备物品
   const equipItem = async (itemId: string | number) => {
     try {
-      const response = await fetch(`/api/v1/equipments/${itemId}/equip`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/equipments/${itemId}/equip`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -92,7 +92,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   // 卸下物品
   const unequipItem = async (itemId: string | number) => {
     try {
-      const response = await fetch(`/api/v1/equipments/${itemId}/unequip`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/equipments/${itemId}/unequip`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
