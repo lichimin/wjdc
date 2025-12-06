@@ -6,6 +6,10 @@ interface InventoryModalProps {
   onClose: () => void;
   // Add original API data for equipment details
   originalItems?: any[];
+  // User skin data for character animation
+  skinData?: {
+    idle_image_urls: string[];
+  };
 }
 
 interface EquippedItem {
@@ -23,9 +27,24 @@ interface EquippedItem {
   equipment: any;
 }
 
-export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, originalItems = [] }) => {
+export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, originalItems = [], skinData }) => {
   const [selectedEquipment, setSelectedEquipment] = useState<LootItem | null>(null);
   const [equippedItems, setEquippedItems] = useState<Record<string, EquippedItem>>({});
+  const [currentFrame, setCurrentFrame] = useState(0);
+  
+  // Animation effect for cycling through idle frames
+  useEffect(() => {
+    if (skinData?.idle_image_urls && skinData.idle_image_urls.length > 1) {
+      const frameCount = skinData.idle_image_urls.length;
+      const frameDuration = 1000 / frameCount; // Complete animation in 1 second
+      
+      const interval = setInterval(() => {
+        setCurrentFrame((prevFrame) => (prevFrame + 1) % frameCount);
+      }, frameDuration);
+      
+      return () => clearInterval(interval);
+    }
+  }, [skinData]);
   
   // 获取已装备物品
   const fetchEquippedItems = async () => {
@@ -188,7 +207,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         {/* Backdrop */}
         <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={onClose}></div>
 
-        <div className="relative z-10 w-full h-full p-6 flex flex-col bg-slate-900/90 border border-slate-700 shadow-2xl overflow-hidden">
+        <div className="relative z-10 w-full h-[50vh] max-h-[600px] p-6 flex flex-col bg-slate-900/90 border border-slate-700 shadow-2xl overflow-hidden">
           {/* Header */}
           <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-700">
             <div>
@@ -379,11 +398,19 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
               {/* Middle character image */}
               <div className="flex-1 flex items-center justify-center mx-4">
                 <div className="w-40 h-40 flex items-center justify-center">
-                  <img 
-                    src="/skins/idle-animation.gif" 
-                    alt="Character idle animation" 
-                    className="w-full h-full object-contain"
-                  />
+                  {skinData?.idle_image_urls && skinData.idle_image_urls.length > 0 ? (
+                    <img 
+                      src={skinData.idle_image_urls[currentFrame]} 
+                      alt="Character idle animation" 
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <img 
+                      src="/skins/idle-animation.gif" 
+                      alt="Character idle animation" 
+                      className="w-full h-full object-contain"
+                    />
+                  )}
                 </div>
               </div>
               
