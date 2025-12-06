@@ -60,13 +60,32 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       });
       
       if (response.ok) {
-        const data = await response.json();
-        // 将装备物品按slot组织
-        const organized = data.reduce((acc: Record<string, EquippedItem>, item: EquippedItem) => {
-          acc[item.slot] = item;
-          return acc;
-        }, {});
-        setEquippedItems(organized);
+        const result = await response.json();
+        if (result.success) {
+          // 将API返回的数据转换为组件期望的EquippedItem格式
+          const organized = result.data.reduce((acc: Record<string, EquippedItem>, item: any) => {
+            if (item.equipment && item.equipment.equipment_template && item.equipment.is_equipped) {
+              const template = item.equipment.equipment_template;
+              const equippedItem: EquippedItem = {
+                id: item.id,
+                item_id: item.item_id,
+                name: template.name,
+                value: 0, // API中没有直接提供value，暂时设为0
+                rarity: 'common', // API中没有直接提供rarity，暂时设为common
+                iconColor: '#ccc', // API中没有直接提供iconColor，暂时设为灰色
+                imageUrl: template.image_url?.trim()?.replace(/^`|`$/g, ''), // 去除可能的反引号和前后空格
+                quantity: 1,
+                type: item.type,
+                level: template.level,
+                slot: template.slot,
+                equipment: item.equipment
+              };
+              acc[template.slot] = equippedItem;
+            }
+            return acc;
+          }, {});
+          setEquippedItems(organized);
+        }
       }
     } catch (error) {
       console.error('获取已装备物品失败:', error);
@@ -113,6 +132,11 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     } catch (error) {
       console.error('卸下物品失败:', error);
     }
+  };
+
+  // 处理卸下装备点击事件
+  const handleUnequipClick = (itemId: string | number) => {
+    unequipItem(itemId);
   };
   
   // 组件挂载时获取已装备物品
