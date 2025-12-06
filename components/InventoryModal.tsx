@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LootItem, Rarity } from '../types';
 
 interface InventoryModalProps {
@@ -8,8 +8,91 @@ interface InventoryModalProps {
   originalItems?: any[];
 }
 
+interface EquippedItem {
+  id: string | number;
+  item_id: string | number;
+  name: string;
+  value: number;
+  rarity: Rarity;
+  iconColor: string;
+  imageUrl?: string;
+  quantity?: number;
+  type: string;
+  level?: number;
+  slot: string; // 部位：weapon, helmet, chest, gloves, pants, boots, ring
+  equipment: any;
+}
+
 export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, originalItems = [] }) => {
   const [selectedEquipment, setSelectedEquipment] = useState<LootItem | null>(null);
+  const [equippedItems, setEquippedItems] = useState<Record<string, EquippedItem>>({});
+  
+  // 获取已装备物品
+  const fetchEquippedItems = async () => {
+    try {
+      const response = await fetch('/api/v1/my-items/equipped', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        // 将装备物品按slot组织
+        const organized = data.reduce((acc: Record<string, EquippedItem>, item: EquippedItem) => {
+          acc[item.slot] = item;
+          return acc;
+        }, {});
+        setEquippedItems(organized);
+      }
+    } catch (error) {
+      console.error('获取已装备物品失败:', error);
+    }
+  };
+  
+  // 装备物品
+  const equipItem = async (itemId: string | number) => {
+    try {
+      const response = await fetch(`/api/v1/equipments/${itemId}/equip`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        // 重新获取装备状态
+        await fetchEquippedItems();
+      }
+    } catch (error) {
+      console.error('装备物品失败:', error);
+    }
+  };
+  
+  // 卸下物品
+  const unequipItem = async (itemId: string | number) => {
+    try {
+      const response = await fetch(`/api/v1/equipments/${itemId}/unequip`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        // 重新获取装备状态
+        await fetchEquippedItems();
+      }
+    } catch (error) {
+      console.error('卸下物品失败:', error);
+    }
+  };
+  
+  // 组件挂载时获取已装备物品
+  useEffect(() => {
+    fetchEquippedItems();
+  }, []);
   
   const getRarityStyle = (rarity: Rarity) => {
     switch (rarity) {
@@ -20,6 +103,20 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       case Rarity.GENESIS: return 'border-transparent bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 p-[2px] shadow-[0_0_30px_rgba(255,255,255,0.5)]';
       default: return 'border-slate-500 text-slate-300';
     }
+  };
+  
+  // 获取装备栏名称
+  const getSlotName = (slot: string): string => {
+    const slotNames: Record<string, string> = {
+      'weapon': '武器',
+      'helmet': '防具-头',
+      'chest': '防具-胸',
+      'gloves': '防具-护手',
+      'pants': '防具-护腿',
+      'boots': '防具-鞋子',
+      'ring': '戒指'
+    };
+    return slotNames[slot] || slot;
   };
 
   const totalValue = items.reduce((sum, item) => sum + (item.value || 0), 0);
@@ -104,6 +201,305 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
             </button>
           </div>
 
+          {/* Equipment Bar */}
+          <div className="mb-6 p-4 bg-slate-950/50 rounded-xl border border-slate-800">
+            <h3 className="text-lg font-bold text-amber-500 mb-4 text-center">装备栏</h3>
+            <div className="flex items-center justify-between">
+              {/* Left 4 slots */}
+              <div className="flex flex-col gap-4">
+                <div className="equip-slot" data-slot="weapon">
+                  {equippedItems.weapon ? (
+                    <div 
+                      className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.weapon.rarity)} cursor-pointer hover:scale-105 transition-transform`}
+                      onClick={() => handleUnequipClick(equippedItems.weapon.id)}
+                    >
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                        {equippedItems.weapon.imageUrl ? (
+                          <img 
+                            src={equippedItems.weapon.imageUrl} 
+                            alt={equippedItems.weapon.name} 
+                            className="w-full h-full object-contain p-2"
+                          />
+                        ) : (
+                          <div 
+                            className="w-12 h-12 rounded shadow-sm"
+                            style={{ backgroundColor: equippedItems.weapon.iconColor }}
+                          ></div>
+                        )}
+                      </div>
+                      <p className="text-xs mt-1 truncate text-center">{equippedItems.weapon.name}</p>
+                      <p className="text-xs text-slate-500">{getSlotName('weapon')}</p>
+                      <button 
+                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-red-600"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUnequipClick(equippedItems.weapon.id);
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
+                      <div className="w-12 h-12 bg-slate-800 rounded"></div>
+                      <p className="text-xs mt-1">{getSlotName('weapon')}</p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="equip-slot" data-slot="helmet">
+                  {equippedItems.helmet ? (
+                    <div 
+                      className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.helmet.rarity)} cursor-pointer hover:scale-105 transition-transform`}
+                      onClick={() => handleUnequipClick(equippedItems.helmet.id)}
+                    >
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                        {equippedItems.helmet.imageUrl ? (
+                          <img 
+                            src={equippedItems.helmet.imageUrl} 
+                            alt={equippedItems.helmet.name} 
+                            className="w-full h-full object-contain p-2"
+                          />
+                        ) : (
+                          <div 
+                            className="w-12 h-12 rounded shadow-sm"
+                            style={{ backgroundColor: equippedItems.helmet.iconColor }}
+                          ></div>
+                        )}
+                      </div>
+                      <p className="text-xs mt-1 truncate text-center">{equippedItems.helmet.name}</p>
+                      <p className="text-xs text-slate-500">{getSlotName('helmet')}</p>
+                      <button 
+                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-red-600"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUnequipClick(equippedItems.helmet.id);
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
+                      <div className="w-12 h-12 bg-slate-800 rounded"></div>
+                      <p className="text-xs mt-1">{getSlotName('helmet')}</p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="equip-slot" data-slot="chest">
+                  {equippedItems.chest ? (
+                    <div 
+                      className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.chest.rarity)} cursor-pointer hover:scale-105 transition-transform`}
+                      onClick={() => handleUnequipClick(equippedItems.chest.id)}
+                    >
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                        {equippedItems.chest.imageUrl ? (
+                          <img 
+                            src={equippedItems.chest.imageUrl} 
+                            alt={equippedItems.chest.name} 
+                            className="w-full h-full object-contain p-2"
+                          />
+                        ) : (
+                          <div 
+                            className="w-12 h-12 rounded shadow-sm"
+                            style={{ backgroundColor: equippedItems.chest.iconColor }}
+                          ></div>
+                        )}
+                      </div>
+                      <p className="text-xs mt-1 truncate text-center">{equippedItems.chest.name}</p>
+                      <p className="text-xs text-slate-500">{getSlotName('chest')}</p>
+                      <button 
+                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-red-600"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUnequipClick(equippedItems.chest.id);
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
+                      <div className="w-12 h-12 bg-slate-800 rounded"></div>
+                      <p className="text-xs mt-1">{getSlotName('chest')}</p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="equip-slot" data-slot="gloves">
+                  {equippedItems.gloves ? (
+                    <div 
+                      className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.gloves.rarity)} cursor-pointer hover:scale-105 transition-transform`}
+                      onClick={() => handleUnequipClick(equippedItems.gloves.id)}
+                    >
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                        {equippedItems.gloves.imageUrl ? (
+                          <img 
+                            src={equippedItems.gloves.imageUrl} 
+                            alt={equippedItems.gloves.name} 
+                            className="w-full h-full object-contain p-2"
+                          />
+                        ) : (
+                          <div 
+                            className="w-12 h-12 rounded shadow-sm"
+                            style={{ backgroundColor: equippedItems.gloves.iconColor }}
+                          ></div>
+                        )}
+                      </div>
+                      <p className="text-xs mt-1 truncate text-center">{equippedItems.gloves.name}</p>
+                      <p className="text-xs text-slate-500">{getSlotName('gloves')}</p>
+                      <button 
+                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-red-600"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUnequipClick(equippedItems.gloves.id);
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
+                      <div className="w-12 h-12 bg-slate-800 rounded"></div>
+                      <p className="text-xs mt-1">{getSlotName('gloves')}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Middle character image */}
+              <div className="flex-1 flex items-center justify-center mx-8">
+                <div className="w-48 h-48 bg-slate-800 rounded-lg border border-slate-700 flex items-center justify-center">
+                  <div className="w-32 h-32 bg-slate-700 rounded-full"></div>
+                </div>
+              </div>
+              
+              {/* Right 3 slots */}
+              <div className="flex flex-col gap-4">
+                <div className="equip-slot" data-slot="pants">
+                  {equippedItems.pants ? (
+                    <div 
+                      className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.pants.rarity)} cursor-pointer hover:scale-105 transition-transform`}
+                      onClick={() => handleUnequipClick(equippedItems.pants.id)}
+                    >
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                        {equippedItems.pants.imageUrl ? (
+                          <img 
+                            src={equippedItems.pants.imageUrl} 
+                            alt={equippedItems.pants.name} 
+                            className="w-full h-full object-contain p-2"
+                          />
+                        ) : (
+                          <div 
+                            className="w-12 h-12 rounded shadow-sm"
+                            style={{ backgroundColor: equippedItems.pants.iconColor }}
+                          ></div>
+                        )}
+                      </div>
+                      <p className="text-xs mt-1 truncate text-center">{equippedItems.pants.name}</p>
+                      <p className="text-xs text-slate-500">{getSlotName('pants')}</p>
+                      <button 
+                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-red-600"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUnequipClick(equippedItems.pants.id);
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
+                      <div className="w-12 h-12 bg-slate-800 rounded"></div>
+                      <p className="text-xs mt-1">{getSlotName('pants')}</p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="equip-slot" data-slot="boots">
+                  {equippedItems.boots ? (
+                    <div 
+                      className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.boots.rarity)} cursor-pointer hover:scale-105 transition-transform`}
+                      onClick={() => handleUnequipClick(equippedItems.boots.id)}
+                    >
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                        {equippedItems.boots.imageUrl ? (
+                          <img 
+                            src={equippedItems.boots.imageUrl} 
+                            alt={equippedItems.boots.name} 
+                            className="w-full h-full object-contain p-2"
+                          />
+                        ) : (
+                          <div 
+                            className="w-12 h-12 rounded shadow-sm"
+                            style={{ backgroundColor: equippedItems.boots.iconColor }}
+                          ></div>
+                        )}
+                      </div>
+                      <p className="text-xs mt-1 truncate text-center">{equippedItems.boots.name}</p>
+                      <p className="text-xs text-slate-500">{getSlotName('boots')}</p>
+                      <button 
+                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-red-600"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUnequipClick(equippedItems.boots.id);
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
+                      <div className="w-12 h-12 bg-slate-800 rounded"></div>
+                      <p className="text-xs mt-1">{getSlotName('boots')}</p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="equip-slot" data-slot="ring">
+                  {equippedItems.ring ? (
+                    <div 
+                      className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.ring.rarity)} cursor-pointer hover:scale-105 transition-transform`}
+                      onClick={() => handleUnequipClick(equippedItems.ring.id)}
+                    >
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                        {equippedItems.ring.imageUrl ? (
+                          <img 
+                            src={equippedItems.ring.imageUrl} 
+                            alt={equippedItems.ring.name} 
+                            className="w-full h-full object-contain p-2"
+                          />
+                        ) : (
+                          <div 
+                            className="w-12 h-12 rounded shadow-sm"
+                            style={{ backgroundColor: equippedItems.ring.iconColor }}
+                          ></div>
+                        )}
+                      </div>
+                      <p className="text-xs mt-1 truncate text-center">{equippedItems.ring.name}</p>
+                      <p className="text-xs text-slate-500">{getSlotName('ring')}</p>
+                      <button 
+                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-red-600"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUnequipClick(equippedItems.ring.id);
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
+                      <div className="w-12 h-12 bg-slate-800 rounded"></div>
+                      <p className="text-xs mt-1">{getSlotName('ring')}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+          
           {/* Grid Content */}
           <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
             {items.length === 0 ? (
@@ -399,8 +795,14 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
               </div>
             )}
 
-            {/* Bottom Close Button */}
-            <div className="mt-8 text-center">
+            {/* Bottom Buttons */}
+            <div className="mt-8 flex justify-center gap-4">
+              <button 
+                onClick={handleEquipClick}
+                className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-green-500 to-emerald-500 transition-all hover:shadow-[0_0_15px_rgba(0,255,128,0.8)]"
+              >
+                穿戴装备
+              </button>
               <button 
                 onClick={closeDetails}
                 className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-purple-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-cyan-500 to-purple-500 transition-all hover:shadow-[0_0_15px_rgba(0,255,255,0.8)]"
