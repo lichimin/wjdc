@@ -150,6 +150,14 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     });
   };
 
+  // Handle equip button click
+  const handleEquipClick = () => {
+    if (selectedEquipment) {
+      equipItem(selectedEquipment.id);
+      closeDetails();
+    }
+  };
+
   const closeDetails = () => {
     setSelectedEquipment(null);
   };
@@ -202,7 +210,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           </div>
 
           {/* Equipment Bar */}
-          <div className="flex-1 p-4 bg-slate-950/50 rounded-xl border border-slate-800 overflow-y-auto">
+          <div className="p-4 bg-slate-950/50 rounded-xl border border-slate-800">
             <h3 className="text-lg font-bold text-amber-500 mb-4 text-center">装备栏</h3>
             <div className="flex items-center justify-between">
               {/* Left 4 slots */}
