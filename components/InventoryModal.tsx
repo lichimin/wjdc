@@ -268,10 +268,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           </div>
 
           {/* Equipment Bar */}
-          <div className="p-2 pt-0 bg-slate-950/50 rounded-xl border border-slate-800 overflow-x-auto">
-            <div className="flex items-center justify-center gap-8 md:gap-8 sm:gap-4">
+          <div className="p-2 pt-0 bg-slate-950/50 rounded-xl border border-slate-800 overflow-x-auto max-h-[60vh] sm:max-h-[40vh]">
+            <div className="flex items-center justify-center gap-6 md:gap-8 sm:gap-2">
               {/* Left 4 slots */}
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2 sm:gap-1">
                 <div className="equip-slot" data-slot="weapon">
                   {equippedItems.weapon ? (
                     <div 
@@ -283,22 +283,22 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.weapon.imageUrl} 
                             alt={equippedItems.weapon.name} 
-                            className="w-full h-full object-contain p-2"
+                            className="w-full h-full object-contain p-1 sm:p-2"
                           />
                         ) : (
                           <div 
-                            className="w-12 h-12 rounded shadow-sm"
+                            className="w-10 sm:w-12 h-10 sm:h-12 rounded shadow-sm"
                             style={{ backgroundColor: equippedItems.weapon.iconColor }}
                           ></div>
                         )}
                       </div>
-                      <p className="text-xs mt-1 truncate text-center">{equippedItems.weapon.name}</p>
-                      <p className="text-xs text-slate-500">{getSlotName('weapon')}</p>
+                      <p className="text-[10px] sm:text-xs mt-0.5 truncate text-center line-clamp-1">{equippedItems.weapon.name}</p>
+                      <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('weapon')}</p>
                     </div>
                   ) : (
-                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
-                      <div className="w-12 h-12 bg-slate-800 rounded"></div>
-                      <p className="text-xs mt-1">{getSlotName('weapon')}</p>
+                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-1 sm:p-2">
+                      <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                      <p className="text-[9px] sm:text-xs mt-0.5">{getSlotName('weapon')}</p>
                     </div>
                   )}
                 </div>
@@ -306,7 +306,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                 <div className="equip-slot" data-slot="helmet">
                   {equippedItems.helmet ? (
                     <div 
-                      className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.helmet.rarity)} cursor-pointer hover:scale-105 transition-transform`}
+                      className={`relative p-1 sm:p-2 rounded-lg border ${getRarityStyle(equippedItems.helmet.rarity)} cursor-pointer hover:scale-105 transition-transform`}
                       onClick={() => handleEquipmentClick(equippedItems.helmet)}
                     >
                       <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
@@ -314,22 +314,22 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.helmet.imageUrl} 
                             alt={equippedItems.helmet.name} 
-                            className="w-full h-full object-contain p-2"
+                            className="w-full h-full object-contain p-1 sm:p-2"
                           />
                         ) : (
                           <div 
-                            className="w-12 h-12 rounded shadow-sm"
+                            className="w-10 sm:w-12 h-10 sm:h-12 rounded shadow-sm"
                             style={{ backgroundColor: equippedItems.helmet.iconColor }}
                           ></div>
                         )}
                       </div>
-                      <p className="text-xs mt-1 truncate text-center">{equippedItems.helmet.name}</p>
-                      <p className="text-xs text-slate-500">{getSlotName('helmet')}</p>
+                      <p className="text-[10px] sm:text-xs mt-0.5 truncate text-center line-clamp-1">{equippedItems.helmet.name}</p>
+                      <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('helmet')}</p>
                     </div>
                   ) : (
-                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
-                      <div className="w-12 h-12 bg-slate-800 rounded"></div>
-                      <p className="text-xs mt-1">{getSlotName('helmet')}</p>
+                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-1 sm:p-2">
+                      <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                      <p className="text-[9px] sm:text-xs mt-0.5">{getSlotName('helmet')}</p>
                     </div>
                   )}
                 </div>
@@ -337,7 +337,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                 <div className="equip-slot" data-slot="chest">
                   {equippedItems.chest ? (
                     <div 
-                      className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.chest.rarity)} cursor-pointer hover:scale-105 transition-transform`}
+                      className={`relative p-1 sm:p-2 rounded-lg border ${getRarityStyle(equippedItems.chest.rarity)} cursor-pointer hover:scale-105 transition-transform`}
                       onClick={() => handleEquipmentClick(equippedItems.chest)}
                     >
                       <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
@@ -345,22 +345,22 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.chest.imageUrl} 
                             alt={equippedItems.chest.name} 
-                            className="w-full h-full object-contain p-2"
+                            className="w-full h-full object-contain p-1 sm:p-2"
                           />
                         ) : (
                           <div 
-                            className="w-12 h-12 rounded shadow-sm"
+                            className="w-10 sm:w-12 h-10 sm:h-12 rounded shadow-sm"
                             style={{ backgroundColor: equippedItems.chest.iconColor }}
                           ></div>
                         )}
                       </div>
-                      <p className="text-xs mt-1 truncate text-center">{equippedItems.chest.name}</p>
-                      <p className="text-xs text-slate-500">{getSlotName('chest')}</p>
+                      <p className="text-[10px] sm:text-xs mt-0.5 truncate text-center line-clamp-1">{equippedItems.chest.name}</p>
+                      <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('chest')}</p>
                     </div>
                   ) : (
-                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
-                      <div className="w-12 h-12 bg-slate-800 rounded"></div>
-                      <p className="text-xs mt-1">{getSlotName('chest')}</p>
+                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-1 sm:p-2">
+                      <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                      <p className="text-[9px] sm:text-xs mt-0.5">{getSlotName('chest')}</p>
                     </div>
                   )}
                 </div>
@@ -368,7 +368,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                 <div className="equip-slot" data-slot="gloves">
                   {equippedItems.gloves ? (
                     <div 
-                      className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.gloves.rarity)} cursor-pointer hover:scale-105 transition-transform`}
+                      className={`relative p-1 sm:p-2 rounded-lg border ${getRarityStyle(equippedItems.gloves.rarity)} cursor-pointer hover:scale-105 transition-transform`}
                       onClick={() => handleEquipmentClick(equippedItems.gloves)}
                     >
                       <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
@@ -376,30 +376,30 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.gloves.imageUrl} 
                             alt={equippedItems.gloves.name} 
-                            className="w-full h-full object-contain p-2"
+                            className="w-full h-full object-contain p-1 sm:p-2"
                           />
                         ) : (
                           <div 
-                            className="w-12 h-12 rounded shadow-sm"
+                            className="w-10 sm:w-12 h-10 sm:h-12 rounded shadow-sm"
                             style={{ backgroundColor: equippedItems.gloves.iconColor }}
                           ></div>
                         )}
                       </div>
-                      <p className="text-xs mt-1 truncate text-center">{equippedItems.gloves.name}</p>
-                      <p className="text-xs text-slate-500">{getSlotName('gloves')}</p>
+                      <p className="text-[10px] sm:text-xs mt-0.5 truncate text-center line-clamp-1">{equippedItems.gloves.name}</p>
+                      <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('gloves')}</p>
                     </div>
                   ) : (
-                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
-                      <div className="w-12 h-12 bg-slate-800 rounded"></div>
-                      <p className="text-xs mt-1">{getSlotName('gloves')}</p>
+                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-1 sm:p-2">
+                      <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                      <p className="text-[9px] sm:text-xs mt-0.5">{getSlotName('gloves')}</p>
                     </div>
                   )}
                 </div>
               </div>
               
               {/* Middle character image */}
-              <div className="flex-1 flex items-center justify-center mx-4">
-                <div className="w-40 h-40 flex items-center justify-center">
+              <div className="flex-1 flex items-center justify-center mx-2 sm:mx-4">
+                <div className="w-28 sm:w-40 h-28 sm:h-40 flex items-center justify-center">
                   {skinData?.idle_image_urls && skinData.idle_image_urls.length > 0 ? (
                     <img 
                       src={skinData.idle_image_urls[currentIdleImageIndex]} 
@@ -415,11 +415,11 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
               </div>
               
               {/* Right 3 slots */}
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2 sm:gap-1">
                 <div className="equip-slot" data-slot="pants">
                   {equippedItems.pants ? (
                     <div 
-                      className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.pants.rarity)} cursor-pointer hover:scale-105 transition-transform`}
+                      className={`relative p-1 sm:p-2 rounded-lg border ${getRarityStyle(equippedItems.pants.rarity)} cursor-pointer hover:scale-105 transition-transform`}
                       onClick={() => handleEquipmentClick(equippedItems.pants)}
                     >
                       <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
@@ -427,22 +427,22 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.pants.imageUrl} 
                             alt={equippedItems.pants.name} 
-                            className="w-full h-full object-contain p-2"
+                            className="w-full h-full object-contain p-1 sm:p-2"
                           />
                         ) : (
                           <div 
-                            className="w-12 h-12 rounded shadow-sm"
+                            className="w-10 sm:w-12 h-10 sm:h-12 rounded shadow-sm"
                             style={{ backgroundColor: equippedItems.pants.iconColor }}
                           ></div>
                         )}
                       </div>
-                      <p className="text-xs mt-1 truncate text-center">{equippedItems.pants.name}</p>
-                      <p className="text-xs text-slate-500">{getSlotName('pants')}</p>
+                      <p className="text-[10px] sm:text-xs mt-0.5 truncate text-center line-clamp-1">{equippedItems.pants.name}</p>
+                      <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('pants')}</p>
                     </div>
                   ) : (
-                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
-                      <div className="w-12 h-12 bg-slate-800 rounded"></div>
-                      <p className="text-xs mt-1">{getSlotName('pants')}</p>
+                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-1 sm:p-2">
+                      <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                      <p className="text-[9px] sm:text-xs mt-0.5">{getSlotName('pants')}</p>
                     </div>
                   )}
                 </div>
@@ -450,7 +450,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                 <div className="equip-slot" data-slot="boots">
                   {equippedItems.boots ? (
                     <div 
-                      className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.boots.rarity)} cursor-pointer hover:scale-105 transition-transform`}
+                      className={`relative p-1 sm:p-2 rounded-lg border ${getRarityStyle(equippedItems.boots.rarity)} cursor-pointer hover:scale-105 transition-transform`}
                       onClick={() => handleEquipmentClick(equippedItems.boots)}
                     >
                       <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
@@ -458,22 +458,22 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.boots.imageUrl} 
                             alt={equippedItems.boots.name} 
-                            className="w-full h-full object-contain p-2"
+                            className="w-full h-full object-contain p-1 sm:p-2"
                           />
                         ) : (
                           <div 
-                            className="w-12 h-12 rounded shadow-sm"
+                            className="w-10 sm:w-12 h-10 sm:h-12 rounded shadow-sm"
                             style={{ backgroundColor: equippedItems.boots.iconColor }}
                           ></div>
                         )}
                       </div>
-                      <p className="text-xs mt-1 truncate text-center">{equippedItems.boots.name}</p>
-                      <p className="text-xs text-slate-500">{getSlotName('boots')}</p>
+                      <p className="text-[10px] sm:text-xs mt-0.5 truncate text-center line-clamp-1">{equippedItems.boots.name}</p>
+                      <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('boots')}</p>
                     </div>
                   ) : (
-                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
-                      <div className="w-12 h-12 bg-slate-800 rounded"></div>
-                      <p className="text-xs mt-1">{getSlotName('boots')}</p>
+                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-1 sm:p-2">
+                      <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                      <p className="text-[9px] sm:text-xs mt-0.5">{getSlotName('boots')}</p>
                     </div>
                   )}
                 </div>
@@ -481,7 +481,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                 <div className="equip-slot" data-slot="ring">
                   {equippedItems.ring ? (
                     <div 
-                      className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.ring.rarity)} cursor-pointer hover:scale-105 transition-transform`}
+                      className={`relative p-1 sm:p-2 rounded-lg border ${getRarityStyle(equippedItems.ring.rarity)} cursor-pointer hover:scale-105 transition-transform`}
                       onClick={() => handleEquipmentClick(equippedItems.ring)}
                     >
                       <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
@@ -489,22 +489,22 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.ring.imageUrl} 
                             alt={equippedItems.ring.name} 
-                            className="w-full h-full object-contain p-2"
+                            className="w-full h-full object-contain p-1 sm:p-2"
                           />
                         ) : (
                           <div 
-                            className="w-12 h-12 rounded shadow-sm"
+                            className="w-10 sm:w-12 h-10 sm:h-12 rounded shadow-sm"
                             style={{ backgroundColor: equippedItems.ring.iconColor }}
                           ></div>
                         )}
                       </div>
-                      <p className="text-xs mt-1 truncate text-center">{equippedItems.ring.name}</p>
-                      <p className="text-xs text-slate-500">{getSlotName('ring')}</p>
+                      <p className="text-[10px] sm:text-xs mt-0.5 truncate text-center line-clamp-1">{equippedItems.ring.name}</p>
+                      <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('ring')}</p>
                     </div>
                   ) : (
-                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
-                      <div className="w-12 h-12 bg-slate-800 rounded"></div>
-                      <p className="text-xs mt-1">{getSlotName('ring')}</p>
+                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-1 sm:p-2">
+                      <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                      <p className="text-[9px] sm:text-xs mt-0.5">{getSlotName('ring')}</p>
                     </div>
                   )}
                 </div>
