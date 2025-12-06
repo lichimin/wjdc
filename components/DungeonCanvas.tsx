@@ -298,16 +298,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
         enemy.health -= damage;
         
         // Add floating text
-        floatingTextsRef.current.push({
-          id: `damage-${Date.now()}-${index}`,
-          x: enemy.x,
-          y: enemy.y - 20,
-          text: `-${damage}`,
-          color: '#aa44ff',
-          life: 60,
-          opacity: 1,
-          scale: 1.0
-        });
+        spawnFloatingText(enemy.x + TILE_SIZE/2, enemy.y, `-${damage}`, '#aa44ff');
         
         // Check if enemy is dead
         if (enemy.health <= 0) {
@@ -610,16 +601,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
           p.health = Math.min(p.maxHealth, p.health + healAmount);
           
           // Add floating text for heal
-          floatingTextsRef.current.push({
-            id: `heal-${Date.now()}-${Math.random()}`,
-            x: p.x + TILE_SIZE / 2,
-            y: p.y - 10,
-            text: `+${healAmount}`,
-            color: '#4ade80', // Green color for healing
-            life: 60,
-            opacity: 1,
-            scale: 1.0
-          });
+          spawnFloatingText(p.x + TILE_SIZE/2, p.y, `+${healAmount}`, '#4ade80');
         }
       }
       
