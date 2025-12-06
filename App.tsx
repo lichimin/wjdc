@@ -1182,6 +1182,7 @@ const App: React.FC = () => {
         onClose={() => setIsInventoryOpen(false)} 
         originalItems={originalInventoryItems} 
         skinData={userSkin?.skin || null}
+        onInventoryUpdate={setRunInventory}
       />}
       {isStatsOpen && <StatsModal playerState={playerRef.current} onClose={() => setIsStatsOpen(false)} />}
       {isSummaryOpen && <SummaryModal type={summaryType} inventory={runInventory} onRestart={handleReturnHome} />}

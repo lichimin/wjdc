@@ -14,6 +14,8 @@ interface InventoryModalProps {
   originalItems?: any[];
   // Add skin data for character animation
   skinData?: SkinData | null;
+  // Add callback for inventory updates
+  onInventoryUpdate?: (updatedItems: LootItem[]) => void;
 }
 
 interface EquippedItem {
@@ -31,7 +33,7 @@ interface EquippedItem {
   equipment: any;
 }
 
-export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, originalItems = [], skinData = null }) => {
+export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, originalItems = [], skinData = null, onInventoryUpdate }) => {
   const [selectedEquipment, setSelectedEquipment] = useState<LootItem | null>(null);
   const [equippedItems, setEquippedItems] = useState<Record<string, EquippedItem>>({});
   const [currentIdleImageIndex, setCurrentIdleImageIndex] = useState(0);
@@ -128,6 +130,12 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       if (response.ok) {
         // 重新获取装备状态
         await fetchEquippedItems();
+        
+        // 将卸下的装备添加到背包栏
+        if (selectedEquipment && onInventoryUpdate) {
+          const updatedItems = [...items, selectedEquipment];
+          onInventoryUpdate(updatedItems);
+        }
       }
     } catch (error) {
       console.error('卸下物品失败:', error);
@@ -286,15 +294,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       </div>
                       <p className="text-xs mt-1 truncate text-center">{equippedItems.weapon.name}</p>
                       <p className="text-xs text-slate-500">{getSlotName('weapon')}</p>
-                      <button 
-                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-red-600"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUnequipClick(equippedItems.weapon.id);
-                        }}
-                      >
-                        ✕
-                      </button>
                     </div>
                   ) : (
                     <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
@@ -326,15 +325,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       </div>
                       <p className="text-xs mt-1 truncate text-center">{equippedItems.helmet.name}</p>
                       <p className="text-xs text-slate-500">{getSlotName('helmet')}</p>
-                      <button 
-                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-red-600"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUnequipClick(equippedItems.helmet.id);
-                        }}
-                      >
-                        ✕
-                      </button>
                     </div>
                   ) : (
                     <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
@@ -366,15 +356,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       </div>
                       <p className="text-xs mt-1 truncate text-center">{equippedItems.chest.name}</p>
                       <p className="text-xs text-slate-500">{getSlotName('chest')}</p>
-                      <button 
-                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-red-600"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUnequipClick(equippedItems.chest.id);
-                        }}
-                      >
-                        ✕
-                      </button>
                     </div>
                   ) : (
                     <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
@@ -406,15 +387,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       </div>
                       <p className="text-xs mt-1 truncate text-center">{equippedItems.gloves.name}</p>
                       <p className="text-xs text-slate-500">{getSlotName('gloves')}</p>
-                      <button 
-                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-red-600"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUnequipClick(equippedItems.gloves.id);
-                        }}
-                      >
-                        ✕
-                      </button>
                     </div>
                   ) : (
                     <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
@@ -466,15 +438,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       </div>
                       <p className="text-xs mt-1 truncate text-center">{equippedItems.pants.name}</p>
                       <p className="text-xs text-slate-500">{getSlotName('pants')}</p>
-                      <button 
-                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-red-600"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUnequipClick(equippedItems.pants.id);
-                        }}
-                      >
-                        ✕
-                      </button>
                     </div>
                   ) : (
                     <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
@@ -506,15 +469,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       </div>
                       <p className="text-xs mt-1 truncate text-center">{equippedItems.boots.name}</p>
                       <p className="text-xs text-slate-500">{getSlotName('boots')}</p>
-                      <button 
-                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-red-600"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUnequipClick(equippedItems.boots.id);
-                        }}
-                      >
-                        ✕
-                      </button>
                     </div>
                   ) : (
                     <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
@@ -546,15 +500,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       </div>
                       <p className="text-xs mt-1 truncate text-center">{equippedItems.ring.name}</p>
                       <p className="text-xs text-slate-500">{getSlotName('ring')}</p>
-                      <button 
-                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-red-600"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUnequipClick(equippedItems.ring.id);
-                        }}
-                      >
-                        ✕
-                      </button>
                     </div>
                   ) : (
                     <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-2">
