@@ -202,7 +202,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           </div>
 
           {/* Equipment Bar */}
-          <div className="mb-6 p-4 bg-slate-950/50 rounded-xl border border-slate-800">
+          <div className="flex-1 p-4 bg-slate-950/50 rounded-xl border border-slate-800 overflow-y-auto">
             <h3 className="text-lg font-bold text-amber-500 mb-4 text-center">装备栏</h3>
             <div className="flex items-center justify-between">
               {/* Left 4 slots */}
@@ -501,14 +501,15 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           </div>
           
           {/* Grid Content */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-2 mt-6">
+            <h3 className="text-lg font-bold text-amber-500 mb-4 text-center">背包</h3>
             {items.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-slate-600 space-y-4">
                 <div className="w-16 h-16 border-2 border-slate-800 border-dashed rounded-lg"></div>
                 <p className="font-mono text-sm">NO ITEMS COLLECTED</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
                 {items.map((item) => {
                    const rarityClass = getRarityStyle(item.rarity);
                    const isGenesis = item.rarity === Rarity.GENESIS;
