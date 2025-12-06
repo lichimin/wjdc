@@ -260,15 +260,15 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           </div>
 
           {/* Equipment Bar */}
-          <div className="p-2 pt-0 bg-slate-950/50 rounded-xl border border-slate-800">
-            <div className="flex items-center justify-center gap-8">
+          <div className="p-2 pt-0 bg-slate-950/50 rounded-xl border border-slate-800 overflow-x-auto">
+            <div className="flex items-center justify-center gap-8 md:gap-8 sm:gap-4">
               {/* Left 4 slots */}
               <div className="flex flex-col gap-4">
                 <div className="equip-slot" data-slot="weapon">
                   {equippedItems.weapon ? (
                     <div 
                       className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.weapon.rarity)} cursor-pointer hover:scale-105 transition-transform`}
-                      onClick={() => handleUnequipClick(equippedItems.weapon.id)}
+                      onClick={() => handleEquipmentClick(equippedItems.weapon)}
                     >
                       <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
                         {equippedItems.weapon.imageUrl ? (
@@ -308,7 +308,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                   {equippedItems.helmet ? (
                     <div 
                       className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.helmet.rarity)} cursor-pointer hover:scale-105 transition-transform`}
-                      onClick={() => handleUnequipClick(equippedItems.helmet.id)}
+                      onClick={() => handleEquipmentClick(equippedItems.helmet)}
                     >
                       <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
                         {equippedItems.helmet.imageUrl ? (
@@ -348,7 +348,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                   {equippedItems.chest ? (
                     <div 
                       className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.chest.rarity)} cursor-pointer hover:scale-105 transition-transform`}
-                      onClick={() => handleUnequipClick(equippedItems.chest.id)}
+                      onClick={() => handleEquipmentClick(equippedItems.chest)}
                     >
                       <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
                         {equippedItems.chest.imageUrl ? (
@@ -388,7 +388,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                   {equippedItems.gloves ? (
                     <div 
                       className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.gloves.rarity)} cursor-pointer hover:scale-105 transition-transform`}
-                      onClick={() => handleUnequipClick(equippedItems.gloves.id)}
+                      onClick={() => handleEquipmentClick(equippedItems.gloves)}
                     >
                       <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
                         {equippedItems.gloves.imageUrl ? (
@@ -448,7 +448,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                   {equippedItems.pants ? (
                     <div 
                       className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.pants.rarity)} cursor-pointer hover:scale-105 transition-transform`}
-                      onClick={() => handleUnequipClick(equippedItems.pants.id)}
+                      onClick={() => handleEquipmentClick(equippedItems.pants)}
                     >
                       <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
                         {equippedItems.pants.imageUrl ? (
@@ -488,7 +488,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                   {equippedItems.boots ? (
                     <div 
                       className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.boots.rarity)} cursor-pointer hover:scale-105 transition-transform`}
-                      onClick={() => handleUnequipClick(equippedItems.boots.id)}
+                      onClick={() => handleEquipmentClick(equippedItems.boots)}
                     >
                       <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
                         {equippedItems.boots.imageUrl ? (
@@ -528,7 +528,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                   {equippedItems.ring ? (
                     <div 
                       className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.ring.rarity)} cursor-pointer hover:scale-105 transition-transform`}
-                      onClick={() => handleUnequipClick(equippedItems.ring.id)}
+                      onClick={() => handleEquipmentClick(equippedItems.ring)}
                     >
                       <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
                         {equippedItems.ring.imageUrl ? (
@@ -641,7 +641,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-gradient-to-br from-black via-slate-900 to-black"
         >
           {/* Modal Content */}
-          <div className="relative w-full max-w-2xl bg-slate-950 border-4 border-cyan-500/50 rounded-lg shadow-[0_0_20px_rgba(0,255,255,0.5)] p-6 font-mono">
+          <div className="relative w-full max-w-2xl bg-slate-950 border-4 border-cyan-500/50 rounded-lg shadow-[0_0_20px_rgba(0,255,255,0.5)] p-6 font-mono transform scale-50">
             {/* Header with pixel-style title */}
             <div className="flex justify-between items-center mb-6 pb-4 border-b-4 border-amber-500/30">
               <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
@@ -865,12 +865,27 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
 
             {/* Bottom Buttons */}
             <div className="mt-8 flex justify-center gap-4">
-              <button 
-                onClick={handleEquipClick}
-                className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-green-500 to-emerald-500 transition-all hover:shadow-[0_0_15px_rgba(0,255,128,0.8)]"
-              >
-                穿戴装备
-              </button>
+              {/* Check if this equipment is already equipped */}
+              {Object.values(equippedItems).some(equipped => equipped.id === selectedEquipment?.id) ? (
+                <button 
+                  onClick={() => {
+                    if (selectedEquipment) {
+                      unequipItem(selectedEquipment.id);
+                      closeDetails();
+                    }
+                  }}
+                  className="px-6 py-3 bg-gradient-to-r from-red-600 to-rose-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-red-500 to-rose-500 transition-all hover:shadow-[0_0_15px_rgba(255,0,0,0.8)]"
+                >
+                  卸下装备
+                </button>
+              ) : (
+                <button 
+                  onClick={handleEquipClick}
+                  className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-green-500 to-emerald-500 transition-all hover:shadow-[0_0_15px_rgba(0,255,128,0.8)]"
+                >
+                  穿戴装备
+                </button>
+              )}
               <button 
                 onClick={closeDetails}
                 className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-purple-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-cyan-500 to-purple-500 transition-all hover:shadow-[0_0_15px_rgba(0,255,255,0.8)]"
