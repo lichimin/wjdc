@@ -55,7 +55,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   const equipItem = async (itemId: string | number) => {
     try {
       const response = await fetch(`/api/v1/equipments/${itemId}/equip`, {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -74,7 +74,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   const unequipItem = async (itemId: string | number) => {
     try {
       const response = await fetch(`/api/v1/equipments/${itemId}/unequip`, {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -188,7 +188,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         {/* Backdrop */}
         <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={onClose}></div>
 
-        <div className="relative z-10 w-full max-w-4xl p-6 flex flex-col h-[80vh] bg-slate-900/90 border border-slate-700 rounded-xl shadow-2xl overflow-hidden">
+        <div className="relative z-10 w-full h-full p-6 flex flex-col bg-slate-900/90 border border-slate-700 shadow-2xl overflow-hidden">
           {/* Header */}
           <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-700">
             <div>
@@ -212,7 +212,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           {/* Equipment Bar */}
           <div className="p-4 bg-slate-950/50 rounded-xl border border-slate-800">
             <h3 className="text-lg font-bold text-amber-500 mb-4 text-center">装备栏</h3>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-center gap-8">
               {/* Left 4 slots */}
               <div className="flex flex-col gap-4">
                 <div className="equip-slot" data-slot="weapon">
@@ -377,9 +377,13 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
               </div>
               
               {/* Middle character image */}
-              <div className="flex-1 flex items-center justify-center mx-8">
-                <div className="w-48 h-48 bg-slate-800 rounded-lg border border-slate-700 flex items-center justify-center">
-                  <div className="w-32 h-32 bg-slate-700 rounded-full"></div>
+              <div className="flex-1 flex items-center justify-center mx-4">
+                <div className="w-40 h-40 flex items-center justify-center">
+                  <img 
+                    src="/skins/idle-animation.gif" 
+                    alt="Character idle animation" 
+                    className="w-full h-full object-contain"
+                  />
                 </div>
               </div>
               
