@@ -1344,7 +1344,10 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     const spriteSize = baseSpriteSize * spriteScale;
     // Calculate bar offset to position at top of player image
     const barWidth = 24; const barHeight = 4; 
-    const barOffset = spriteSize / 2 + barHeight / 2; // 血条位于图片顶部
+    const baseBarOffset = spriteSize / 2 + barHeight / 2; // 血条默认位于图片顶部
+    // 根据hp_pos调整血条位置：默认0即不变，正数上移，负数下移，0.1 = 10%
+    const hpPosAdjustment = (skinData?.hp_pos || 0) * spriteSize; // 血条位置调整量
+    const barOffset = baseBarOffset + hpPosAdjustment;
 
     ctx.fillStyle = '#0f172a'; ctx.fillRect(drawX - barWidth / 2 - 1, drawY - barOffset - 1, barWidth + 2, barHeight + 2);
     ctx.fillStyle = '#334155'; ctx.fillRect(drawX - barWidth / 2, drawY - barOffset, barWidth, barHeight);

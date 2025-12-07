@@ -23,6 +23,7 @@ interface SkinData {
   attack_image_urls: string[];
   move_image_urls: string[];
   scale: number; // 角色图片缩放大小，默认100，为100%大小
+  hp_pos: number; // 控制血条位置，默认0即不变，正数上移，负数下移，0.1 = 10%
   created_at: number;
   updated_at: number;
 }
