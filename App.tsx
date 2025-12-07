@@ -1017,79 +1017,44 @@ const App: React.FC = () => {
            </div>
            
            {/* Action Buttons (Bottom Right) */}
-           <div className="absolute bottom-8 right-8 z-50 flex flex-col gap-4">
-              {/* Attack Button - Large, Primary Button */}
-              <button 
-                className="w-20 h-20 bg-gradient-to-br from-red-900/70 to-red-800/70 border-4 border-red-700/80 rounded-full flex items-center justify-center text-white shadow-[0_0_25px_rgba(220,38,38,0.6)] hover:from-red-800/80 hover:to-red-700/80 transition-all active:scale-95"
-                onMouseDown={(e) => { 
-                  if (inputRef.current) {
-                    if (!inputRef.current.isAttacking) {
-                      inputRef.current.isAttacking = true;
-                      inputRef.current.attackPressed = true;
-                    }
-                  }
-                }}
-                onMouseUp={(e) => { 
-                  if (inputRef.current) {
-                    inputRef.current.isAttacking = false;
-                    inputRef.current.attackPressed = false;
-                  }
-                }}
-                onMouseLeave={(e) => { 
-                  if (inputRef.current) {
-                    inputRef.current.isAttacking = false;
-                    inputRef.current.attackPressed = false;
-                  }
-                }}
-                onTouchStart={(e) => { 
-                  if (inputRef.current) {
-                    if (!inputRef.current.isAttacking) {
-                      inputRef.current.isAttacking = true;
-                      inputRef.current.attackPressed = true;
-                    }
-                  }
-                }}
-                onTouchEnd={(e) => { 
-                  if (inputRef.current) {
-                    inputRef.current.isAttacking = false;
-                    inputRef.current.attackPressed = false;
-                  }
-                }}
-                onTouchCancel={(e) => {
-                  if (inputRef.current) {
-                    inputRef.current.isAttacking = false;
-                    inputRef.current.attackPressed = false;
-                  }
-                }}
-              >
-                {/* Pixel Attack Icon */}
-                <svg width="48" height="48" viewBox="0 0 8 8" className="w-12 h-12">
-                  <rect x="0" y="3" width="3" height="2" fill="white" />
-                  <rect x="1" y="2" width="1" height="4" fill="white" />
-                  <path d="M3,2 L7,6 M7,2 L3,6" stroke="white" stroke-width="1" fill="none" />
-                </svg>
-              </button>
-              
-              <div className="flex gap-4">
-                {/* Dodge Button - Same size as skill buttons */}
+           <div className="absolute bottom-8 right-8 z-50 flex flex-col items-end gap-2">
+              {/* Top Row: Skill & Heal */}
+              <div className="flex gap-2">
+                {/* Heal Button - Top Left */}
                 <button 
-                  className={`w-14 h-14 bg-gradient-to-br from-blue-900/70 to-blue-800/70 border-3 border-blue-700/80 rounded-full flex items-center justify-center text-white shadow-[0_0_15px_rgba(59,130,246,0.6)] transition-all active:scale-95 relative ${dashBtnActive ? 'from-blue-800/80 to-blue-700/80' : 'hover:from-blue-800/80 hover:to-blue-700/80 cursor-pointer'}`}
-                  onMouseDown={(e) => { inputRef.current.isDodging = true; setDashBtnActive(true); }}
-                  onMouseUp={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
-                  onMouseLeave={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
-                  onTouchStart={(e) => { inputRef.current.isDodging = true; setDashBtnActive(true); }}
-                  onTouchEnd={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
-                  onTouchCancel={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
+                  className={`w-14 h-14 bg-gradient-to-br from-green-900/70 to-green-800/70 border-3 border-green-700/80 rounded-full flex items-center justify-center text-white shadow-[0_0_15px_rgba(74,222,128,0.6)] transition-all active:scale-95 relative ${healSkillCooldown > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:from-green-800/80 hover:to-green-700/80 cursor-pointer'}`}
+                  disabled={healSkillCooldown > 0}
+                  onClick={() => {
+                    if (healSkillCooldown === 0 && !healSkillActive) {
+                      setHealSkillActive(true);
+                      setHealSkillCooldown(60); // 60 seconds cooldown
+                      
+                      if (activateHealSkillRef.current) {
+                        activateHealSkillRef.current();
+                      }
+                      
+                      setTimeout(() => {
+                        setHealSkillActive(false);
+                      }, 10000);
+                    }
+                  }}
                 >
-                  {/* Pixel Dash Icon */}
+                  {/* Pixel Heal Icon */}
                   <svg width="32" height="32" viewBox="0 0 8 8" className="w-8 h-8">
-                    <path d="M1,4 L6,4" stroke="white" stroke-width="1" stroke-dasharray="1,1" />
-                    <path d="M4,2 L7,5 L4,8" stroke="white" stroke-width="1" fill="none" />
-                    <circle cx="1" cy="4" r="1" fill="white" />
+                    <circle cx="4" cy="2" r="1" fill="white" />
+                    <path d="M4,3 L4,6" stroke="white" stroke-width="1" />
+                    <path d="M2,5 L6,5" stroke="white" stroke-width="1" />
+                    <path d="M1,6 L3,8 M5,8 L7,6" stroke="white" stroke-width="1" />
                   </svg>
+                  
+                  {healSkillCooldown > 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center font-pixel text-xs font-bold text-white">
+                      {healSkillCooldown}
+                    </div>
+                  )}
                 </button>
                 
-                {/* Special Skill Button */}
+                {/* Skill Button - Top Right */}
                 <button 
                   className={`w-14 h-14 bg-gradient-to-br from-purple-900/70 to-purple-800/70 border-3 border-purple-700/80 rounded-full flex items-center justify-center text-white shadow-[0_0_15px_rgba(168,85,247,0.6)] transition-all active:scale-95 relative ${skillCooldown > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:from-purple-800/80 hover:to-purple-700/80 cursor-pointer'}`}
                   disabled={skillCooldown > 0}
@@ -1123,39 +1088,78 @@ const App: React.FC = () => {
                     </div>
                   )}
                 </button>
-                
-                {/* Heal Skill Button */}
+              </div>
+              
+              {/* Bottom Row: Dodge & Attack */}
+              <div className="flex items-end gap-2">
+                {/* Dodge Button - Bottom Left */}
                 <button 
-                  className={`w-14 h-14 bg-gradient-to-br from-green-900/70 to-green-800/70 border-3 border-green-700/80 rounded-full flex items-center justify-center text-white shadow-[0_0_15px_rgba(74,222,128,0.6)] transition-all active:scale-95 relative ${healSkillCooldown > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:from-green-800/80 hover:to-green-700/80 cursor-pointer'}`}
-                  disabled={healSkillCooldown > 0}
-                  onClick={() => {
-                    if (healSkillCooldown === 0 && !healSkillActive) {
-                      setHealSkillActive(true);
-                      setHealSkillCooldown(60); // 60 seconds cooldown
-                      
-                      if (activateHealSkillRef.current) {
-                        activateHealSkillRef.current();
+                  className={`w-14 h-14 bg-gradient-to-br from-blue-900/70 to-blue-800/70 border-3 border-blue-700/80 rounded-full flex items-center justify-center text-white shadow-[0_0_15px_rgba(59,130,246,0.6)] transition-all active:scale-95 relative ${dashBtnActive ? 'from-blue-800/80 to-blue-700/80' : 'hover:from-blue-800/80 hover:to-blue-700/80 cursor-pointer'}`}
+                  onMouseDown={(e) => { inputRef.current.isDodging = true; setDashBtnActive(true); }}
+                  onMouseUp={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
+                  onMouseLeave={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
+                  onTouchStart={(e) => { inputRef.current.isDodging = true; setDashBtnActive(true); }}
+                  onTouchEnd={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
+                  onTouchCancel={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
+                >
+                  {/* Pixel Dash Icon */}
+                  <svg width="32" height="32" viewBox="0 0 8 8" className="w-8 h-8">
+                    <path d="M1,4 L6,4" stroke="white" stroke-width="1" stroke-dasharray="1,1" />
+                    <path d="M4,2 L7,5 L4,8" stroke="white" stroke-width="1" fill="none" />
+                    <circle cx="1" cy="4" r="1" fill="white" />
+                  </svg>
+                </button>
+                
+                {/* Attack Button - Bottom Right (Large, Primary Button) */}
+                <button 
+                  className="w-20 h-20 bg-gradient-to-br from-red-900/70 to-red-800/70 border-4 border-red-700/80 rounded-full flex items-center justify-center text-white shadow-[0_0_25px_rgba(220,38,38,0.6)] hover:from-red-800/80 hover:to-red-700/80 transition-all active:scale-95"
+                  onMouseDown={(e) => { 
+                    if (inputRef.current) {
+                      if (!inputRef.current.isAttacking) {
+                        inputRef.current.isAttacking = true;
+                        inputRef.current.attackPressed = true;
                       }
-                      
-                      setTimeout(() => {
-                        setHealSkillActive(false);
-                      }, 10000);
+                    }
+                  }}
+                  onMouseUp={(e) => { 
+                    if (inputRef.current) {
+                      inputRef.current.isAttacking = false;
+                      inputRef.current.attackPressed = false;
+                    }
+                  }}
+                  onMouseLeave={(e) => { 
+                    if (inputRef.current) {
+                      inputRef.current.isAttacking = false;
+                      inputRef.current.attackPressed = false;
+                    }
+                  }}
+                  onTouchStart={(e) => { 
+                    if (inputRef.current) {
+                      if (!inputRef.current.isAttacking) {
+                        inputRef.current.isAttacking = true;
+                        inputRef.current.attackPressed = true;
+                      }
+                    }
+                  }}
+                  onTouchEnd={(e) => { 
+                    if (inputRef.current) {
+                      inputRef.current.isAttacking = false;
+                      inputRef.current.attackPressed = false;
+                    }
+                  }}
+                  onTouchCancel={(e) => {
+                    if (inputRef.current) {
+                      inputRef.current.isAttacking = false;
+                      inputRef.current.attackPressed = false;
                     }
                   }}
                 >
-                  {/* Pixel Heal Icon */}
-                  <svg width="32" height="32" viewBox="0 0 8 8" className="w-8 h-8">
-                    <circle cx="4" cy="2" r="1" fill="white" />
-                    <path d="M4,3 L4,6" stroke="white" stroke-width="1" />
-                    <path d="M2,5 L6,5" stroke="white" stroke-width="1" />
-                    <path d="M1,6 L3,8 M5,8 L7,6" stroke="white" stroke-width="1" />
+                  {/* Pixel Attack Icon */}
+                  <svg width="48" height="48" viewBox="0 0 8 8" className="w-12 h-12">
+                    <rect x="0" y="3" width="3" height="2" fill="white" />
+                    <rect x="1" y="2" width="1" height="4" fill="white" />
+                    <path d="M3,2 L7,6 M7,2 L3,6" stroke="white" stroke-width="1" fill="none" />
                   </svg>
-                  
-                  {healSkillCooldown > 0 && (
-                    <div className="absolute inset-0 flex items-center justify-center font-pixel text-xs font-bold text-white">
-                      {healSkillCooldown}
-                    </div>
-                  )}
                 </button>
               </div>
            </div>

@@ -583,7 +583,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       {selectedEquipment && (
         <div 
           id="equipment-details-modal"
-          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-gradient-to-br from-black via-slate-900 to-black"
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
         >
           {/* Modal Content */}
           <div className="relative w-full max-w-2xl bg-slate-950 border-4 border-cyan-500/50 rounded-lg shadow-[0_0_20px_rgba(0,255,255,0.5)] p-6 font-mono transform scale-50">
