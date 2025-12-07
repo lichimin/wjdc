@@ -405,6 +405,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       src={skinData.idle_image_urls[currentIdleImageIndex]} 
                       alt="Character idle animation" 
                       className="w-full h-full object-contain"
+                      style={{ transform: `scale(${skinData?.scale ? (skinData.scale / 100) * 1.1 : 1.1})` }}
                     />
                   ) : (
                     <div className="w-full h-full bg-slate-800 rounded flex items-center justify-center">

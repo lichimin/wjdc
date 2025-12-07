@@ -1308,7 +1308,11 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
   const drawGhost = (ctx: CanvasRenderingContext2D, t: BlinkTrail) => {
     const drawX = Math.floor(t.x + TILE_SIZE/2);
     const drawY = Math.floor(t.y + TILE_SIZE/2 - 16);
-    const spriteSize = 64;
+    const baseSpriteSize = 64;
+    // 获取缩放比例，默认scale为100，对应110%大小
+    const scale = skinData?.scale || 100;
+    const spriteScale = (scale / 100) * 1.1; // 100对应110%大小
+    const spriteSize = baseSpriteSize * spriteScale;
 
     ctx.save();
     ctx.translate(drawX, drawY);
@@ -1333,7 +1337,11 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
   const drawPlayer = (ctx: CanvasRenderingContext2D, p: PlayerState, isAttacking: boolean) => {
     const drawX = Math.floor(p.x + TILE_SIZE/2);
     const drawY = Math.floor(p.y + TILE_SIZE/2); // Moved down by 16 pixels to match reduced size
-    const spriteSize = 38; // Reduced by 40% from original 64
+    const baseSpriteSize = 38; // Reduced by 40% from original 64
+    // 获取缩放比例，默认scale为100，对应110%大小
+    const scale = skinData?.scale || 100;
+    const spriteScale = (scale / 100) * 1.1; // 100对应110%大小
+    const spriteSize = baseSpriteSize * spriteScale;
     // Calculate bar offset to position at top of player image
     const barWidth = 24; const barHeight = 4; 
     const barOffset = spriteSize / 2 + barHeight / 2; // 血条位于图片顶部

@@ -22,6 +22,7 @@ interface SkinData {
   idle_image_urls: string[];
   attack_image_urls: string[];
   move_image_urls: string[];
+  scale: number; // 角色图片缩放大小，默认100，为100%大小
   created_at: number;
   updated_at: number;
 }
@@ -288,12 +289,14 @@ export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenIn
               <img 
                 src={userSkin.skin.idle_image_urls[currentIdleImageIndex]} 
                 className="w-32 h-32 object-contain image-pixelated drop-shadow-[0_0_20px_rgba(34,211,238,0.4)] animate-float"
+                style={{ transform: `scale(${userSkin?.skin?.scale ? (userSkin.skin.scale / 100) * 1.1 : 1.1})` }}
                 alt={userData.username || "Hero"}
               />
             ) : (
               <img 
                 src={userData.img || "https://czrimg.godqb.com/game/v2/play2/1.png"} 
                 className="w-32 h-32 object-contain image-pixelated drop-shadow-[0_0_20px_rgba(34,211,238,0.4)] animate-float"
+                style={{ transform: `scale(1.1)` }}
                 alt={userData.username || "Hero"}
               />
             )}
