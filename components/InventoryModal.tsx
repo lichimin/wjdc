@@ -49,6 +49,39 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     }
   }, [skinData]);
 
+  // 打印背包和装备栏物品的id，用于调试键冲突
+  useEffect(() => {
+    console.log('=== 背包物品ID列表 ===');
+    items.forEach((item, index) => {
+      console.log(`背包物品${index}: id = ${item.id}, name = ${item.name}`);
+    });
+    
+    console.log('=== 装备栏物品ID列表 ===');
+    Object.values(equippedItems).forEach((item, index) => {
+      console.log(`装备栏物品${index}: id = ${item.id}, name = ${item.name}, slot = ${item.slot}`);
+    });
+    
+    // 检查背包内是否有重复ID
+    const backpackIds = items.map(item => item.id);
+    const duplicateBackpackIds = backpackIds.filter((id, index) => backpackIds.indexOf(id) !== index);
+    if (duplicateBackpackIds.length > 0) {
+      console.warn('⚠️  背包内存在重复ID:', duplicateBackpackIds);
+    }
+    
+    // 检查装备栏内是否有重复ID
+    const equippedIds = Object.values(equippedItems).map(item => item.id);
+    const duplicateEquippedIds = equippedIds.filter((id, index) => equippedIds.indexOf(id) !== index);
+    if (duplicateEquippedIds.length > 0) {
+      console.warn('⚠️  装备栏内存在重复ID:', duplicateEquippedIds);
+    }
+    
+    // 检查背包和装备栏之间是否有重复ID
+    const commonIds = backpackIds.filter(id => equippedIds.includes(id));
+    if (commonIds.length > 0) {
+      console.warn('⚠️  背包和装备栏之间存在重复ID:', commonIds);
+    }
+  }, [items, equippedItems]);
+
   // 获取已装备物品
   const fetchEquippedItems = async () => {
     try {
@@ -138,23 +171,32 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       let updatedItems = items.filter(item => item.id !== itemId);
       if (currentEquippedItem) {
         // 将EquippedItem转换为LootItem格式，使用API返回的原始id
-      const lootedItem: LootItem = {
-        id: currentEquippedItem.id,
-        item_id: currentEquippedItem.item_id,
-        name: currentEquippedItem.name,
-        value: currentEquippedItem.value,
-        rarity: currentEquippedItem.rarity,
-        iconColor: currentEquippedItem.iconColor,
-        imageUrl: currentEquippedItem.imageUrl,
-        quantity: currentEquippedItem.quantity || 1,
-        type: currentEquippedItem.type || 'equipment',
-        level: currentEquippedItem.level || 1,
-        attack_power: currentEquippedItem.equipment?.attack_power,
-        defense_power: currentEquippedItem.equipment?.defense_power,
-        health: currentEquippedItem.equipment?.health,
-        additional_attrs: currentEquippedItem.equipment?.additional_attrs
-      };
-      updatedItems = [...updatedItems, lootedItem];
+        const lootedItem: LootItem = {
+          id: currentEquippedItem.id,
+          item_id: currentEquippedItem.item_id,
+          name: currentEquippedItem.name,
+          value: currentEquippedItem.value,
+          rarity: currentEquippedItem.rarity,
+          iconColor: currentEquippedItem.iconColor,
+          imageUrl: currentEquippedItem.imageUrl,
+          quantity: currentEquippedItem.quantity || 1,
+          type: currentEquippedItem.type || 'equipment',
+          level: currentEquippedItem.level || 1,
+          attack_power: currentEquippedItem.equipment?.attack_power,
+          defense_power: currentEquippedItem.equipment?.defense_power,
+          health: currentEquippedItem.equipment?.health,
+          additional_attrs: currentEquippedItem.equipment?.additional_attrs
+        };
+        
+        // 检查背包中是否已存在相同id的物品，避免重复添加
+        const existingItemIndex = updatedItems.findIndex(item => item.id === lootedItem.id);
+        if (existingItemIndex >= 0) {
+          // 如果已存在，更新现有物品（通常不会发生，这里做防御性编程）
+          updatedItems[existingItemIndex] = lootedItem;
+        } else {
+          // 如果不存在，添加到背包
+          updatedItems = [...updatedItems, lootedItem];
+        }
       }
       
       // 更新前端背包显示
@@ -235,9 +277,21 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         additional_attrs: itemToUnequip.equipment?.additional_attrs
       };
       
-      // 前端更新背包：添加卸下的装备
+      // 前端更新背包：添加卸下的装备，确保不重复
       if (onInventoryUpdate) {
-        const updatedItems = [...items, lootedItem];
+        // 检查背包中是否已存在相同id的物品，避免重复添加
+        const existingItemIndex = items.findIndex(item => item.id === lootedItem.id);
+        let updatedItems;
+        
+        if (existingItemIndex >= 0) {
+          // 如果已存在，更新现有物品（通常不会发生，这里做防御性编程）
+          updatedItems = [...items];
+          updatedItems[existingItemIndex] = lootedItem;
+        } else {
+          // 如果不存在，添加到背包
+          updatedItems = [...items, lootedItem];
+        }
+        
         onInventoryUpdate(updatedItems);
       }
       
