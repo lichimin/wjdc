@@ -97,6 +97,51 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   // 装备物品
   const equipItem = async (itemId: string | number) => {
     try {
+      // 获取要穿戴的装备
+      const itemToEquip = items.find(item => item.id === itemId);
+      if (!itemToEquip) return;
+
+      // 检查是否有穿戴中的装备在同一部位
+      const currentEquippedItem = equippedItems[itemToEquip.slot];
+      
+      // 前端数据处理：移除背包中的装备
+      if (onInventoryUpdate) {
+        const updatedItems = items.filter(item => item.id !== itemId);
+        onInventoryUpdate(updatedItems);
+      }
+
+      // 前端数据处理：如果有已装备的，先移到背包
+      if (currentEquippedItem) {
+        // 前端立即更新装备栏和背包
+        setEquippedItems(prev => {
+          const updated = { ...prev };
+          delete updated[itemToEquip.slot];
+          return updated;
+        });
+        
+        if (onInventoryUpdate) {
+          const updatedItems = [...items.filter(item => item.id !== itemId), currentEquippedItem];
+          onInventoryUpdate(updatedItems);
+        }
+        
+        // 异步请求卸下接口
+        const token = authService.getAuthToken();
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/equipments/${currentEquippedItem.id}/unequip`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` }),
+          },
+        });
+      }
+      
+      // 前端立即更新装备栏
+      setEquippedItems(prev => ({
+        ...prev,
+        [itemToEquip.slot]: itemToEquip
+      }));
+      
+      // 异步请求装备接口
       const token = authService.getAuthToken();
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/equipments/${itemId}/equip`, {
         method: 'PUT',
@@ -106,18 +151,30 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         },
       });
       
-      if (response.ok) {
-        // 重新获取装备状态
-        await fetchEquippedItems();
+      if (!response.ok) {
+        // 如果装备失败，回滚前端更改
+        setEquippedItems(prev => {
+          const updated = { ...prev };
+          delete updated[itemToEquip.slot];
+          if (currentEquippedItem) {
+            updated[itemToEquip.slot] = currentEquippedItem;
+          }
+          return updated;
+        });
         
-        // 将装备从背包中移除
         if (onInventoryUpdate) {
-          const updatedItems = items.filter(item => item.id !== itemId);
+          let updatedItems = [...items];
+          if (!currentEquippedItem) {
+            updatedItems.push(itemToEquip);
+          } else {
+            updatedItems = updatedItems.filter(item => item.id !== currentEquippedItem.id).concat(currentEquippedItem);
+          }
           onInventoryUpdate(updatedItems);
         }
       }
     } catch (error) {
       console.error('装备物品失败:', error);
+      // 错误处理：可以添加通知或回滚逻辑
     }
   };
   
@@ -126,7 +183,21 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     try {
       // 获取要卸下的装备信息
       const itemToUnequip = selectedEquipment || Object.values(equippedItems).find(item => item.id === itemId);
+      if (!itemToUnequip) return;
       
+      // 前端立即更新装备栏和背包
+      setEquippedItems(prev => {
+        const updated = { ...prev };
+        delete updated[itemToUnequip.slot];
+        return updated;
+      });
+      
+      if (onInventoryUpdate) {
+        const updatedItems = [...items, itemToUnequip];
+        onInventoryUpdate(updatedItems);
+      }
+      
+      // 异步请求卸下接口
       const token = authService.getAuthToken();
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/equipments/${itemId}/unequip`, {
         method: 'PUT',
@@ -136,18 +207,21 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         },
       });
       
-      if (response.ok) {
-        // 重新获取装备状态
-        await fetchEquippedItems();
+      if (!response.ok) {
+        // 如果卸下失败，回滚前端更改
+        setEquippedItems(prev => ({
+          ...prev,
+          [itemToUnequip.slot]: itemToUnequip
+        }));
         
-        // 将卸下的装备添加到背包栏
-        if (itemToUnequip && onInventoryUpdate) {
-          const updatedItems = [...items, itemToUnequip];
+        if (onInventoryUpdate) {
+          const updatedItems = items.filter(item => item.id !== itemToUnequip.id);
           onInventoryUpdate(updatedItems);
         }
       }
     } catch (error) {
       console.error('卸下物品失败:', error);
+      // 错误处理：可以添加通知或回滚逻辑
     }
   };
 
