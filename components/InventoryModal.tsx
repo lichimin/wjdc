@@ -137,24 +137,24 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       // 计算更新后的背包：移除要装备的物品，添加要卸下的物品（如果有）
       let updatedItems = items.filter(item => item.id !== itemId);
       if (currentEquippedItem) {
-        // 将EquippedItem转换为LootItem格式
-        const lootedItem: LootItem = {
-          id: currentEquippedItem.id,
-          item_id: currentEquippedItem.item_id,
-          name: currentEquippedItem.name,
-          value: currentEquippedItem.value,
-          rarity: currentEquippedItem.rarity,
-          iconColor: currentEquippedItem.iconColor,
-          imageUrl: currentEquippedItem.imageUrl,
-          quantity: currentEquippedItem.quantity,
-          type: currentEquippedItem.type,
-          level: currentEquippedItem.level,
-          attack_power: currentEquippedItem.equipment?.attack_power,
-          defense_power: currentEquippedItem.equipment?.defense_power,
-          health: currentEquippedItem.equipment?.health,
-          additional_attrs: currentEquippedItem.equipment?.additional_attrs
-        };
-        updatedItems = [...updatedItems, lootedItem];
+        // 将EquippedItem转换为LootItem格式，使用API返回的原始id
+      const lootedItem: LootItem = {
+        id: currentEquippedItem.id,
+        item_id: currentEquippedItem.item_id,
+        name: currentEquippedItem.name,
+        value: currentEquippedItem.value,
+        rarity: currentEquippedItem.rarity,
+        iconColor: currentEquippedItem.iconColor,
+        imageUrl: currentEquippedItem.imageUrl,
+        quantity: currentEquippedItem.quantity || 1,
+        type: currentEquippedItem.type || 'equipment',
+        level: currentEquippedItem.level || 1,
+        attack_power: currentEquippedItem.equipment?.attack_power,
+        defense_power: currentEquippedItem.equipment?.defense_power,
+        health: currentEquippedItem.equipment?.health,
+        additional_attrs: currentEquippedItem.equipment?.additional_attrs
+      };
+      updatedItems = [...updatedItems, lootedItem];
       }
       
       // 更新前端背包显示
@@ -217,7 +217,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         return updated;
       });
       
-      // 将EquippedItem转换为LootItem格式
+      // 将EquippedItem转换为LootItem格式，使用API返回的原始id
       const lootedItem: LootItem = {
         id: itemToUnequip.id,
         item_id: itemToUnequip.item_id,
