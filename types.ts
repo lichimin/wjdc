@@ -52,6 +52,7 @@ export interface LootItem {
   quantity?: number;
   type?: string; // 'equipment' or 'treasure'
   level?: number; // 新增：宝物等级
+  slot?: string; // 新增：装备槽位，如weapon, helmet, chest等
   attack_power?: number;
   defense_power?: number;
   health?: number;

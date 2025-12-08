@@ -108,20 +108,53 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       const originalEquippedItems = { ...equippedItems };
       const originalItems = [...items];
       
+      // 将LootItem转换为EquippedItem格式
+      const equippedItem: EquippedItem = {
+        id: itemToEquip.id,
+        item_id: itemToEquip.item_id,
+        name: itemToEquip.name,
+        value: itemToEquip.value || 0,
+        rarity: itemToEquip.rarity,
+        iconColor: itemToEquip.iconColor,
+        imageUrl: itemToEquip.imageUrl,
+        quantity: itemToEquip.quantity || 1,
+        type: itemToEquip.type || 'equipment',
+        level: itemToEquip.level || 1,
+        slot: itemToEquip.slot || 'weapon', // 假设默认是武器槽位
+        equipment: { is_equipped: true } // 添加必要的equipment字段
+      };
+      
       // 前端立即更新装备栏
       setEquippedItems(prev => {
         const updated = { ...prev };
         if (currentEquippedItem) {
           delete updated[itemToEquip.slot];
         }
-        updated[itemToEquip.slot] = itemToEquip;
+        updated[itemToEquip.slot] = equippedItem;
         return updated;
       });
       
       // 计算更新后的背包：移除要装备的物品，添加要卸下的物品（如果有）
       let updatedItems = items.filter(item => item.id !== itemId);
       if (currentEquippedItem) {
-        updatedItems = [...updatedItems, currentEquippedItem];
+        // 将EquippedItem转换为LootItem格式
+        const lootedItem: LootItem = {
+          id: currentEquippedItem.id,
+          item_id: currentEquippedItem.item_id,
+          name: currentEquippedItem.name,
+          value: currentEquippedItem.value,
+          rarity: currentEquippedItem.rarity,
+          iconColor: currentEquippedItem.iconColor,
+          imageUrl: currentEquippedItem.imageUrl,
+          quantity: currentEquippedItem.quantity,
+          type: currentEquippedItem.type,
+          level: currentEquippedItem.level,
+          attack_power: currentEquippedItem.equipment?.attack_power,
+          defense_power: currentEquippedItem.equipment?.defense_power,
+          health: currentEquippedItem.equipment?.health,
+          additional_attrs: currentEquippedItem.equipment?.additional_attrs
+        };
+        updatedItems = [...updatedItems, lootedItem];
       }
       
       // 更新前端背包显示
@@ -184,9 +217,27 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         return updated;
       });
       
+      // 将EquippedItem转换为LootItem格式
+      const lootedItem: LootItem = {
+        id: itemToUnequip.id,
+        item_id: itemToUnequip.item_id,
+        name: itemToUnequip.name,
+        value: itemToUnequip.value,
+        rarity: itemToUnequip.rarity,
+        iconColor: itemToUnequip.iconColor,
+        imageUrl: itemToUnequip.imageUrl,
+        quantity: itemToUnequip.quantity || 1,
+        type: itemToUnequip.type || 'equipment',
+        level: itemToUnequip.level || 1,
+        attack_power: itemToUnequip.equipment?.attack_power,
+        defense_power: itemToUnequip.equipment?.defense_power,
+        health: itemToUnequip.equipment?.health,
+        additional_attrs: itemToUnequip.equipment?.additional_attrs
+      };
+      
       // 前端更新背包：添加卸下的装备
       if (onInventoryUpdate) {
-        const updatedItems = [...items, itemToUnequip];
+        const updatedItems = [...items, lootedItem];
         onInventoryUpdate(updatedItems);
       }
       
