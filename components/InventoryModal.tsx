@@ -104,21 +104,9 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       // 检查是否有穿戴中的装备在同一部位
       const currentEquippedItem = equippedItems[itemToEquip.slot];
       
-      // 保存原始的items数组，用于后续操作
+      // 保存原始状态用于回滚
+      const originalEquippedItems = { ...equippedItems };
       const originalItems = [...items];
-      
-      // 前端数据处理：移除背包中的装备
-      let updatedItems = originalItems.filter(item => item.id !== itemId);
-      
-      // 前端数据处理：如果有已装备的，先移到背包
-      if (currentEquippedItem) {
-        updatedItems = [...updatedItems, currentEquippedItem];
-      }
-      
-      // 更新前端显示
-      if (onInventoryUpdate) {
-        onInventoryUpdate(updatedItems);
-      }
       
       // 前端立即更新装备栏
       setEquippedItems(prev => {
@@ -129,6 +117,17 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         updated[itemToEquip.slot] = itemToEquip;
         return updated;
       });
+      
+      // 计算更新后的背包：移除要装备的物品，添加要卸下的物品（如果有）
+      let updatedItems = items.filter(item => item.id !== itemId);
+      if (currentEquippedItem) {
+        updatedItems = [...updatedItems, currentEquippedItem];
+      }
+      
+      // 更新前端背包显示
+      if (onInventoryUpdate) {
+        onInventoryUpdate(updatedItems);
+      }
       
       // 异步请求卸下接口（如果有需要卸下的装备）
       if (currentEquippedItem) {
@@ -154,14 +153,8 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       
       if (!response.ok) {
         // 如果装备失败，回滚前端更改
-        setEquippedItems(prev => {
-          const updated = { ...prev };
-          delete updated[itemToEquip.slot];
-          if (currentEquippedItem) {
-            updated[itemToEquip.slot] = currentEquippedItem;
-          }
-          return updated;
-        });
+        console.error('装备失败，回滚前端状态');
+        setEquippedItems(originalEquippedItems);
         
         if (onInventoryUpdate) {
           onInventoryUpdate(originalItems);
@@ -180,6 +173,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       const itemToUnequip = selectedEquipment || Object.values(equippedItems).find(item => item.id === itemId);
       if (!itemToUnequip) return;
       
+      // 保存原始状态用于回滚
+      const originalEquippedItems = { ...equippedItems };
+      const originalItems = [...items];
+      
       // 前端立即更新装备栏
       setEquippedItems(prev => {
         const updated = { ...prev };
@@ -187,7 +184,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         return updated;
       });
       
-      // 前端更新背包，确保使用最新的items数组
+      // 前端更新背包：添加卸下的装备
       if (onInventoryUpdate) {
         const updatedItems = [...items, itemToUnequip];
         onInventoryUpdate(updatedItems);
@@ -210,14 +207,11 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       
       if (!response.ok) {
         // 如果卸下失败，回滚前端更改
-        setEquippedItems(prev => ({
-          ...prev,
-          [itemToUnequip.slot]: itemToUnequip
-        }));
+        console.error('卸下失败，回滚前端状态');
+        setEquippedItems(originalEquippedItems);
         
         if (onInventoryUpdate) {
-          const updatedItems = items.filter(item => item.id !== itemToUnequip.id);
-          onInventoryUpdate(updatedItems);
+          onInventoryUpdate(originalItems);
         }
       }
     } catch (error) {
@@ -247,6 +241,14 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     }
   };
   
+  // 调试函数：检查装备状态
+  const debugEquipmentState = () => {
+    console.log('当前装备栏状态:', equippedItems);
+    console.log('当前背包状态:', items);
+    console.log('已装备物品数量:', Object.keys(equippedItems).length);
+    console.log('背包物品数量:', items.length);
+  };
+
   // 获取装备栏名称
   const getSlotName = (slot: string): string => {
     const slotNames: Record<string, string> = {
