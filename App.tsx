@@ -258,6 +258,7 @@ const App: React.FC = () => {
     authService.logout();
     setIsAuthenticated(false);
     setUserData(null);
+  };
     setUsername('');
     setPassword('');
     setGameState('HOME');
@@ -907,7 +908,7 @@ const App: React.FC = () => {
               userData={userData}
               onStartAdventure={startGame} 
               onOpenInventory={() => setIsHomeInventoryOpen(true)}
-              onLogout={() => setIsAuthenticated(false)}
+              onLogout={handleLogout}
               onSkinLoaded={setUserSkin}
             />
           )}

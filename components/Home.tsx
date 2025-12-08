@@ -163,7 +163,7 @@ export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenIn
     };
     
     fetchUserSkin();
-  }, [onLogout]);
+  }, []);
 
   // Cache all skin images
   const cacheSkinImages = async (skin: SkinData): Promise<void> => {
