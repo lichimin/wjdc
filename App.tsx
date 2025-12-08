@@ -258,7 +258,6 @@ const App: React.FC = () => {
     authService.logout();
     setIsAuthenticated(false);
     setUserData(null);
-  };
     setUsername('');
     setPassword('');
     setGameState('HOME');
