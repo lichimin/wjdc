@@ -271,20 +271,20 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       };
       
       // 前端更新背包：添加卸下的装备，确保不重复
+      // 检查背包中是否已存在相同id的物品，避免重复添加
+      const existingItemIndex = items.findIndex(item => item.id === lootedItem.id);
+      let updatedItems;
+      
+      if (existingItemIndex >= 0) {
+        // 如果已存在，更新现有物品（通常不会发生，这里做防御性编程）
+        updatedItems = [...items];
+        updatedItems[existingItemIndex] = lootedItem;
+      } else {
+        // 如果不存在，添加到背包
+        updatedItems = [...items, lootedItem];
+      }
+      
       if (onInventoryUpdate) {
-        // 检查背包中是否已存在相同id的物品，避免重复添加
-        const existingItemIndex = items.findIndex(item => item.id === lootedItem.id);
-        let updatedItems;
-        
-        if (existingItemIndex >= 0) {
-          // 如果已存在，更新现有物品（通常不会发生，这里做防御性编程）
-          updatedItems = [...items];
-          updatedItems[existingItemIndex] = lootedItem;
-        } else {
-          // 如果不存在，添加到背包
-          updatedItems = [...items, lootedItem];
-        }
-        
         onInventoryUpdate(updatedItems);
       }
       
