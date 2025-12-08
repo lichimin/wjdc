@@ -49,38 +49,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     }
   }, [skinData]);
 
-  // 打印背包和装备栏物品的id，用于调试键冲突
-  useEffect(() => {
-    console.log('=== 背包物品ID列表 ===');
-    items.forEach((item, index) => {
-      console.log(`背包物品${index}: id = ${item.id}, name = ${item.name}`);
-    });
-    
-    console.log('=== 装备栏物品ID列表 ===');
-    Object.values(equippedItems).forEach((item, index) => {
-      console.log(`装备栏物品${index}: id = ${item.id}, name = ${item.name}, slot = ${item.slot}`);
-    });
-    
-    // 检查背包内是否有重复ID
-    const backpackIds = items.map(item => item.id);
-    const duplicateBackpackIds = backpackIds.filter((id, index) => backpackIds.indexOf(id) !== index);
-    if (duplicateBackpackIds.length > 0) {
-      console.warn('⚠️  背包内存在重复ID:', duplicateBackpackIds);
-    }
-    
-    // 检查装备栏内是否有重复ID
-    const equippedIds = Object.values(equippedItems).map(item => item.id);
-    const duplicateEquippedIds = equippedIds.filter((id, index) => equippedIds.indexOf(id) !== index);
-    if (duplicateEquippedIds.length > 0) {
-      console.warn('⚠️  装备栏内存在重复ID:', duplicateEquippedIds);
-    }
-    
-    // 检查背包和装备栏之间是否有重复ID
-    const commonIds = backpackIds.filter(id => equippedIds.includes(id));
-    if (commonIds.length > 0) {
-      console.warn('⚠️  背包和装备栏之间存在重复ID:', commonIds);
-    }
-  }, [items, equippedItems]);
+  // 移除了通用调试日志，只保留装备穿戴和卸下时的特定格式日志
 
   // 获取已装备物品
   const fetchEquippedItems = async () => {
@@ -226,7 +195,21 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         },
       });
       
-      if (!response.ok) {
+      if (response.ok) {
+        // 装备成功后打印状态日志
+        console.log(`穿戴装备，id${itemId}`);
+        const currentEquippedIds = Object.values(equippedItems)
+          .filter(item => item.id !== itemId)
+          .concat([equippedItem])
+          .map(item => item.id)
+          .sort((a, b) => Number(a) - Number(b));
+        console.log(`穿戴中的装备，${currentEquippedIds.join(',')}`);
+        
+        const currentBackpackIds = updatedItems
+          .map(item => item.id)
+          .sort((a, b) => Number(a) - Number(b));
+        console.log(`背包中的装备${currentBackpackIds.join(',')}`);
+      } else {
         // 如果装备失败，回滚前端更改
         console.error('装备失败，回滚前端状态');
         setEquippedItems(originalEquippedItems);
@@ -310,7 +293,24 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         },
       });
       
-      if (!response.ok) {
+      if (response.ok) {
+        // 卸下成功后打印状态日志
+        console.log(`卸下装备，id${itemId}`);
+        const currentEquippedIds = Object.values(equippedItems)
+          .filter(item => item.id !== itemId)
+          .map(item => item.id)
+          .sort((a, b) => Number(a) - Number(b));
+        console.log(`穿戴中的装备，${currentEquippedIds.join(',')}`);
+        
+        // 计算更新后的背包物品ID
+        const updatedItems = items.findIndex(item => item.id === lootedItem.id) >= 0
+          ? [...items]
+          : [...items, lootedItem];
+        const currentBackpackIds = updatedItems
+          .map(item => item.id)
+          .sort((a, b) => Number(a) - Number(b));
+        console.log(`背包中的装备${currentBackpackIds.join(',')}`);
+      } else {
         // 如果卸下失败，回滚前端更改
         console.error('卸下失败，回滚前端状态');
         setEquippedItems(originalEquippedItems);
