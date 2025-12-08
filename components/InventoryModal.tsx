@@ -186,6 +186,9 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       
       // 更新前端背包显示
       if (onInventoryUpdate) {
+        // 调试日志：打印更新后的背包数据
+        console.log('更新后的背包数据:', updatedItems);
+        console.log('卸下的装备转换后的背包物品:', lootedItem);
         onInventoryUpdate(updatedItems);
       }
       
@@ -261,57 +264,16 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     try {
       // 获取要卸下的装备信息
       const itemToUnequip = selectedEquipment || Object.values(equippedItems).find(item => item.id === itemId);
-      if (!itemToUnequip) return;
+      if (!itemToUnequip) {
+        console.error('未找到要卸下的装备:', itemId);
+        return;
+      }
+      
+      console.log('要卸下的装备信息:', itemToUnequip);
       
       // 保存原始状态用于回滚
       const originalEquippedItems = { ...equippedItems };
       const originalItems = [...items];
-      
-      // 前端立即更新装备栏
-      setEquippedItems(prev => {
-        const updated = { ...prev };
-        delete updated[itemToUnequip.slot];
-        return updated;
-      });
-      
-      // 将EquippedItem转换为LootItem格式，使用API返回的原始id
-      const lootedItem: LootItem = {
-        id: itemToUnequip.id,
-        item_id: itemToUnequip.item_id,
-        name: itemToUnequip.name,
-        value: itemToUnequip.value,
-        rarity: itemToUnequip.rarity,
-        iconColor: itemToUnequip.iconColor,
-        imageUrl: itemToUnequip.imageUrl,
-        quantity: itemToUnequip.quantity || 1,
-        type: itemToUnequip.type || 'equipment',
-        level: itemToUnequip.level || 1,
-        attack_power: itemToUnequip.equipment?.attack_power,
-        defense_power: itemToUnequip.equipment?.defense_power,
-        health: itemToUnequip.equipment?.health,
-        additional_attrs: itemToUnequip.equipment?.additional_attrs
-      };
-      
-      // 前端更新背包：添加卸下的装备，确保不重复
-      // 检查背包中是否已存在相同item_id的物品，避免重复添加
-      const existingItemIndex = items.findIndex(item => item.item_id === lootedItem.item_id);
-      let updatedItems;
-      
-      if (existingItemIndex >= 0) {
-        // 如果已存在，更新现有物品的数量
-        updatedItems = [...items];
-        updatedItems[existingItemIndex] = {
-          ...updatedItems[existingItemIndex],
-          quantity: (updatedItems[existingItemIndex].quantity || 1) + 1
-        };
-      } else {
-        // 如果不存在，添加到背包
-        updatedItems = [...items, lootedItem];
-      }
-      
-      if (onInventoryUpdate) {
-        onInventoryUpdate(updatedItems);
-      }
       
       // 清除选中状态
       if (selectedEquipment?.id === itemId) {
@@ -329,6 +291,76 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       });
       
       if (response.ok) {
+        // 前端更新装备栏
+        setEquippedItems(prev => {
+          const updated = { ...prev };
+          delete updated[itemToUnequip.slot];
+          return updated;
+        });
+        
+        // 将EquippedItem转换为LootItem格式，确保包含所有必要字段
+        console.log('装备详情:', itemToUnequip);
+        console.log('装备equipment字段:', itemToUnequip.equipment);
+        
+        // 确保rarity字段的类型正确
+        let normalizedRarity = itemToUnequip.rarity;
+        if (typeof normalizedRarity === 'string') {
+          normalizedRarity = Rarity[normalizedRarity as keyof typeof Rarity] || Rarity.COMMON;
+        }
+        
+        const lootedItem: LootItem = {
+          id: `${itemToUnequip.id}-${Date.now()}`, // 生成一个唯一的id，避免与背包中已有的物品冲突
+          item_id: itemToUnequip.item_id,
+          name: itemToUnequip.name,
+          value: itemToUnequip.value,
+          rarity: normalizedRarity,
+          iconColor: itemToUnequip.iconColor,
+          imageUrl: itemToUnequip.imageUrl,
+          quantity: itemToUnequip.quantity || 1,
+          type: 'equipment', // 明确设置为equipment类型
+          level: itemToUnequip.level || 1,
+          slot: itemToUnequip.slot,
+          attack_power: itemToUnequip.equipment?.attack_power,
+          defense_power: itemToUnequip.equipment?.defense_power,
+          health: itemToUnequip.equipment?.health,
+          additional_attrs: itemToUnequip.equipment?.additional_attrs
+        };
+        
+        console.log('转换后的背包物品:', lootedItem);
+        
+        console.log('转换为背包物品的装备:', lootedItem);
+        
+        // 前端更新背包：添加卸下的装备，确保不重复
+        // 使用当前的items数组创建最新的背包状态
+        const latestItems = [...items];
+        
+        // 检查背包中是否已存在相同item_id的物品，避免重复添加
+        const existingItemIndex = latestItems.findIndex(item => item.item_id === lootedItem.item_id);
+        
+        if (existingItemIndex >= 0) {
+          // 如果已存在，更新现有物品的数量
+          latestItems[existingItemIndex] = {
+            ...latestItems[existingItemIndex],
+            quantity: (latestItems[existingItemIndex].quantity || 1) + 1
+          };
+          console.log('物品已存在，更新数量:', latestItems[existingItemIndex]);
+        } else {
+          // 如果不存在，添加到背包
+          latestItems.push(lootedItem);
+          console.log('物品不存在，添加到背包:', lootedItem);
+        }
+        
+        console.log('当前背包状态:', items);
+        console.log('查找item_id为', lootedItem.item_id, '的物品，结果索引:', existingItemIndex);
+        console.log('更新后的背包数据:', latestItems);
+        
+        if (onInventoryUpdate) {
+          console.log('调用onInventoryUpdate更新背包');
+          onInventoryUpdate(latestItems);
+        } else {
+          console.error('onInventoryUpdate未定义');
+        }
+        
         // 计算最新的装备栏状态（移除当前卸下的物品）
         const latestEquippedItems = { ...originalEquippedItems };
         delete latestEquippedItems[itemToUnequip.slot];
@@ -340,8 +372,8 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           .sort((a, b) => Number(a) - Number(b));
         console.log(`穿戴中的装备，${currentEquippedIds.join(',')}`);
         
-        // 使用函数外部计算好的更新后的背包物品
-        const currentBackpackIds = updatedItems
+        // 使用更新后的背包物品
+        const currentBackpackIds = latestItems
           .map(item => item.id)
           .sort((a, b) => Number(a) - Number(b));
         console.log(`背包中的装备${currentBackpackIds.join(',')}`);
@@ -769,11 +801,12 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
               </div>
             ) : (
               <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+                {console.log('背包中所有物品:', items)};
                 {items.map((item) => {
-                   const rarityClass = getRarityStyle(item.rarity);
-                   const isGenesis = item.rarity === Rarity.GENESIS;
-
-                   return (
+                  console.log('渲染物品:', item);
+                  const rarityClass = getRarityStyle(item.rarity);
+                  const isGenesis = item.rarity === Rarity.GENESIS;
+                  return (
                      <div 
                        key={item.id} 
                        className={`group relative bg-slate-950 p-2 rounded-lg border border-slate-800 transition-colors cursor-pointer ${item.type === 'equipment' ? 'hover:border-amber-500' : ''}`}
@@ -808,7 +841,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                               </div>
                             )}
                         </div>
-                             
+                              
                         <div className="text-center">
                           <div className={`text-[10px] font-bold truncate ${item.rarity === Rarity.GENESIS ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-yellow-400' : rarityClass.match(/text-\S+/)?.[0] || 'text-slate-300'}`}>
                             {item.name}
@@ -818,8 +851,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           </div>
                         </div>
                      </div>
-                   );
-                })}
+                  );})}
               </div>
             )}
           </div>
