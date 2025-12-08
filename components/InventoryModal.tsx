@@ -65,7 +65,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         const result = await response.json();
         if (result.success) {
           // 将API返回的数据转换为组件期望的EquippedItem格式
-          const organized = result.data.reduce((acc: Record<string, EquippedItem>, item: any) => {
+          const organized = (result.data || []).reduce((acc: Record<string, EquippedItem>, item: any) => {
             if (item.equipment && item.equipment.equipment_template && item.equipment.is_equipped) {
               const template = item.equipment.equipment_template;
               const equippedItem: EquippedItem = {
@@ -109,6 +109,12 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       if (response.ok) {
         // 重新获取装备状态
         await fetchEquippedItems();
+        
+        // 将装备从背包中移除
+        if (onInventoryUpdate) {
+          const updatedItems = items.filter(item => item.id !== itemId);
+          onInventoryUpdate(updatedItems);
+        }
       }
     } catch (error) {
       console.error('装备物品失败:', error);
@@ -118,6 +124,9 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   // 卸下物品
   const unequipItem = async (itemId: string | number) => {
     try {
+      // 获取要卸下的装备信息
+      const itemToUnequip = selectedEquipment || Object.values(equippedItems).find(item => item.id === itemId);
+      
       const token = authService.getAuthToken();
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/equipments/${itemId}/unequip`, {
         method: 'PUT',
@@ -132,8 +141,8 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         await fetchEquippedItems();
         
         // 将卸下的装备添加到背包栏
-        if (selectedEquipment && onInventoryUpdate) {
-          const updatedItems = [...items, selectedEquipment];
+        if (itemToUnequip && onInventoryUpdate) {
+          const updatedItems = [...items, itemToUnequip];
           onInventoryUpdate(updatedItems);
         }
       }
@@ -275,7 +284,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                 <div className="equip-slot" data-slot="weapon">
                   {equippedItems.weapon ? (
                     <div 
-                      className={`relative p-2 rounded-lg border ${getRarityStyle(equippedItems.weapon.rarity)} cursor-pointer hover:scale-105 transition-transform`}
+                      className={`relative p-1 sm:p-2 rounded-lg border ${getRarityStyle(equippedItems.weapon.rarity)} cursor-pointer hover:scale-105 transition-transform`}
                       onClick={() => handleEquipmentClick(equippedItems.weapon)}
                     >
                       <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
