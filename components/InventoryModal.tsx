@@ -292,7 +292,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.weapon.imageUrl} 
                             alt={equippedItems.weapon.name} 
-                            className="w-full h-full object-contain p-1 sm:p-2"
+                            className="w-full h-full object-contain max-w-12 max-h-12"
                           />
                         ) : (
                           <div 
@@ -325,7 +325,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.helmet.imageUrl} 
                             alt={equippedItems.helmet.name} 
-                            className="w-full h-full object-contain p-1 sm:p-2"
+                            className="w-full h-full object-contain max-w-12 max-h-12"
                           />
                         ) : (
                           <div 
@@ -358,7 +358,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.chest.imageUrl} 
                             alt={equippedItems.chest.name} 
-                            className="w-full h-full object-contain p-1 sm:p-2"
+                            className="w-full h-full object-contain max-w-12 max-h-12"
                           />
                         ) : (
                           <div 
@@ -391,7 +391,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.gloves.imageUrl} 
                             alt={equippedItems.gloves.name} 
-                            className="w-full h-full object-contain p-1 sm:p-2"
+                            className="w-full h-full object-contain max-w-12 max-h-12"
                           />
                         ) : (
                           <div 
@@ -445,7 +445,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.pants.imageUrl} 
                             alt={equippedItems.pants.name} 
-                            className="w-full h-full object-contain p-1 sm:p-2"
+                            className="w-full h-full object-contain max-w-12 max-h-12"
                           />
                         ) : (
                           <div 
@@ -478,7 +478,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.boots.imageUrl} 
                             alt={equippedItems.boots.name} 
-                            className="w-full h-full object-contain p-1 sm:p-2"
+                            className="w-full h-full object-contain max-w-12 max-h-12"
                           />
                         ) : (
                           <div 
@@ -511,7 +511,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.ring.imageUrl} 
                             alt={equippedItems.ring.name} 
-                            className="w-full h-full object-contain p-1 sm:p-2"
+                            className="w-full h-full object-contain max-w-12 max-h-12"
                           />
                         ) : (
                           <div 
