@@ -196,11 +196,16 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       });
       
       if (response.ok) {
+        // 计算最新的装备栏状态（考虑当前装备的物品和可能卸下的物品）
+        const latestEquippedItems = { ...originalEquippedItems };
+        if (currentEquippedItem) {
+          delete latestEquippedItems[itemToEquip.slot];
+        }
+        latestEquippedItems[itemToEquip.slot] = equippedItem;
+        
         // 装备成功后打印状态日志
         console.log(`穿戴装备，id${itemId}`);
-        const currentEquippedIds = Object.values(equippedItems)
-          .filter(item => item.id !== itemId)
-          .concat([equippedItem])
+        const currentEquippedIds = Object.values(latestEquippedItems)
           .map(item => item.id)
           .sort((a, b) => Number(a) - Number(b));
         console.log(`穿戴中的装备，${currentEquippedIds.join(',')}`);
@@ -214,13 +219,18 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         console.error('装备失败，回滚前端状态');
         setEquippedItems(originalEquippedItems);
         
+        // 回滚背包状态
         if (onInventoryUpdate) {
           onInventoryUpdate(originalItems);
         }
       }
     } catch (error) {
       console.error('装备物品失败:', error);
-      // 错误处理：可以添加通知或回滚逻辑
+      // 发生异常时也回滚前端状态
+      setEquippedItems(originalEquippedItems);
+      if (onInventoryUpdate) {
+        onInventoryUpdate(originalItems);
+      }
     }
   };
   
@@ -294,18 +304,18 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       });
       
       if (response.ok) {
+        // 计算最新的装备栏状态（移除当前卸下的物品）
+        const latestEquippedItems = { ...originalEquippedItems };
+        delete latestEquippedItems[itemToUnequip.slot];
+        
         // 卸下成功后打印状态日志
         console.log(`卸下装备，id${itemId}`);
-        const currentEquippedIds = Object.values(equippedItems)
-          .filter(item => item.id !== itemId)
+        const currentEquippedIds = Object.values(latestEquippedItems)
           .map(item => item.id)
           .sort((a, b) => Number(a) - Number(b));
         console.log(`穿戴中的装备，${currentEquippedIds.join(',')}`);
         
-        // 计算更新后的背包物品ID
-        const updatedItems = items.findIndex(item => item.id === lootedItem.id) >= 0
-          ? [...items]
-          : [...items, lootedItem];
+        // 使用函数外部计算好的更新后的背包物品
         const currentBackpackIds = updatedItems
           .map(item => item.id)
           .sort((a, b) => Number(a) - Number(b));
@@ -321,7 +331,11 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       }
     } catch (error) {
       console.error('卸下物品失败:', error);
-      // 错误处理：可以添加通知或回滚逻辑
+      // 发生异常时也回滚前端状态
+      setEquippedItems(originalEquippedItems);
+      if (onInventoryUpdate) {
+        onInventoryUpdate(originalItems);
+      }
     }
   };
 
