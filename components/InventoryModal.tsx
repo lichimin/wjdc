@@ -305,8 +305,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('weapon')}</p>
                     </div>
                   ) : (
-                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-1 sm:p-2">
-                      <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                    <div className="relative p-1 sm:p-2 rounded-lg border border-slate-700 aspect-square flex flex-col items-center justify-center text-slate-500">
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                        <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                      </div>
                       <p className="text-[9px] sm:text-xs mt-0.5">{getSlotName('weapon')}</p>
                     </div>
                   )}
@@ -336,8 +338,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('helmet')}</p>
                     </div>
                   ) : (
-                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-1 sm:p-2">
-                      <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                    <div className="relative p-1 sm:p-2 rounded-lg border border-slate-700 aspect-square flex flex-col items-center justify-center text-slate-500">
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                        <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                      </div>
                       <p className="text-[9px] sm:text-xs mt-0.5">{getSlotName('helmet')}</p>
                     </div>
                   )}
@@ -367,8 +371,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('chest')}</p>
                     </div>
                   ) : (
-                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-1 sm:p-2">
-                      <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                    <div className="relative p-1 sm:p-2 rounded-lg border border-slate-700 aspect-square flex flex-col items-center justify-center text-slate-500">
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                        <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                      </div>
                       <p className="text-[9px] sm:text-xs mt-0.5">{getSlotName('chest')}</p>
                     </div>
                   )}
@@ -398,8 +404,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('gloves')}</p>
                     </div>
                   ) : (
-                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-1 sm:p-2">
-                      <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                    <div className="relative p-1 sm:p-2 rounded-lg border border-slate-700 aspect-square flex flex-col items-center justify-center text-slate-500">
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                        <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                      </div>
                       <p className="text-[9px] sm:text-xs mt-0.5">{getSlotName('gloves')}</p>
                     </div>
                   )}
@@ -450,8 +458,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('pants')}</p>
                     </div>
                   ) : (
-                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-1 sm:p-2">
-                      <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                    <div className="relative p-1 sm:p-2 rounded-lg border border-slate-700 aspect-square flex flex-col items-center justify-center text-slate-500">
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                        <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                      </div>
                       <p className="text-[9px] sm:text-xs mt-0.5">{getSlotName('pants')}</p>
                     </div>
                   )}
@@ -481,8 +491,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('boots')}</p>
                     </div>
                   ) : (
-                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-1 sm:p-2">
-                      <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                    <div className="relative p-1 sm:p-2 rounded-lg border border-slate-700 aspect-square flex flex-col items-center justify-center text-slate-500">
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                        <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                      </div>
                       <p className="text-[9px] sm:text-xs mt-0.5">{getSlotName('boots')}</p>
                     </div>
                   )}
@@ -512,8 +524,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('ring')}</p>
                     </div>
                   ) : (
-                    <div className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-500 p-1 sm:p-2">
-                      <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                    <div className="relative p-1 sm:p-2 rounded-lg border border-slate-700 aspect-square flex flex-col items-center justify-center text-slate-500">
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                        <div className="w-10 sm:w-12 h-10 sm:h-12 bg-slate-800 rounded"></div>
+                      </div>
                       <p className="text-[9px] sm:text-xs mt-0.5">{getSlotName('ring')}</p>
                     </div>
                   )}

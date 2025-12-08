@@ -130,6 +130,12 @@ export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenIn
         });
         const data = await response.json();
         
+        // Check if token is invalid
+        if (data.error === "token无效") {
+          onLogout();
+          return;
+        }
+        
         if (data.success && data.data.length > 0) {
           const activeSkin = data.data[0];
           setUserSkin(activeSkin);
@@ -157,7 +163,7 @@ export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenIn
     };
     
     fetchUserSkin();
-  }, []);
+  }, [onLogout]);
 
   // Cache all skin images
   const cacheSkinImages = async (skin: SkinData): Promise<void> => {
