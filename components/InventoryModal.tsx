@@ -37,6 +37,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   const [selectedEquipment, setSelectedEquipment] = useState<LootItem | null>(null);
   const [equippedItems, setEquippedItems] = useState<Record<string, EquippedItem>>({});
   const [currentIdleImageIndex, setCurrentIdleImageIndex] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false); // 防止并发操作的加载状态
   
   // 循环播放角色待机动画
   useEffect(() => {
@@ -98,6 +99,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   
   // 装备物品
   const equipItem = async (itemId: string | number) => {
+    if (isProcessing) return; // 如果正在处理其他操作，直接返回
+    
+    setIsProcessing(true); // 设置为处理中状态
+    
     try {
       // 获取要穿戴的装备
       const itemToEquip = items.find(item => item.id === itemId);
@@ -137,7 +142,15 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       });
       
       // 计算更新后的背包：移除要装备的物品，添加要卸下的物品（如果有）
-      let updatedItems = items.filter(item => item.id !== itemId);
+      let updatedItems = [...items];
+      
+      // 先移除要装备的物品
+      const itemIndex = updatedItems.findIndex(item => item.id === itemId);
+      if (itemIndex >= 0) {
+        updatedItems.splice(itemIndex, 1);
+      }
+      
+      // 如果有要卸下的物品，添加到背包
       if (currentEquippedItem) {
         // 将EquippedItem转换为LootItem格式，使用API返回的原始id
         const lootedItem: LootItem = {
@@ -231,11 +244,17 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       if (onInventoryUpdate) {
         onInventoryUpdate(originalItems);
       }
+    } finally {
+      setIsProcessing(false); // 无论成功还是失败，都重置处理状态
     }
   };
   
   // 卸下物品
   const unequipItem = async (itemId: string | number) => {
+    if (isProcessing) return; // 如果正在处理其他操作，直接返回
+    
+    setIsProcessing(true); // 设置为处理中状态
+    
     try {
       // 获取要卸下的装备信息
       const itemToUnequip = selectedEquipment || Object.values(equippedItems).find(item => item.id === itemId);
@@ -336,6 +355,8 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       if (onInventoryUpdate) {
         onInventoryUpdate(originalItems);
       }
+    } finally {
+      setIsProcessing(false); // 无论成功还是失败，都重置处理状态
     }
   };
 
