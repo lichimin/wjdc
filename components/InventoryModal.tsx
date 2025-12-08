@@ -104,27 +104,34 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       // 检查是否有穿戴中的装备在同一部位
       const currentEquippedItem = equippedItems[itemToEquip.slot];
       
+      // 保存原始的items数组，用于后续操作
+      const originalItems = [...items];
+      
       // 前端数据处理：移除背包中的装备
-      if (onInventoryUpdate) {
-        const updatedItems = items.filter(item => item.id !== itemId);
-        onInventoryUpdate(updatedItems);
-      }
-
+      let updatedItems = originalItems.filter(item => item.id !== itemId);
+      
       // 前端数据处理：如果有已装备的，先移到背包
       if (currentEquippedItem) {
-        // 前端立即更新装备栏和背包
-        setEquippedItems(prev => {
-          const updated = { ...prev };
+        updatedItems = [...updatedItems, currentEquippedItem];
+      }
+      
+      // 更新前端显示
+      if (onInventoryUpdate) {
+        onInventoryUpdate(updatedItems);
+      }
+      
+      // 前端立即更新装备栏
+      setEquippedItems(prev => {
+        const updated = { ...prev };
+        if (currentEquippedItem) {
           delete updated[itemToEquip.slot];
-          return updated;
-        });
-        
-        if (onInventoryUpdate) {
-          const updatedItems = [...items.filter(item => item.id !== itemId), currentEquippedItem];
-          onInventoryUpdate(updatedItems);
         }
-        
-        // 异步请求卸下接口
+        updated[itemToEquip.slot] = itemToEquip;
+        return updated;
+      });
+      
+      // 异步请求卸下接口（如果有需要卸下的装备）
+      if (currentEquippedItem) {
         const token = authService.getAuthToken();
         await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/equipments/${currentEquippedItem.id}/unequip`, {
           method: 'PUT',
@@ -134,12 +141,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           },
         });
       }
-      
-      // 前端立即更新装备栏
-      setEquippedItems(prev => ({
-        ...prev,
-        [itemToEquip.slot]: itemToEquip
-      }));
       
       // 异步请求装备接口
       const token = authService.getAuthToken();
@@ -163,13 +164,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         });
         
         if (onInventoryUpdate) {
-          let updatedItems = [...items];
-          if (!currentEquippedItem) {
-            updatedItems.push(itemToEquip);
-          } else {
-            updatedItems = updatedItems.filter(item => item.id !== currentEquippedItem.id).concat(currentEquippedItem);
-          }
-          onInventoryUpdate(updatedItems);
+          onInventoryUpdate(originalItems);
         }
       }
     } catch (error) {
@@ -185,16 +180,22 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       const itemToUnequip = selectedEquipment || Object.values(equippedItems).find(item => item.id === itemId);
       if (!itemToUnequip) return;
       
-      // 前端立即更新装备栏和背包
+      // 前端立即更新装备栏
       setEquippedItems(prev => {
         const updated = { ...prev };
         delete updated[itemToUnequip.slot];
         return updated;
       });
       
+      // 前端更新背包，确保使用最新的items数组
       if (onInventoryUpdate) {
         const updatedItems = [...items, itemToUnequip];
         onInventoryUpdate(updatedItems);
+      }
+      
+      // 清除选中状态
+      if (selectedEquipment?.id === itemId) {
+        setSelectedEquipment(null);
       }
       
       // 异步请求卸下接口
