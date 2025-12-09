@@ -39,6 +39,14 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   const [currentIdleImageIndex, setCurrentIdleImageIndex] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false); // 防止并发操作的加载状态
   
+  // 使用ref跟踪最新的装备栏状态，避免闭包问题
+  const equippedItemsRef = useRef<Record<string, EquippedItem>>({});
+  
+  // 当装备栏状态更新时，同步更新ref
+  useEffect(() => {
+    equippedItemsRef.current = equippedItems;
+  }, [equippedItems]);
+  
   // 循环播放角色待机动画
   useEffect(() => {
     if (skinData?.idle_image_urls && skinData.idle_image_urls.length > 1) {
@@ -49,6 +57,11 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       return () => clearInterval(interval);
     }
   }, [skinData]);
+  
+  // 组件加载时获取已装备的物品
+  useEffect(() => {
+    fetchEquippedItems();
+  }, []);
 
   // 移除了通用调试日志，只保留装备穿戴和卸下时的特定格式日志
 
@@ -217,6 +230,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       });
       
       if (response.ok) {
+        // 如果API请求成功，更新装备栏和背包
         // 计算最新的装备栏状态（考虑当前装备的物品和可能卸下的物品）
         const latestEquippedItems = { ...originalEquippedItems };
         if (currentEquippedItem) {
@@ -231,9 +245,9 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           .sort((a, b) => Number(a) - Number(b));
         console.log(`穿戴中的装备，${currentEquippedIds.join(',')}`);
 
-        // 如果要打印实际的React状态，需要稍后打印
+        // 使用ref打印最新的React状态
         setTimeout(() => {
-          console.log('实际React状态中的装备栏:', equippedItems);
+          console.log('实际React状态中的装备栏:', equippedItemsRef.current);
         }, 100);
         
         const currentBackpackIds = updatedItems
