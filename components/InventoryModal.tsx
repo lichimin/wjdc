@@ -39,6 +39,12 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   const [currentIdleImageIndex, setCurrentIdleImageIndex] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false); // 防止并发操作的加载状态
   
+  // Sell-related states
+  const [showSellModal, setShowSellModal] = useState(false);
+  const [sellItem, setSellItem] = useState<LootItem | null>(null);
+  const [sellQuantity, setSellQuantity] = useState(1);
+  const [isSelling, setIsSelling] = useState(false);
+  
   // 使用ref跟踪最新的装备栏状态，避免闭包问题
   const equippedItemsRef = useRef<Record<string, EquippedItem>>({});
   
@@ -64,6 +70,78 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   }, []);
 
   // 移除了通用调试日志，只保留装备穿戴和卸下时的特定格式日志
+
+  // 处理出售按钮点击
+  const handleSellClick = (item: LootItem) => {
+    setSellItem(item);
+    setSellQuantity(item.quantity ? Math.min(item.quantity, 1) : 1); // 默认出售1个
+    setShowSellModal(true);
+  };
+
+  // 出售物品
+  const sellMultipleItems = async () => {
+    if (!sellItem) return;
+    
+    setIsSelling(true);
+    try {
+      const token = authService.getAuthToken();
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/my-items/sell-multiple`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }),
+        },
+        body: JSON.stringify({
+          items: [{
+            my_item_id: sellItem.id,
+            quantity: sellQuantity
+          }]
+        })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.code === 200) {
+          // 出售成功，更新背包数据
+          updateInventoryAfterSell(sellItem, sellQuantity);
+          setShowSellModal(false);
+          closeDetails();
+        } else {
+          console.error('出售失败:', result.message);
+        }
+      } else {
+        console.error('出售请求失败:', response.status);
+      }
+    } catch (error) {
+      console.error('出售时发生错误:', error);
+    } finally {
+      setIsSelling(false);
+    }
+  };
+
+  // 出售成功后更新背包数据
+  const updateInventoryAfterSell = (soldItem: LootItem, quantity: number) => {
+    // 更新本地状态
+    const updatedItems = items.map(item => {
+      if (item.id === soldItem.id) {
+        // 如果数量大于1，减去出售的数量；否则移除该物品
+        if (item.quantity && item.quantity > quantity) {
+          return {
+            ...item,
+            quantity: item.quantity - quantity
+          };
+        } else {
+          return null; // 标记为要移除的物品
+        }
+      }
+      return item;
+    }).filter(item => item !== null) as LootItem[];
+    
+    // 通知父组件更新
+    if (onInventoryUpdate) {
+      onInventoryUpdate(updatedItems);
+    }
+  };
 
   // 获取已装备物品
   const fetchEquippedItems = async () => {
@@ -930,11 +1008,78 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                   穿戴装备
                 </button>
               )}
+              
+              {/* Sell Button */}
+              <button 
+                onClick={() => {
+                  if (selectedEquipment) {
+                    handleSellClick(selectedEquipment);
+                  }
+                }}
+                className="px-6 py-3 bg-gradient-to-r from-yellow-600 to-amber-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-yellow-500 to-amber-500 transition-all hover:shadow-[0_0_15px_rgba(255,215,0,0.8)]"
+              >
+                出售
+              </button>
+              
               <button 
                 onClick={closeDetails}
                 className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-purple-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-cyan-500 to-purple-500 transition-all hover:shadow-[0_0_15px_rgba(0,255,255,0.8)]"
               >
                 关闭详情
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sell Modal */}
+      {showSellModal && sellItem && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/70">
+          <div className="bg-slate-800 p-6 rounded-lg border border-white/20 max-w-sm w-full mx-4">
+            <div className="text-xl font-bold text-white mb-4">出售 {sellItem.name}</div>
+            <div className="mb-4">
+              <div className="text-slate-400 mb-2">单价: {sellItem.value} 金币</div>
+              <div className="text-slate-400 mb-2">当前拥有: {sellItem.quantity || 1} 个</div>
+            </div>
+            
+            {/* Quantity Input */}
+            {sellItem.quantity && sellItem.quantity > 1 && (
+              <div className="mb-6">
+                <label className="text-slate-400 block mb-2">出售数量</label>
+                <input
+                  type="number"
+                  min="1"
+                  max={sellItem.quantity}
+                  value={sellQuantity}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (!isNaN(value) && value >= 1 && value <= sellItem.quantity!) {
+                      setSellQuantity(value);
+                    }
+                  }}
+                  className="w-full p-2 bg-slate-900 border border-slate-700 rounded text-white"
+                />
+              </div>
+            )}
+            
+            <div className="text-yellow-400 font-bold mb-6">
+              总售价: {sellItem.value * sellQuantity} 金币
+            </div>
+            
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowSellModal(false)}
+                className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded text-white"
+                disabled={isSelling}
+              >
+                取消
+              </button>
+              <button
+                onClick={sellMultipleItems}
+                className="flex-1 px-4 py-2 bg-yellow-600 hover:bg-yellow-500 rounded text-white"
+                disabled={isSelling}
+              >
+                {isSelling ? '出售中...' : '确认出售'}
               </button>
             </div>
           </div>
