@@ -118,7 +118,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     
     try {
       // 获取要穿戴的装备
-      const itemToEquip = items.find(item => item.id === itemId);
+      const itemToEquip = items.find(item => Number(item.id) === Number(itemId));
       if (!itemToEquip) return;
 
       // 检查是否有穿戴中的装备在同一部位
@@ -152,11 +152,14 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       // 先移除要装备的物品
       console.log(`准备移除装备，id${itemId}，当前背包物品数量：${updatedItems.length}`);
       console.log(`背包物品ID列表：${updatedItems.map(item => item.id).join(',')}`);
-      const itemIndex = updatedItems.findIndex(item => item.id === itemId);
+      const itemIndex = updatedItems.findIndex(item => Number(item.id) === Number(itemId));
       console.log(`找到要移除的装备索引：${itemIndex}`);
       if (itemIndex >= 0) {
         updatedItems.splice(itemIndex, 1);
         console.log(`已移除装备，id${itemId}，移除后背包物品数量：${updatedItems.length}`);
+      } else {
+        console.error(`未找到要移除的装备，id${itemId}，请检查ID类型是否匹配`);
+        console.log(`背包物品详细信息：${JSON.stringify(updatedItems, null, 2)}`);
       }
       
       // 如果有要卸下的物品，添加到背包
@@ -253,7 +256,11 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         // 更新装备栏和背包的最终状态
         setEquippedItems(latestEquippedItems);
         if (onInventoryUpdate) {
-          onInventoryUpdate(updatedItems);
+          console.log('调用onInventoryUpdate更新背包，更新后的物品数量:', updatedItems.length);
+          console.log('更新后的物品列表:', JSON.stringify(updatedItems, null, 2));
+          // 创建一个全新的数组引用以确保React检测到变化
+          const newInventoryItems = [...updatedItems];
+          onInventoryUpdate(newInventoryItems);
         }
       } else {
         // 如果装备失败，回滚前端更改
@@ -423,14 +430,20 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
             console.log('添加新的流星剑到背包:', lootedItem);
           }
         } else {
-          // 如果不是流星剑，直接添加到背包
-          latestItems.push(lootedItem);
-          console.log('直接添加卸下的装备到背包:', lootedItem);
+          // 如果不是流星剑，检查是否已存在相同item_id的物品
+          if (existingItemIndex >= 0) {
+            // 替换相同item_id的物品
+            latestItems[existingItemIndex] = lootedItem;
+            console.log('替换背包中相同item_id的非流星剑物品:', lootedItem);
+          } else {
+            // 直接添加到背包
+            latestItems.push(lootedItem);
+            console.log('直接添加卸下的非流星剑装备到背包:', lootedItem);
+          }
         }
         
         console.log('当前背包状态:', items);
         console.log('查找item_id为', lootedItem.item_id, '的物品，结果索引:', existingItemIndex);
-        console.log('查找id为', lootedItem.id, '的物品，结果索引:', existingIdIndex);
         console.log('更新后的背包数据:', JSON.stringify(latestItems, null, 2));
         
         if (onInventoryUpdate) {
