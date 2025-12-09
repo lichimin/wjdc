@@ -136,7 +136,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         value: itemToEquip.value || 0,
         rarity: itemToEquip.rarity,
         iconColor: itemToEquip.iconColor,
-        imageUrl: itemToEquip.imageUrl,
+        imageUrl: itemToEquip.imageUrl?.replace(/^\s*[`'"\s]*|[`'"\s]*\s*$/g, ''), // 去除可能的各种引号和前后空格
         quantity: itemToEquip.quantity || 1,
         type: itemToEquip.type || 'equipment',
         level: itemToEquip.level || 1,
@@ -169,7 +169,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           value: currentEquippedItem.value,
           rarity: currentEquippedItem.rarity,
           iconColor: currentEquippedItem.iconColor,
-          imageUrl: currentEquippedItem.imageUrl?.trim()?.replace(/^`|`$/g, ''), // 去除可能的反引号和前后空格
+          imageUrl: currentEquippedItem.imageUrl?.replace(/^\s*[`'"\s]*|[`'"\s]*\s*$/g, ''), // 去除可能的各种引号和前后空格
           quantity: currentEquippedItem.quantity || 1,
           type: currentEquippedItem.type || 'equipment',
           level: currentEquippedItem.level || 1,
@@ -337,7 +337,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           value: itemToUnequip.value,
           rarity: normalizedRarity,
           iconColor: itemToUnequip.iconColor,
-          imageUrl: itemToUnequip.imageUrl?.trim()?.replace(/^`|`$/g, ''), // 去除可能的反引号和前后空格
+          imageUrl: itemToUnequip.imageUrl?.replace(/^\s*[`'"\s]*|[`'"\s]*\s*$/g, ''), // 去除可能的各种引号和前后空格
           quantity: itemToUnequip.quantity || 1,
           type: 'equipment', // 明确设置为equipment类型
           level: itemToUnequip.level || 1,
@@ -350,10 +350,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         
         // 添加详细日志以便调试
         console.log('转换后的装备信息:', lootedItem);
-        
-        console.log('转换后的背包物品:', lootedItem);
-        
-        console.log('转换为背包物品的装备:', lootedItem);
         
         // 前端更新背包：添加卸下的装备，确保不重复
         // 使用当前的items数组创建最新的背包状态
@@ -371,20 +367,32 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           Number(item.item_id) === Number(lootedItem.item_id)
         );
         
+        // 同时检查是否已存在相同id的物品，避免重复添加
+        const existingIdIndex = latestItems.findIndex(item => item.id === lootedItem.id);
+        
         // 添加详细日志以便调试
         console.log('背包中是否已存在相同item_id的物品:', existingItemIndex >= 0);
         console.log('背包中相同item_id的物品索引:', existingItemIndex);
         if (existingItemIndex >= 0) {
           console.log('背包中已存在的物品信息:', latestItems[existingItemIndex]);
         }
+        console.log('背包中是否已存在相同id的物品:', existingIdIndex >= 0);
+        console.log('背包中相同id的物品索引:', existingIdIndex);
+        if (existingIdIndex >= 0) {
+          console.log('背包中已存在的相同id物品信息:', latestItems[existingIdIndex]);
+        }
         
-        if (existingItemIndex >= 0) {
-          // 如果已存在，更新现有物品的数量
+        if (existingIdIndex >= 0) {
+          // 如果已存在相同id的物品，替换为格式正确的新物品
+          latestItems[existingIdIndex] = lootedItem;
+          console.log('物品已存在（相同id），替换为格式正确的物品:', lootedItem);
+        } else if (existingItemIndex >= 0) {
+          // 如果已存在相同item_id的物品，更新现有物品的数量
           latestItems[existingItemIndex] = {
             ...latestItems[existingItemIndex],
             quantity: (latestItems[existingItemIndex].quantity || 1) + 1
           };
-          console.log('物品已存在，更新数量:', latestItems[existingItemIndex]);
+          console.log('物品已存在（相同item_id），更新数量:', latestItems[existingItemIndex]);
         } else {
           // 如果不存在，添加到背包
           latestItems.push(lootedItem);
