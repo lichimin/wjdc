@@ -127,8 +127,12 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
 
   // 获取已装备物品
   const fetchEquippedItems = async () => {
+    console.log('=== 开始获取装备栏数据 ===');
     try {
       const token = authService.getAuthToken();
+      console.log('1. 获取令牌:', token ? '存在' : '不存在');
+      console.log('2. API基础URL:', import.meta.env.VITE_API_BASE_URL);
+      console.log('3. 开始发起网络请求...');
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/my-items/equipped`, {
         method: 'GET',
         headers: {
@@ -136,6 +140,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           ...(token && { 'Authorization': `Bearer ${token}` }),
         },
       });
+      console.log('4. 网络请求完成，响应状态:', response.status);
       
       if (response.ok) {
         const result = await response.json();
@@ -280,20 +285,23 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   
   // 集成刷新方法：初始化背包数据（请求我的装备，及我的物品接口）
   const refreshInventoryData = async () => {
-    console.log('开始刷新背包数据...');
+    console.log('=== 开始刷新背包数据 ===');
     try {
-      // 重新获取装备栏数据
+      console.log('1. 开始重新获取装备栏数据...');
       await fetchEquippedItems();
       
+      console.log('2. 装备栏数据获取完成，通知父组件更新背包数据...');
       // 通知父组件更新背包数据（父组件会重新请求API）
       if (onInventoryUpdate) {
-        console.log('通知父组件更新背包数据...');
+        console.log('3. 调用onInventoryUpdate通知父组件...');
         onInventoryUpdate([]); // 传递空数组，父组件会重新请求API获取最新数据
+      } else {
+        console.log('3. onInventoryUpdate未定义，无法通知父组件');
       }
       
-      console.log('背包数据刷新完成');
+      console.log('=== 背包数据刷新完成 ===');
     } catch (error) {
-      console.error('刷新背包数据失败:', error);
+      console.error('=== 刷新背包数据失败:', error);
     }
   };
 

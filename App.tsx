@@ -393,14 +393,22 @@ const App: React.FC = () => {
   
   // Fetch backpack items from API
   const fetchBackpackItems = async () => {
-    if (!isAuthenticated) return;
+    console.log('=== App: 开始获取背包数据 ===');
+    if (!isAuthenticated) {
+      console.log('1. 用户未认证，跳过获取背包数据');
+      return;
+    }
     
+    console.log('2. 设置加载状态为true');
     setInventoryLoading(true);
     try {
       const token = authService.getAuthToken();
+      console.log('3. 获取令牌:', token ? '存在' : '不存在');
       if (!token) throw new Error('No authentication token found');
       
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+      console.log('4. API基础URL:', apiBaseUrl);
+      console.log('5. 开始发起网络请求获取背包数据...');
       const response = await fetch(`${apiBaseUrl}/api/v1/my-items?position=backpack`, {
         method: 'GET',
         headers: {
@@ -408,6 +416,7 @@ const App: React.FC = () => {
           'Content-Type': 'application/json'
         }
       });
+      console.log('6. 网络请求完成，响应状态:', response.status);
       
       const data = await response.json();
       if (!data.success) throw new Error(data.message || 'Failed to fetch items');
@@ -1202,8 +1211,10 @@ const App: React.FC = () => {
         originalItems={originalInventoryItems} 
         skinData={userSkin?.skin || null}
         onInventoryUpdate={(updatedItems) => {
+          console.log('=== App: 收到背包更新通知 ===');
+          console.log('1. 更新背包状态:', updatedItems);
           setRunInventory(updatedItems);
-          // 装备操作后重新获取背包数据
+          console.log('2. 装备操作后重新获取背包数据...');
           fetchBackpackItems();
         }}
       />}
