@@ -102,8 +102,17 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       if (response.ok) {
         const result = await response.json();
         if (result.code === 200) {
-          // 出售成功，更新背包数据
-          updateInventoryAfterSell(sellItem, sellQuantity);
+          // 出售成功后打印状态日志
+          console.log(`出售宝物，id${sellItem.id}，数量${sellQuantity}`);
+          
+          // 重新获取装备栏和背包数据
+          await fetchEquippedItems();
+          
+          // 通知父组件更新背包数据（父组件会重新请求API）
+          if (onInventoryUpdate) {
+            onInventoryUpdate([]); // 传递空数组，父组件会重新请求API获取最新数据
+          }
+          
           setShowSellModal(false);
           closeDetails();
         } else {
@@ -119,29 +128,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     }
   };
 
-  // 出售成功后更新背包数据
-  const updateInventoryAfterSell = (soldItem: LootItem, quantity: number) => {
-    // 更新本地状态
-    const updatedItems = items.map(item => {
-      if (item.id === soldItem.id) {
-        // 如果数量大于1，减去出售的数量；否则移除该物品
-        if (item.quantity && item.quantity > quantity) {
-          return {
-            ...item,
-            quantity: item.quantity - quantity
-          };
-        } else {
-          return null; // 标记为要移除的物品
-        }
-      }
-      return item;
-    }).filter(item => item !== null) as LootItem[];
-    
-    // 通知父组件更新
-    if (onInventoryUpdate) {
-      onInventoryUpdate(updatedItems);
-    }
-  };
+
 
   // 获取已装备物品
   const fetchEquippedItems = async () => {
@@ -1009,17 +996,19 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                 </button>
               )}
               
-              {/* Sell Button */}
-              <button 
-                onClick={() => {
-                  if (selectedEquipment) {
-                    handleSellClick(selectedEquipment);
-                  }
-                }}
-                className="px-6 py-3 bg-gradient-to-r from-yellow-600 to-amber-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-yellow-500 to-amber-500 transition-all hover:shadow-[0_0_15px_rgba(255,215,0,0.8)]"
-              >
-                出售
-              </button>
+              {/* Sell Button - Only show for treasures */}
+              {selectedEquipment?.type === 'treasure' && (
+                <button 
+                  onClick={() => {
+                    if (selectedEquipment) {
+                      handleSellClick(selectedEquipment);
+                    }
+                  }}
+                  className="px-6 py-3 bg-gradient-to-r from-yellow-600 to-amber-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-yellow-500 to-amber-500 transition-all hover:shadow-[0_0_15px_rgba(255,215,0,0.8)]"
+                >
+                  出售
+                </button>
+              )}
               
               <button 
                 onClick={closeDetails}
