@@ -213,18 +213,22 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       
       if (response.ok) {
         // 装备成功后打印状态日志
-        console.log(`穿戴装备，id${itemId}`);
+        console.log(`穿戴装备成功，id${itemId}`);
         
         // 重新获取装备栏和背包数据
+        console.log('开始重新获取装备栏数据...');
         await fetchEquippedItems();
         
         // 通知父组件更新背包数据（父组件会重新请求API）
         if (onInventoryUpdate) {
+          console.log('通知父组件更新背包数据...');
           onInventoryUpdate([]); // 传递空数组，父组件会重新请求API获取最新数据
         }
       } else {
         // 如果装备失败，打印错误信息
         console.error('装备失败');
+        const errorData = await response.json();
+        console.error('装备失败详情:', errorData);
       }
     } catch (error) {
       console.error('装备物品失败:', error);
@@ -264,18 +268,22 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       
       if (response.ok) {
         // 卸下成功后打印状态日志
-        console.log(`卸下装备，id${itemId}`);
+        console.log(`卸下装备成功，id${itemId}`);
         
         // 重新获取装备栏和背包数据
+        console.log('开始重新获取装备栏数据...');
         await fetchEquippedItems();
         
         // 通知父组件更新背包数据（父组件会重新请求API）
         if (onInventoryUpdate) {
+          console.log('通知父组件更新背包数据...');
           onInventoryUpdate([]); // 传递空数组，父组件会重新请求API获取最新数据
         }
       } else {
         // 如果卸下失败，打印错误信息
         console.error('卸下装备失败');
+        const errorData = await response.json();
+        console.error('卸下装备失败详情:', errorData);
       }
     } catch (error) {
       console.error('卸下装备失败:', error);
@@ -697,9 +705,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                        className={`group relative bg-slate-950 p-2 rounded-lg border border-slate-800 transition-colors cursor-pointer ${item.type === 'equipment' ? 'hover:border-amber-500' : ''}`}
                        onClick={(e) => {
                          e.stopPropagation(); // Prevent event bubbling to parent backdrop
-                         if (item.type === 'equipment') {
-                           handleEquipmentClick(item);
-                         }
+                         handleEquipmentClick(item);
                        }}
                      >
                         <div className={`
