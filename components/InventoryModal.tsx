@@ -394,7 +394,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         console.log(`穿戴中的装备，${currentEquippedIds.join(',')}`);
 
         setTimeout(() => {
-          console.log('实际React状态中的装备栏:', equippedItems);
+          console.log('实际React状态中的装备栏:', equippedItemsRef.current);
         }, 100);
         
         // 使用更新后的背包物品
