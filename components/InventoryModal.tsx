@@ -189,6 +189,8 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         // 调试日志：打印更新后的背包数据
         console.log('更新后的背包数据:', updatedItems);
         console.log('卸下的装备转换后的背包物品:', lootedItem);
+
+        
         onInventoryUpdate(updatedItems);
       }
       
@@ -228,6 +230,11 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           .map(item => item.id)
           .sort((a, b) => Number(a) - Number(b));
         console.log(`穿戴中的装备，${currentEquippedIds.join(',')}`);
+
+        // 如果要打印实际的React状态，需要稍后打印
+        setTimeout(() => {
+          console.log('实际React状态中的装备栏:', equippedItems);
+        }, 100);
         
         const currentBackpackIds = updatedItems
           .map(item => item.id)
@@ -371,6 +378,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           .map(item => item.id)
           .sort((a, b) => Number(a) - Number(b));
         console.log(`穿戴中的装备，${currentEquippedIds.join(',')}`);
+
+        setTimeout(() => {
+          console.log('实际React状态中的装备栏:', equippedItems);
+        }, 100);
         
         // 使用更新后的背包物品
         const currentBackpackIds = latestItems
