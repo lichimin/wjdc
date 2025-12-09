@@ -144,24 +144,23 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         equipment: { is_equipped: true } // 添加必要的equipment字段
       };
       
-      // 前端立即更新装备栏
-      setEquippedItems(prev => {
-        const updated = { ...prev };
-        const actualSlot = itemToEquip.slot || 'weapon'; // 使用默认值
-        if (currentEquippedItem) {
-          delete updated[actualSlot];
-        }
-        updated[actualSlot] = equippedItem;
-        return updated;
-      });
+      // 保存原始装备栏状态，用于失败时回滚
+      const originalEquippedItems = { ...equippedItems };
+      
+      // 保存原始背包状态，用于失败时回滚
+      const originalItems = [...items];
       
       // 计算更新后的背包：移除要装备的物品，添加要卸下的物品（如果有）
       let updatedItems = [...items];
       
       // 先移除要装备的物品
+      console.log(`准备移除装备，id${itemId}，当前背包物品数量：${updatedItems.length}`);
+      console.log(`背包物品ID列表：${updatedItems.map(item => item.id).join(',')}`);
       const itemIndex = updatedItems.findIndex(item => item.id === itemId);
+      console.log(`找到要移除的装备索引：${itemIndex}`);
       if (itemIndex >= 0) {
         updatedItems.splice(itemIndex, 1);
+        console.log(`已移除装备，id${itemId}，移除后背包物品数量：${updatedItems.length}`);
       }
       
       // 如果有要卸下的物品，添加到背包
@@ -198,14 +197,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         }
       }
       
-      // 更新前端背包显示
-      if (onInventoryUpdate) {
-        // 调试日志：打印更新后的背包数据
-        console.log('更新后的背包数据:', updatedItems);
+      // 调试日志：打印更新后的背包数据
+      console.log('更新后的背包数据:', updatedItems);
+      if (currentEquippedItem) {
         console.log('卸下的装备转换后的背包物品:', lootedItem);
-
-        
-        onInventoryUpdate(updatedItems);
       }
       
       // 异步请求卸下接口（如果有需要卸下的装备）
@@ -251,13 +246,19 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         setTimeout(() => {
           console.log('实际React状态中的装备栏:', equippedItemsRef.current);
           // 打印背包栏状态
-          console.log('实际React状态中的背包栏:', latestItems);
+          console.log('实际React状态中的背包栏:', updatedItems);
         }, 100);
         
         const currentBackpackIds = updatedItems
           .map(item => item.id)
           .sort((a, b) => Number(a) - Number(b));
         console.log(`背包中的装备${currentBackpackIds.join(',')}`);
+        
+        // 更新装备栏和背包的最终状态
+        setEquippedItems(latestEquippedItems);
+        if (onInventoryUpdate) {
+          onInventoryUpdate(updatedItems);
+        }
       } else {
         // 如果装备失败，回滚前端更改
         console.error('装备失败，回滚前端状态');
