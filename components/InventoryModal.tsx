@@ -174,7 +174,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           value: currentEquippedItem.value,
           rarity: currentEquippedItem.rarity,
           iconColor: currentEquippedItem.iconColor,
-          imageUrl: currentEquippedItem.imageUrl,
+          imageUrl: currentEquippedItem.imageUrl?.trim()?.replace(/^`|`$/g, ''), // 去除可能的反引号和前后空格
           quantity: currentEquippedItem.quantity || 1,
           type: currentEquippedItem.type || 'equipment',
           level: currentEquippedItem.level || 1,
@@ -340,7 +340,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           value: itemToUnequip.value,
           rarity: normalizedRarity,
           iconColor: itemToUnequip.iconColor,
-          imageUrl: itemToUnequip.imageUrl,
+          imageUrl: itemToUnequip.imageUrl?.trim()?.replace(/^`|`$/g, ''), // 去除可能的反引号和前后空格
           quantity: itemToUnequip.quantity || 1,
           type: 'equipment', // 明确设置为equipment类型
           level: itemToUnequip.level || 1,
