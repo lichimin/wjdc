@@ -147,10 +147,11 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       // 前端立即更新装备栏
       setEquippedItems(prev => {
         const updated = { ...prev };
+        const actualSlot = itemToEquip.slot || 'weapon'; // 使用默认值
         if (currentEquippedItem) {
-          delete updated[itemToEquip.slot];
+          delete updated[actualSlot];
         }
-        updated[itemToEquip.slot] = equippedItem;
+        updated[actualSlot] = equippedItem;
         return updated;
       });
       
@@ -233,10 +234,11 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         // 如果API请求成功，更新装备栏和背包
         // 计算最新的装备栏状态（考虑当前装备的物品和可能卸下的物品）
         const latestEquippedItems = { ...originalEquippedItems };
+        const actualSlot = itemToEquip.slot || 'weapon'; // 使用默认值
         if (currentEquippedItem) {
-          delete latestEquippedItems[itemToEquip.slot];
+          delete latestEquippedItems[actualSlot];
         }
-        latestEquippedItems[itemToEquip.slot] = equippedItem;
+        latestEquippedItems[actualSlot] = equippedItem;
         
         // 装备成功后打印状态日志
         console.log(`穿戴装备，id${itemId}`);
