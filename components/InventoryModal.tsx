@@ -812,7 +812,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
               </div>
             ) : (
               <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
-                {console.log('背包中所有物品:', items)};
                 {items.map((item) => {
                   // console.log('渲染物品:', item);
                   const rarityClass = getRarityStyle(item.rarity);
