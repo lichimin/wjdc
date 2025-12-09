@@ -342,10 +342,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           type: 'equipment', // 明确设置为equipment类型
           level: itemToUnequip.level || 1,
           slot: itemToUnequip.slot,
-          attack_power: itemToUnequip.equipment?.attack_power,
-          defense_power: itemToUnequip.equipment?.defense_power,
-          health: itemToUnequip.equipment?.health,
-          additional_attrs: itemToUnequip.equipment?.additional_attrs
+          attack_power: itemToUnequip.attack_power,
+          defense_power: itemToUnequip.defense_power,
+          health: itemToUnequip.health,
+          additional_attrs: itemToUnequip.additional_attrs
         };
         
         // 添加详细日志以便调试
