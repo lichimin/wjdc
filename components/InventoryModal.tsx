@@ -144,11 +144,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         equipment: { is_equipped: true } // 添加必要的equipment字段
       };
       
-      // 保存原始装备栏状态，用于失败时回滚
-      const originalEquippedItems = { ...equippedItems };
-      
-      // 保存原始背包状态，用于失败时回滚
-      const originalItems = [...items];
+      // 原始状态已在函数开头保存
       
       // 计算更新后的背包：移除要装备的物品，添加要卸下的物品（如果有）
       let updatedItems = [...items];
