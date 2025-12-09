@@ -124,84 +124,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       // 检查是否有穿戴中的装备在同一部位
       const currentEquippedItem = equippedItems[itemToEquip.slot];
       
-      // 保存原始状态用于回滚
-      const originalEquippedItems = { ...equippedItems };
-      const originalItems = [...items];
-      
-      // 将LootItem转换为EquippedItem格式
-      const equippedItem: EquippedItem = {
-        id: itemToEquip.id,
-        item_id: itemToEquip.item_id,
-        name: itemToEquip.name,
-        value: itemToEquip.value || 0,
-        rarity: itemToEquip.rarity,
-        iconColor: itemToEquip.iconColor,
-        imageUrl: itemToEquip.imageUrl?.replace(/^\s*[`'"\s]*|[`'"\s]*\s*$/g, ''), // 去除可能的各种引号和前后空格
-        quantity: itemToEquip.quantity || 1,
-        type: itemToEquip.type || 'equipment',
-        level: itemToEquip.level || 1,
-        slot: itemToEquip.slot || 'weapon', // 假设默认是武器槽位
-        equipment: { is_equipped: true } // 添加必要的equipment字段
-      };
-      
-      // 原始状态已在函数开头保存
-      
-      // 计算更新后的背包：移除要装备的物品，添加要卸下的物品（如果有）
-      let updatedItems = [...items];
-      
-      // 先移除要装备的物品
-      console.log(`准备移除装备，id${itemId}，当前背包物品数量：${updatedItems.length}`);
-      console.log(`背包物品ID列表：${updatedItems.map(item => item.id).join(',')}`);
-      const itemIndex = updatedItems.findIndex(item => Number(item.id) === Number(itemId));
-      console.log(`找到要移除的装备索引：${itemIndex}`);
-      if (itemIndex >= 0) {
-        updatedItems.splice(itemIndex, 1);
-        console.log(`已移除装备，id${itemId}，移除后背包物品数量：${updatedItems.length}`);
-      } else {
-        console.error(`未找到要移除的装备，id${itemId}，请检查ID类型是否匹配`);
-        console.log(`背包物品详细信息：${JSON.stringify(updatedItems, null, 2)}`);
-      }
-      
-      // 如果有要卸下的物品，添加到背包
-      if (currentEquippedItem) {
-        // 将EquippedItem转换为LootItem格式，使用API返回的原始id
-        const lootedItem: LootItem = {
-          id: currentEquippedItem.id,
-          item_id: currentEquippedItem.item_id,
-          name: currentEquippedItem.name,
-          value: currentEquippedItem.value,
-          rarity: currentEquippedItem.rarity,
-          iconColor: currentEquippedItem.iconColor,
-          imageUrl: currentEquippedItem.imageUrl?.replace(/^\s*[`'"\s]*|[`'"\s]*\s*$/g, ''), // 去除可能的各种引号和前后空格
-          quantity: currentEquippedItem.quantity || 1,
-          type: currentEquippedItem.type || 'equipment',
-          level: currentEquippedItem.level || 1,
-          attack_power: currentEquippedItem.equipment?.attack_power,
-          defense_power: currentEquippedItem.equipment?.defense_power,
-          health: currentEquippedItem.equipment?.health,
-          additional_attrs: currentEquippedItem.equipment?.additional_attrs
-        };
-        
-        // 检查背包中是否已存在相同item_id的物品，避免重复添加
-        const existingItemIndex = updatedItems.findIndex(item => item.item_id === lootedItem.item_id);
-        if (existingItemIndex >= 0) {
-          // 如果已存在，更新现有物品的数量
-          updatedItems[existingItemIndex] = {
-            ...updatedItems[existingItemIndex],
-            quantity: (updatedItems[existingItemIndex].quantity || 1) + 1
-          };
-        } else {
-          // 如果不存在，添加到背包
-          updatedItems = [...updatedItems, lootedItem];
-        }
-      }
-      
-      // 调试日志：打印更新后的背包数据
-      console.log('更新后的背包数据:', updatedItems);
-      if (currentEquippedItem) {
-        console.log('卸下的装备转换后的背包物品:', lootedItem);
-      }
-      
       // 异步请求卸下接口（如果有需要卸下的装备）
       if (currentEquippedItem) {
         const token = authService.getAuthToken();
@@ -225,60 +147,22 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       });
       
       if (response.ok) {
-        // 如果API请求成功，更新装备栏和背包
-        // 计算最新的装备栏状态（考虑当前装备的物品和可能卸下的物品）
-        const latestEquippedItems = { ...originalEquippedItems };
-        const actualSlot = itemToEquip.slot || 'weapon'; // 使用默认值
-        if (currentEquippedItem) {
-          delete latestEquippedItems[actualSlot];
-        }
-        latestEquippedItems[actualSlot] = equippedItem;
-        
         // 装备成功后打印状态日志
         console.log(`穿戴装备，id${itemId}`);
-        const currentEquippedIds = Object.values(latestEquippedItems)
-          .map(item => item.id)
-          .sort((a, b) => Number(a) - Number(b));
-        console.log(`穿戴中的装备，${currentEquippedIds.join(',')}`);
-
-        // 使用ref打印最新的React状态
-        setTimeout(() => {
-          console.log('实际React状态中的装备栏:', equippedItemsRef.current);
-          // 打印背包栏状态
-          console.log('实际React状态中的背包栏:', updatedItems);
-        }, 100);
         
-        const currentBackpackIds = updatedItems
-          .map(item => item.id)
-          .sort((a, b) => Number(a) - Number(b));
-        console.log(`背包中的装备${currentBackpackIds.join(',')}`);
+        // 重新获取装备栏和背包数据
+        await fetchEquippedItems();
         
-        // 更新装备栏和背包的最终状态
-        setEquippedItems(latestEquippedItems);
+        // 通知父组件更新背包数据（父组件会重新请求API）
         if (onInventoryUpdate) {
-          console.log('调用onInventoryUpdate更新背包，更新后的物品数量:', updatedItems.length);
-          console.log('更新后的物品列表:', JSON.stringify(updatedItems, null, 2));
-          // 创建一个全新的数组引用以确保React检测到变化
-          const newInventoryItems = [...updatedItems];
-          onInventoryUpdate(newInventoryItems);
+          onInventoryUpdate([]); // 传递空数组，父组件会重新请求API获取最新数据
         }
       } else {
-        // 如果装备失败，回滚前端更改
-        console.error('装备失败，回滚前端状态');
-        setEquippedItems(originalEquippedItems);
-        
-        // 回滚背包状态
-        if (onInventoryUpdate) {
-          onInventoryUpdate(originalItems);
-        }
+        // 如果装备失败，打印错误信息
+        console.error('装备失败');
       }
     } catch (error) {
       console.error('装备物品失败:', error);
-      // 发生异常时也回滚前端状态
-      setEquippedItems(originalEquippedItems);
-      if (onInventoryUpdate) {
-        onInventoryUpdate(originalItems);
-      }
     } finally {
       setIsProcessing(false); // 无论成功还是失败，都重置处理状态
     }
@@ -292,25 +176,18 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     
     try {
       // 获取要卸下的装备信息
-      // 使用Number()进行类型转换，确保类型一致
       const itemToUnequip = selectedEquipment || Object.values(equippedItems).find(item => Number(item.id) === Number(itemId));
       if (!itemToUnequip) {
         console.error('未找到要卸下的装备:', itemId);
         return;
       }
       
-      console.log('要卸下的装备信息:', itemToUnequip);
-      
-      // 保存原始状态用于回滚
-      const originalEquippedItems = { ...equippedItems };
-      const originalItems = [...items];
-      
       // 清除选中状态
-        if (selectedEquipment && Number(selectedEquipment.id) === Number(itemId)) {
-          setSelectedEquipment(null);
-        }
+      if (selectedEquipment && Number(selectedEquipment.id) === Number(itemId)) {
+        setSelectedEquipment(null);
+      }
       
-      // 异步请求卸下接口
+      // 异步请求卸下装备API
       const token = authService.getAuthToken();
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/equipments/${itemId}/unequip`, {
         method: 'PUT',
@@ -321,183 +198,22 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       });
       
       if (response.ok) {
-        // 前端更新装备栏
-        setEquippedItems(prev => {
-          const updated = { ...prev };
-          delete updated[itemToUnequip.slot];
-          return updated;
-        });
-        
-        // 将EquippedItem转换为LootItem格式，确保包含所有必要字段
-        console.log('装备详情:', itemToUnequip);
-        console.log('装备详情 - 完整字段:', JSON.stringify(itemToUnequip, null, 2));
-        console.log('装备equipment字段:', itemToUnequip.equipment);
-        console.log('装备是否有equipment字段:', 'equipment' in itemToUnequip);
-        
-        // 确保rarity字段的类型正确
-        let normalizedRarity = itemToUnequip.rarity;
-        if (typeof normalizedRarity === 'string') {
-          normalizedRarity = Rarity[normalizedRarity as keyof typeof Rarity] || Rarity.COMMON;
-        } else {
-          // 如果不是字符串或未定义，默认设置为COMMON
-          normalizedRarity = Rarity.COMMON;
-        }
-        
-        // 为流星剑设置正确的属性
-        // 直接检查id是否为4，确保能正确识别流星剑
-        const isMeteorSword = Number(itemToUnequip.id) === 4;
-        
-        // 直接设置流星剑的正确属性
-        const lootedItem: LootItem = {
-          id: `${itemToUnequip.id}_${Date.now()}`, // 使用唯一ID，避免重复
-          item_id: itemToUnequip.item_id,
-          name: '流星剑', // 直接设置名称为流星剑
-          value: 300, // 直接设置正确的价值
-          rarity: Rarity.LEGENDARY, // 直接设置为传说品质
-          iconColor: '#ff7000', // 设置正确的颜色
-          imageUrl: itemToUnequip.imageUrl ? itemToUnequip.imageUrl.replace(/^\s*[`'"\s]*|[`'"\s]*\s*$/g, '') : undefined, // 去除可能的各种引号和前后空格
-          quantity: 1, // 设置数量为1
-          type: 'equipment', // 明确设置为equipment类型
-          level: itemToUnequip.level || 1,
-          slot: itemToUnequip.slot,
-          attack_power: itemToUnequip.attack_power,
-          defense_power: itemToUnequip.defense_power,
-          health: itemToUnequip.health,
-          additional_attrs: itemToUnequip.additional_attrs
-        };
-        
-        // 如果不是流星剑，则使用正常的属性设置
-        if (!isMeteorSword) {
-          lootedItem.name = itemToUnequip.name;
-          lootedItem.value = itemToUnequip.value || 0;
-          lootedItem.rarity = normalizedRarity;
-          lootedItem.iconColor = itemToUnequip.iconColor || '#ff7000';
-          lootedItem.quantity = itemToUnequip.quantity || 1;
-        }
-        
-        // 添加详细日志以便调试
-        console.log('转换后的装备信息:', lootedItem);
-        console.log('转换后的装备信息 - 完整字段:', JSON.stringify(lootedItem, null, 2));
-        
-        // 前端更新背包：添加卸下的装备，确保不重复
-        // 使用当前的items数组创建最新的背包状态
-        let latestItems = [...items];
-        
-        // 添加详细调试日志
-        console.log('要卸下的装备id:', itemToUnequip.id);
-        console.log('要卸下的装备item_id:', itemToUnequip.item_id);
-        console.log('转换后的装备id:', lootedItem.id);
-        console.log('转换后的装备item_id:', lootedItem.item_id);
-        console.log('当前背包中的物品数量:', latestItems.length);
-        console.log('当前背包中的物品列表:', JSON.stringify(latestItems, null, 2));
-        
-        // 检查背包中是否已存在相同item_id的物品，如果存在则替换
-        // 使用Number()进行类型转换，确保类型一致
-        const existingItemIndex = latestItems.findIndex(item => 
-          Number(item.item_id) === Number(lootedItem.item_id)
-        );
-        
-        // 检查背包中是否已存在相同id的流星剑，如果存在则替换
-        const meteorSwordIndex = latestItems.findIndex(item => 
-          Number(item.id) === 4 && item.name === '流星剑'
-        );
-        
-        // 添加详细日志以便调试
-        console.log('背包中是否已存在相同item_id的物品:', existingItemIndex >= 0);
-        console.log('背包中相同item_id的物品索引:', existingItemIndex);
-        if (existingItemIndex >= 0) {
-          console.log('背包中已存在的物品信息:', latestItems[existingItemIndex]);
-        }
-        console.log('背包中是否已存在旧的流星剑:', meteorSwordIndex >= 0);
-        console.log('背包中旧的流星剑索引:', meteorSwordIndex);
-        if (meteorSwordIndex >= 0) {
-          console.log('背包中已存在的旧流星剑信息:', latestItems[meteorSwordIndex]);
-        }
-        
-        // 如果是流星剑，替换旧的流星剑
-        if (isMeteorSword) {
-          if (meteorSwordIndex >= 0) {
-            // 替换旧的流星剑
-            latestItems[meteorSwordIndex] = lootedItem;
-            console.log('替换背包中的旧流星剑:', lootedItem);
-          } else if (existingItemIndex >= 0) {
-            // 替换相同item_id的物品
-            latestItems[existingItemIndex] = lootedItem;
-            console.log('替换背包中相同item_id的物品:', lootedItem);
-          } else {
-            // 添加新的流星剑
-            latestItems.push(lootedItem);
-            console.log('添加新的流星剑到背包:', lootedItem);
-          }
-        } else {
-          // 如果不是流星剑，检查是否已存在相同item_id的物品
-          if (existingItemIndex >= 0) {
-            // 替换相同item_id的物品
-            latestItems[existingItemIndex] = lootedItem;
-            console.log('替换背包中相同item_id的非流星剑物品:', lootedItem);
-          } else {
-            // 直接添加到背包
-            latestItems.push(lootedItem);
-            console.log('直接添加卸下的非流星剑装备到背包:', lootedItem);
-          }
-        }
-        
-        console.log('当前背包状态:', items);
-        console.log('查找item_id为', lootedItem.item_id, '的物品，结果索引:', existingItemIndex);
-        console.log('更新后的背包数据:', JSON.stringify(latestItems, null, 2));
-        
-        if (onInventoryUpdate) {
-          console.log('调用onInventoryUpdate更新背包');
-          console.log('更新背包前的onInventoryUpdate类型:', typeof onInventoryUpdate);
-          console.log('要更新的背包数据:', JSON.stringify(latestItems, null, 2));
-          // 创建一个全新的数组引用以确保React检测到变化
-          const newInventoryItems = [...latestItems];
-          onInventoryUpdate(newInventoryItems);
-          console.log('调用onInventoryUpdate后');
-          // 请求父组件强制重渲染
-          if (window.forceUpdate) window.forceUpdate();
-        } else {
-          console.error('onInventoryUpdate未定义');
-        }
-        
-        // 计算最新的装备栏状态（移除当前卸下的物品）
-        const latestEquippedItems = { ...originalEquippedItems };
-        delete latestEquippedItems[itemToUnequip.slot];
-        
         // 卸下成功后打印状态日志
         console.log(`卸下装备，id${itemId}`);
-        const currentEquippedIds = Object.values(latestEquippedItems)
-          .map(item => item.id)
-          .sort((a, b) => Number(a) - Number(b));
-        console.log(`穿戴中的装备，${currentEquippedIds.join(',')}`);
-
-        setTimeout(() => {
-          console.log('实际React状态中的装备栏:', equippedItemsRef.current);
-          // 打印背包栏状态
-          console.log('实际React状态中的背包栏:', latestItems);
-        }, 100);
         
-        // 使用更新后的背包物品
-        const currentBackpackIds = latestItems
-          .map(item => item.id)
-          .sort((a, b) => Number(a) - Number(b));
-        console.log(`背包中的装备${currentBackpackIds.join(',')}`);
-      } else {
-        // 如果卸下失败，回滚前端更改
-        console.error('卸下失败，回滚前端状态');
-        setEquippedItems(originalEquippedItems);
+        // 重新获取装备栏和背包数据
+        await fetchEquippedItems();
         
+        // 通知父组件更新背包数据（父组件会重新请求API）
         if (onInventoryUpdate) {
-          onInventoryUpdate(originalItems);
+          onInventoryUpdate([]); // 传递空数组，父组件会重新请求API获取最新数据
         }
+      } else {
+        // 如果卸下失败，打印错误信息
+        console.error('卸下装备失败');
       }
     } catch (error) {
-      console.error('卸下物品失败:', error);
-      // 发生异常时也回滚前端状态
-      setEquippedItems(originalEquippedItems);
-      if (onInventoryUpdate) {
-        onInventoryUpdate(originalItems);
-      }
+      console.error('卸下装备失败:', error);
     } finally {
       setIsProcessing(false); // 无论成功还是失败，都重置处理状态
     }
