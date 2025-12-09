@@ -375,6 +375,21 @@ const App: React.FC = () => {
   
   const [isInventoryOpen, setIsInventoryOpen] = useState(false); // 控制临时背包的显示
   const [isHomeInventoryOpen, setIsHomeInventoryOpen] = useState(false); // 控制home页面的inventory显示
+  const [forceUpdateCount, setForceUpdateCount] = useState(0);
+  
+  // 强制更新整个应用
+  const forceUpdate = () => {
+    console.log('强制更新整个应用');
+    setForceUpdateCount(prev => prev + 1);
+  };
+  
+  // 将forceUpdate添加到window对象，以便在组件中调用
+  useEffect(() => {
+    (window as any).forceUpdate = forceUpdate;
+    return () => {
+      delete (window as any).forceUpdate;
+    };
+  }, []);
   
   // Fetch backpack items from API
   const fetchBackpackItems = async () => {

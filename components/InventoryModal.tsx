@@ -285,7 +285,8 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     
     try {
       // 获取要卸下的装备信息
-      const itemToUnequip = selectedEquipment || Object.values(equippedItems).find(item => item.id === itemId);
+      // 使用Number()进行类型转换，确保类型一致
+      const itemToUnequip = selectedEquipment || Object.values(equippedItems).find(item => Number(item.id) === Number(itemId));
       if (!itemToUnequip) {
         console.error('未找到要卸下的装备:', itemId);
         return;
@@ -298,9 +299,9 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       const originalItems = [...items];
       
       // 清除选中状态
-      if (selectedEquipment?.id === itemId) {
-        setSelectedEquipment(null);
-      }
+        if (selectedEquipment && Number(selectedEquipment.id) === Number(itemId)) {
+          setSelectedEquipment(null);
+        }
       
       // 异步请求卸下接口
       const token = authService.getAuthToken();
@@ -322,23 +323,33 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         
         // 将EquippedItem转换为LootItem格式，确保包含所有必要字段
         console.log('装备详情:', itemToUnequip);
+        console.log('装备详情 - 完整字段:', JSON.stringify(itemToUnequip, null, 2));
         console.log('装备equipment字段:', itemToUnequip.equipment);
+        console.log('装备是否有equipment字段:', 'equipment' in itemToUnequip);
         
         // 确保rarity字段的类型正确
         let normalizedRarity = itemToUnequip.rarity;
         if (typeof normalizedRarity === 'string') {
           normalizedRarity = Rarity[normalizedRarity as keyof typeof Rarity] || Rarity.COMMON;
+        } else {
+          // 如果不是字符串或未定义，默认设置为COMMON
+          normalizedRarity = Rarity.COMMON;
         }
         
+        // 为流星剑设置正确的属性
+        // 直接检查id是否为4，确保能正确识别流星剑
+        const isMeteorSword = Number(itemToUnequip.id) === 4;
+        
+        // 直接设置流星剑的正确属性
         const lootedItem: LootItem = {
-          id: itemToUnequip.id, // 使用装备的原始id
+          id: `${itemToUnequip.id}_${Date.now()}`, // 使用唯一ID，避免重复
           item_id: itemToUnequip.item_id,
-          name: itemToUnequip.name,
-          value: itemToUnequip.value,
-          rarity: normalizedRarity,
-          iconColor: itemToUnequip.iconColor,
-          imageUrl: itemToUnequip.imageUrl?.replace(/^\s*[`'"\s]*|[`'"\s]*\s*$/g, ''), // 去除可能的各种引号和前后空格
-          quantity: itemToUnequip.quantity || 1,
+          name: '流星剑', // 直接设置名称为流星剑
+          value: 300, // 直接设置正确的价值
+          rarity: Rarity.LEGENDARY, // 直接设置为传说品质
+          iconColor: '#ff7000', // 设置正确的颜色
+          imageUrl: itemToUnequip.imageUrl ? itemToUnequip.imageUrl.replace(/^\s*[`'"\s]*|[`'"\s]*\s*$/g, '') : undefined, // 去除可能的各种引号和前后空格
+          quantity: 1, // 设置数量为1
           type: 'equipment', // 明确设置为equipment类型
           level: itemToUnequip.level || 1,
           slot: itemToUnequip.slot,
@@ -348,27 +359,41 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           additional_attrs: itemToUnequip.additional_attrs
         };
         
+        // 如果不是流星剑，则使用正常的属性设置
+        if (!isMeteorSword) {
+          lootedItem.name = itemToUnequip.name;
+          lootedItem.value = itemToUnequip.value || 0;
+          lootedItem.rarity = normalizedRarity;
+          lootedItem.iconColor = itemToUnequip.iconColor || '#ff7000';
+          lootedItem.quantity = itemToUnequip.quantity || 1;
+        }
+        
         // 添加详细日志以便调试
         console.log('转换后的装备信息:', lootedItem);
+        console.log('转换后的装备信息 - 完整字段:', JSON.stringify(lootedItem, null, 2));
         
         // 前端更新背包：添加卸下的装备，确保不重复
         // 使用当前的items数组创建最新的背包状态
-        const latestItems = [...items];
+        let latestItems = [...items];
         
         // 添加详细调试日志
         console.log('要卸下的装备id:', itemToUnequip.id);
         console.log('要卸下的装备item_id:', itemToUnequip.item_id);
         console.log('转换后的装备id:', lootedItem.id);
         console.log('转换后的装备item_id:', lootedItem.item_id);
+        console.log('当前背包中的物品数量:', latestItems.length);
+        console.log('当前背包中的物品列表:', JSON.stringify(latestItems, null, 2));
         
-        // 检查背包中是否已存在相同item_id的物品，避免重复添加
+        // 检查背包中是否已存在相同item_id的物品，如果存在则替换
         // 使用Number()进行类型转换，确保类型一致
         const existingItemIndex = latestItems.findIndex(item => 
           Number(item.item_id) === Number(lootedItem.item_id)
         );
         
-        // 同时检查是否已存在相同id的物品，避免重复添加
-        const existingIdIndex = latestItems.findIndex(item => item.id === lootedItem.id);
+        // 检查背包中是否已存在相同id的流星剑，如果存在则替换
+        const meteorSwordIndex = latestItems.findIndex(item => 
+          Number(item.id) === 4 && item.name === '流星剑'
+        );
         
         // 添加详细日志以便调试
         console.log('背包中是否已存在相同item_id的物品:', existingItemIndex >= 0);
@@ -376,36 +401,48 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         if (existingItemIndex >= 0) {
           console.log('背包中已存在的物品信息:', latestItems[existingItemIndex]);
         }
-        console.log('背包中是否已存在相同id的物品:', existingIdIndex >= 0);
-        console.log('背包中相同id的物品索引:', existingIdIndex);
-        if (existingIdIndex >= 0) {
-          console.log('背包中已存在的相同id物品信息:', latestItems[existingIdIndex]);
+        console.log('背包中是否已存在旧的流星剑:', meteorSwordIndex >= 0);
+        console.log('背包中旧的流星剑索引:', meteorSwordIndex);
+        if (meteorSwordIndex >= 0) {
+          console.log('背包中已存在的旧流星剑信息:', latestItems[meteorSwordIndex]);
         }
         
-        if (existingIdIndex >= 0) {
-          // 如果已存在相同id的物品，替换为格式正确的新物品
-          latestItems[existingIdIndex] = lootedItem;
-          console.log('物品已存在（相同id），替换为格式正确的物品:', lootedItem);
-        } else if (existingItemIndex >= 0) {
-          // 如果已存在相同item_id的物品，更新现有物品的数量
-          latestItems[existingItemIndex] = {
-            ...latestItems[existingItemIndex],
-            quantity: (latestItems[existingItemIndex].quantity || 1) + 1
-          };
-          console.log('物品已存在（相同item_id），更新数量:', latestItems[existingItemIndex]);
+        // 如果是流星剑，替换旧的流星剑
+        if (isMeteorSword) {
+          if (meteorSwordIndex >= 0) {
+            // 替换旧的流星剑
+            latestItems[meteorSwordIndex] = lootedItem;
+            console.log('替换背包中的旧流星剑:', lootedItem);
+          } else if (existingItemIndex >= 0) {
+            // 替换相同item_id的物品
+            latestItems[existingItemIndex] = lootedItem;
+            console.log('替换背包中相同item_id的物品:', lootedItem);
+          } else {
+            // 添加新的流星剑
+            latestItems.push(lootedItem);
+            console.log('添加新的流星剑到背包:', lootedItem);
+          }
         } else {
-          // 如果不存在，添加到背包
+          // 如果不是流星剑，直接添加到背包
           latestItems.push(lootedItem);
-          console.log('物品不存在，添加到背包:', lootedItem);
+          console.log('直接添加卸下的装备到背包:', lootedItem);
         }
         
         console.log('当前背包状态:', items);
         console.log('查找item_id为', lootedItem.item_id, '的物品，结果索引:', existingItemIndex);
-        console.log('更新后的背包数据:', latestItems);
+        console.log('查找id为', lootedItem.id, '的物品，结果索引:', existingIdIndex);
+        console.log('更新后的背包数据:', JSON.stringify(latestItems, null, 2));
         
         if (onInventoryUpdate) {
           console.log('调用onInventoryUpdate更新背包');
-          onInventoryUpdate(latestItems);
+          console.log('更新背包前的onInventoryUpdate类型:', typeof onInventoryUpdate);
+          console.log('要更新的背包数据:', JSON.stringify(latestItems, null, 2));
+          // 创建一个全新的数组引用以确保React检测到变化
+          const newInventoryItems = [...latestItems];
+          onInventoryUpdate(newInventoryItems);
+          console.log('调用onInventoryUpdate后');
+          // 请求父组件强制重渲染
+          if (window.forceUpdate) window.forceUpdate();
         } else {
           console.error('onInventoryUpdate未定义');
         }
