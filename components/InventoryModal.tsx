@@ -105,13 +105,8 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           // 出售成功后打印状态日志
           console.log(`出售宝物，id${sellItem.id}，数量${sellQuantity}`);
           
-          // 重新获取装备栏和背包数据
-          await fetchEquippedItems();
-          
-          // 通知父组件更新背包数据（父组件会重新请求API）
-          if (onInventoryUpdate) {
-            onInventoryUpdate([]); // 传递空数组，父组件会重新请求API获取最新数据
-          }
+          // 调用统一刷新方法
+          refreshInventoryData();
           
           setShowSellModal(false);
           closeDetails();
@@ -215,15 +210,8 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         // 装备成功后打印状态日志
         console.log(`穿戴装备成功，id${itemId}`);
         
-        // 重新获取装备栏和背包数据
-        console.log('开始重新获取装备栏数据...');
-        await fetchEquippedItems();
-        
-        // 通知父组件更新背包数据（父组件会重新请求API）
-        if (onInventoryUpdate) {
-          console.log('通知父组件更新背包数据...');
-          onInventoryUpdate([]); // 传递空数组，父组件会重新请求API获取最新数据
-        }
+        // 调用统一刷新方法
+        refreshInventoryData();
       } else {
         // 如果装备失败，打印错误信息
         console.error('装备失败');
@@ -270,15 +258,8 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         // 卸下成功后打印状态日志
         console.log(`卸下装备成功，id${itemId}`);
         
-        // 重新获取装备栏和背包数据
-        console.log('开始重新获取装备栏数据...');
-        await fetchEquippedItems();
-        
-        // 通知父组件更新背包数据（父组件会重新请求API）
-        if (onInventoryUpdate) {
-          console.log('通知父组件更新背包数据...');
-          onInventoryUpdate([]); // 传递空数组，父组件会重新请求API获取最新数据
-        }
+        // 调用统一刷新方法
+        refreshInventoryData();
       } else {
         // 如果卸下失败，打印错误信息
         console.error('卸下装备失败');
@@ -297,9 +278,28 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     unequipItem(itemId);
   };
   
+  // 集成刷新方法：初始化背包数据（请求我的装备，及我的物品接口）
+  const refreshInventoryData = async () => {
+    console.log('开始刷新背包数据...');
+    try {
+      // 重新获取装备栏数据
+      await fetchEquippedItems();
+      
+      // 通知父组件更新背包数据（父组件会重新请求API）
+      if (onInventoryUpdate) {
+        console.log('通知父组件更新背包数据...');
+        onInventoryUpdate([]); // 传递空数组，父组件会重新请求API获取最新数据
+      }
+      
+      console.log('背包数据刷新完成');
+    } catch (error) {
+      console.error('刷新背包数据失败:', error);
+    }
+  };
+
   // 组件挂载时获取已装备物品
   useEffect(() => {
-    fetchEquippedItems();
+    refreshInventoryData();
   }, []);
   
   const getRarityStyle = (rarity: Rarity) => {
@@ -772,250 +772,268 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
               </button>
             </div>
 
-            {/* Equipment Template Info */}
-            {selectedEquipment.equipment?.equipment_template && (
-              <div className="mb-8">
-                <div className="text-lg font-bold text-cyan-400 mb-4">基础属性</div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Equipment Image */}
-                  {selectedEquipment.equipment.equipment_template.image_url && (
-                    <div className="bg-slate-900 p-4 rounded border border-slate-800 flex items-center justify-center">
-                      <img 
-                        src={selectedEquipment.equipment.equipment_template.image_url} 
-                        alt={selectedEquipment.equipment.equipment_template.name} 
-                        className="max-h-32 max-w-full object-contain"
-                      />
-                    </div>
-                  )}
-                  
-                  {/* Basic Info */}
-                  <div className="space-y-3">
-                    {/* Name */}
-                    <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                      <div className="text-sm text-slate-400 mb-1">装备名称</div>
-                      <div className="text-xl font-bold text-white">
-                        {selectedEquipment.equipment.equipment_template.name}
-                      </div>
-                    </div>
-                    
-                    {/* Level */}
-                    <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                      <div className="text-sm text-slate-400 mb-1">品级</div>
-                      <div className={`text-xl font-bold ${getLevelColor(selectedEquipment.equipment.equipment_template.level)}`}>
-                        {['普通', '稀有', '史诗', '传说', '神话', '创世'][selectedEquipment.equipment.equipment_template.level - 1]}
-                      </div>
-                    </div>
-                    
-                    {/* Slot */}
-                    <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                      <div className="text-sm text-slate-400 mb-1">部位</div>
-                      <div className="text-xl font-bold text-white">
-                        {{
-                          'weapon': '武器',
-                          'helmet': '防具-头',
-                          'chest': '防具-胸',
-                          'gloves': '防具-护手',
-                          'pants': '防具-护腿',
-                          'boots': '防具-鞋子'
-                        }[selectedEquipment.equipment.equipment_template.slot] || selectedEquipment.equipment.equipment_template.slot}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Attributes Grid */}
-                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {/* Health */}
-                  {selectedEquipment.equipment.equipment_template.hp > 0 && (
-                    <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                      <div className="text-sm text-slate-400 mb-1">生命值</div>
-                      <div className="text-lg font-bold text-white">
-                        {selectedEquipment.equipment.equipment_template.hp}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Attack */}
-                  {selectedEquipment.equipment.equipment_template.attack > 0 && (
-                    <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                      <div className="text-sm text-slate-400 mb-1">攻击力</div>
-                      <div className="text-lg font-bold text-white">
-                        {selectedEquipment.equipment.equipment_template.attack}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Attack Speed */}
-                  {selectedEquipment.equipment.equipment_template.attack_speed > 0 && (
-                    <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                      <div className="text-sm text-slate-400 mb-1">攻速</div>
-                      <div className="text-lg font-bold text-white">
-                        {selectedEquipment.equipment.equipment_template.attack_speed}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Move Speed */}
-                  {selectedEquipment.equipment.equipment_template.move_speed > 0 && (
-                    <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                      <div className="text-sm text-slate-400 mb-1">移速</div>
-                      <div className="text-lg font-bold text-white">
-                        {selectedEquipment.equipment.equipment_template.move_speed}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Bullet Speed */}
-                  {selectedEquipment.equipment.equipment_template.bullet_speed > 0 && (
-                    <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                      <div className="text-sm text-slate-400 mb-1">弹速</div>
-                      <div className="text-lg font-bold text-white">
-                        {selectedEquipment.equipment.equipment_template.bullet_speed}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Drain */}
-                  {selectedEquipment.equipment.equipment_template.drain > 0 && (
-                    <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                      <div className="text-sm text-slate-400 mb-1">吸血</div>
-                      <div className="text-lg font-bold text-white">
-                        {selectedEquipment.equipment.equipment_template.drain}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Critical */}
-                  {selectedEquipment.equipment.equipment_template.critical > 0 && (
-                    <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                      <div className="text-sm text-slate-400 mb-1">暴击</div>
-                      <div className="text-lg font-bold text-white">
-                        {selectedEquipment.equipment.equipment_template.critical}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Dodge */}
-                  {selectedEquipment.equipment.equipment_template.dodge > 0 && (
-                    <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                      <div className="text-sm text-slate-400 mb-1">闪避</div>
-                      <div className="text-lg font-bold text-white">
-                        {selectedEquipment.equipment.equipment_template.dodge}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Instant Kill */}
-                  {selectedEquipment.equipment.equipment_template.instant_kill > 0 && (
-                    <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                      <div className="text-sm text-slate-400 mb-1">秒杀</div>
-                      <div className="text-lg font-bold text-white">
-                        {selectedEquipment.equipment.equipment_template.instant_kill}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Recovery */}
-                  {selectedEquipment.equipment.equipment_template.recovery > 0 && (
-                    <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                      <div className="text-sm text-slate-400 mb-1">恢复</div>
-                      <div className="text-lg font-bold text-white">
-                        {selectedEquipment.equipment.equipment_template.recovery}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Trajectory */}
-                  {selectedEquipment.equipment.equipment_template.trajectory > 0 && (
-                    <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                      <div className="text-sm text-slate-400 mb-1">弹道数</div>
-                      <div className="text-lg font-bold text-white">
-                        {selectedEquipment.equipment.equipment_template.trajectory}
-                      </div>
-                    </div>
-                  )}
+            {/* 宝物详情 */}
+            {selectedEquipment.type === 'treasure' ? (
+              <div className="mb-8 text-center">
+                <div className="bg-slate-900 p-6 rounded-lg border border-amber-500/30 mb-6">
+                  <div className="text-xl text-slate-400 mb-2">宝物价格</div>
+                  <div className="text-4xl font-bold text-yellow-400">{selectedEquipment.value} 金币</div>
                 </div>
               </div>
-            )}
-            
-            {/* Additional Attributes */}
-            {selectedEquipment.equipment?.additional_attrs && selectedEquipment.equipment.additional_attrs.length > 0 && (
-              <div>
-                <div className="text-lg font-bold text-cyan-400 mb-4">附加属性</div>
-                <div className="space-y-3">
-                  {selectedEquipment.equipment.additional_attrs.map((attr: any, index: number) => {
-                    const isSin = isSevenDeadlySin(attr.attr_type);
-                    const textColor = isSin ? 'text-red-400' : 'text-purple-400';
-                    const borderColor = isSin ? 'border-red-500/30' : 'border-purple-500/30';
-                    const bgColor = isSin ? 'bg-red-500/5' : 'bg-purple-500/5';
-                    
-                    // Map seven deadly sins to their descriptions
-                    const sinDescriptions: Record<string, string> = {
-                      'envy': '暴击伤害',
-                      'pride': '最大HP',
-                      'gluttony': '攻速',
-                      'greed': '秒杀',
-                      'lust': '自动回复',
-                      'wrath': '暴击率',
-                      'sloth': '攻击力'
-                    };
-                    
-                    // Format attribute name for seven deadly sins
-                    const formattedAttrName = isSin && sinDescriptions[attr.attr_type] 
-                      ? `${attr.attr_name}-${sinDescriptions[attr.attr_type]}` 
-                      : attr.attr_name;
-                    
-                    return (
-                      <div key={index} className={`${bgColor} p-3 rounded border ${borderColor}`}>
-                        <div className="flex justify-between items-center">
-                          <div className={`text-sm font-bold ${textColor}`}>{formattedAttrName}</div>
-                          <div className={`text-sm font-bold ${textColor}`}>{attr.attr_value}</div>
+            ) : (
+              /* 装备详情（保持原有内容） */
+              <>
+                {/* Equipment Template Info */}
+                {selectedEquipment.equipment?.equipment_template && (
+                  <div className="mb-8">
+                    <div className="text-lg font-bold text-cyan-400 mb-4">基础属性</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Equipment Image */}
+                      {selectedEquipment.equipment.equipment_template.image_url && (
+                        <div className="bg-slate-900 p-4 rounded border border-slate-800 flex items-center justify-center">
+                          <img 
+                            src={selectedEquipment.equipment.equipment_template.image_url} 
+                            alt={selectedEquipment.equipment.equipment_template.name} 
+                            className="max-h-32 max-w-full object-contain"
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Basic Info */}
+                      <div className="space-y-3">
+                        {/* Name */}
+                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
+                          <div className="text-sm text-slate-400 mb-1">装备名称</div>
+                          <div className="text-xl font-bold text-white">
+                            {selectedEquipment.equipment.equipment_template.name}
+                          </div>
+                        </div>
+                        
+                        {/* Level */}
+                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
+                          <div className="text-sm text-slate-400 mb-1">品级</div>
+                          <div className={`text-xl font-bold ${getLevelColor(selectedEquipment.equipment.equipment_template.level)}`}>
+                            {['普通', '稀有', '史诗', '传说', '神话', '创世'][selectedEquipment.equipment.equipment_template.level - 1]}
+                          </div>
+                        </div>
+                        
+                        {/* Slot */}
+                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
+                          <div className="text-sm text-slate-400 mb-1">部位</div>
+                          <div className="text-xl font-bold text-white">
+                            {{
+                              'weapon': '武器',
+                              'helmet': '防具-头',
+                              'chest': '防具-胸',
+                              'gloves': '防具-护手',
+                              'pants': '防具-护腿',
+                              'boots': '防具-鞋子'
+                            }[selectedEquipment.equipment.equipment_template.slot] || selectedEquipment.equipment.equipment_template.slot}
+                          </div>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
+                    </div>
+                    
+                    {/* Attributes Grid */}
+                    <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {/* Health */}
+                      {selectedEquipment.equipment.equipment_template.hp > 0 && (
+                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
+                          <div className="text-sm text-slate-400 mb-1">生命值</div>
+                          <div className="text-lg font-bold text-white">
+                            {selectedEquipment.equipment.equipment_template.hp}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Attack */}
+                      {selectedEquipment.equipment.equipment_template.attack > 0 && (
+                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
+                          <div className="text-sm text-slate-400 mb-1">攻击力</div>
+                          <div className="text-lg font-bold text-white">
+                            {selectedEquipment.equipment.equipment_template.attack}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Attack Speed */}
+                      {selectedEquipment.equipment.equipment_template.attack_speed > 0 && (
+                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
+                          <div className="text-sm text-slate-400 mb-1">攻速</div>
+                          <div className="text-lg font-bold text-white">
+                            {selectedEquipment.equipment.equipment_template.attack_speed}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Move Speed */}
+                      {selectedEquipment.equipment.equipment_template.move_speed > 0 && (
+                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
+                          <div className="text-sm text-slate-400 mb-1">移速</div>
+                          <div className="text-lg font-bold text-white">
+                            {selectedEquipment.equipment.equipment_template.move_speed}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Bullet Speed */}
+                      {selectedEquipment.equipment.equipment_template.bullet_speed > 0 && (
+                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
+                          <div className="text-sm text-slate-400 mb-1">弹速</div>
+                          <div className="text-lg font-bold text-white">
+                            {selectedEquipment.equipment.equipment_template.bullet_speed}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Drain */}
+                      {selectedEquipment.equipment.equipment_template.drain > 0 && (
+                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
+                          <div className="text-sm text-slate-400 mb-1">吸血</div>
+                          <div className="text-lg font-bold text-white">
+                            {selectedEquipment.equipment.equipment_template.drain}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Critical */}
+                      {selectedEquipment.equipment.equipment_template.critical > 0 && (
+                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
+                          <div className="text-sm text-slate-400 mb-1">暴击</div>
+                          <div className="text-lg font-bold text-white">
+                            {selectedEquipment.equipment.equipment_template.critical}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Dodge */}
+                      {selectedEquipment.equipment.equipment_template.dodge > 0 && (
+                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
+                          <div className="text-sm text-slate-400 mb-1">闪避</div>
+                          <div className="text-lg font-bold text-white">
+                            {selectedEquipment.equipment.equipment_template.dodge}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Instant Kill */}
+                      {selectedEquipment.equipment.equipment_template.instant_kill > 0 && (
+                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
+                          <div className="text-sm text-slate-400 mb-1">秒杀</div>
+                          <div className="text-lg font-bold text-white">
+                            {selectedEquipment.equipment.equipment_template.instant_kill}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Recovery */}
+                      {selectedEquipment.equipment.equipment_template.recovery > 0 && (
+                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
+                          <div className="text-sm text-slate-400 mb-1">恢复</div>
+                          <div className="text-lg font-bold text-white">
+                            {selectedEquipment.equipment.equipment_template.recovery}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Trajectory */}
+                      {selectedEquipment.equipment.equipment_template.trajectory > 0 && (
+                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
+                          <div className="text-sm text-slate-400 mb-1">弹道数</div>
+                          <div className="text-lg font-bold text-white">
+                            {selectedEquipment.equipment.equipment_template.trajectory}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Additional Attributes */}
+                {selectedEquipment.equipment?.additional_attrs && selectedEquipment.equipment.additional_attrs.length > 0 && (
+                  <div>
+                    <div className="text-lg font-bold text-cyan-400 mb-4">附加属性</div>
+                    <div className="space-y-3">
+                      {selectedEquipment.equipment.additional_attrs.map((attr: any, index: number) => {
+                        const isSin = isSevenDeadlySin(attr.attr_type);
+                        const textColor = isSin ? 'text-red-400' : 'text-purple-400';
+                        const borderColor = isSin ? 'border-red-500/30' : 'border-purple-500/30';
+                        const bgColor = isSin ? 'bg-red-500/5' : 'bg-purple-500/5';
+                        
+                        // Map seven deadly sins to their descriptions
+                        const sinDescriptions: Record<string, string> = {
+                          'envy': '暴击伤害',
+                          'pride': '最大HP',
+                          'gluttony': '攻速',
+                          'greed': '秒杀',
+                          'lust': '自动回复',
+                          'wrath': '暴击率',
+                          'sloth': '攻击力'
+                        };
+                        
+                        // Format attribute name for seven deadly sins
+                        const formattedAttrName = isSin && sinDescriptions[attr.attr_type] 
+                          ? `${attr.attr_name}-${sinDescriptions[attr.attr_type]}` 
+                          : attr.attr_name;
+                        
+                        return (
+                          <div key={index} className={`${bgColor} p-3 rounded border ${borderColor}`}>
+                            <div className="flex justify-between items-center">
+                              <div className={`text-sm font-bold ${textColor}`}>{formattedAttrName}</div>
+                              <div className={`text-sm font-bold ${textColor}`}>{attr.attr_value}</div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             {/* Bottom Buttons */}
             <div className="mt-8 flex justify-center gap-4">
-              {/* Check if this equipment is already equipped */}
-              {Object.values(equippedItems).some(equipped => equipped.id === selectedEquipment?.id) ? (
-                <button 
-                  onClick={() => {
-                    if (selectedEquipment) {
-                      unequipItem(selectedEquipment.id);
-                      closeDetails();
-                    }
-                  }}
-                  className="px-6 py-3 bg-gradient-to-r from-red-600 to-rose-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-red-500 to-rose-500 transition-all hover:shadow-[0_0_15px_rgba(255,0,0,0.8)]"
-                >
-                  卸下装备
-                </button>
-              ) : (
-                <button 
-                  onClick={handleEquipClick}
-                  className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-green-500 to-emerald-500 transition-all hover:shadow-[0_0_15px_rgba(0,255,128,0.8)]"
-                >
-                  穿戴装备
-                </button>
-              )}
-              
-              {/* Sell Button - Only show for treasures */}
-              {selectedEquipment?.type === 'treasure' && (
+              {/* 宝物只显示出售按钮 */}
+              {selectedEquipment.type === 'treasure' ? (
                 <button 
                   onClick={() => {
                     if (selectedEquipment) {
                       handleSellClick(selectedEquipment);
+                      closeDetails();
                     }
                   }}
                   className="px-6 py-3 bg-gradient-to-r from-yellow-600 to-amber-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-yellow-500 to-amber-500 transition-all hover:shadow-[0_0_15px_rgba(255,215,0,0.8)]"
                 >
                   出售
                 </button>
+              ) : (
+                /* 装备显示装备/卸下按钮 */
+                <>
+                  {/* Check if this equipment is already equipped */}
+                  {Object.values(equippedItems).some(equipped => equipped.id === selectedEquipment?.id) ? (
+                    <button 
+                      onClick={() => {
+                        if (selectedEquipment) {
+                          unequipItem(selectedEquipment.id);
+                          closeDetails();
+                        }
+                      }}
+                      className="px-6 py-3 bg-gradient-to-r from-red-600 to-rose-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-red-500 to-rose-500 transition-all hover:shadow-[0_0_15px_rgba(255,0,0,0.8)]"
+                    >
+                      卸下装备
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={handleEquipClick}
+                      className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-green-500 to-emerald-500 transition-all hover:shadow-[0_0_15px_rgba(0,255,128,0.8)]"
+                    >
+                      穿戴装备
+                    </button>
+                  )}
+                </>
               )}
               
+              {/* 关闭详情按钮 */}
               <button 
                 onClick={closeDetails}
                 className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-purple-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-cyan-500 to-purple-500 transition-all hover:shadow-[0_0_15px_rgba(0,255,255,0.8)]"
