@@ -251,7 +251,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         setTimeout(() => {
           console.log('实际React状态中的装备栏:', equippedItemsRef.current);
           // 打印背包栏状态
-          console.log('实际React状态中的背包栏:', items);
+          console.log('实际React状态中的背包栏:', latestItems);
         }, 100);
         
         const currentBackpackIds = updatedItems
@@ -334,7 +334,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         }
         
         const lootedItem: LootItem = {
-          id: itemToUnequip.id, // 生成一个唯一的id，避免与背包中已有的物品冲突
+          id: itemToUnequip.id, // 使用装备的原始id
           item_id: itemToUnequip.item_id,
           name: itemToUnequip.name,
           value: itemToUnequip.value,
@@ -351,6 +351,9 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           additional_attrs: itemToUnequip.equipment?.additional_attrs
         };
         
+        // 添加详细日志以便调试
+        console.log('转换后的装备信息:', lootedItem);
+        
         console.log('转换后的背包物品:', lootedItem);
         
         console.log('转换为背包物品的装备:', lootedItem);
@@ -359,8 +362,24 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         // 使用当前的items数组创建最新的背包状态
         const latestItems = [...items];
         
+        // 添加详细调试日志
+        console.log('要卸下的装备id:', itemToUnequip.id);
+        console.log('要卸下的装备item_id:', itemToUnequip.item_id);
+        console.log('转换后的装备id:', lootedItem.id);
+        console.log('转换后的装备item_id:', lootedItem.item_id);
+        
         // 检查背包中是否已存在相同item_id的物品，避免重复添加
-        const existingItemIndex = latestItems.findIndex(item => item.item_id === lootedItem.item_id);
+        // 使用Number()进行类型转换，确保类型一致
+        const existingItemIndex = latestItems.findIndex(item => 
+          Number(item.item_id) === Number(lootedItem.item_id)
+        );
+        
+        // 添加详细日志以便调试
+        console.log('背包中是否已存在相同item_id的物品:', existingItemIndex >= 0);
+        console.log('背包中相同item_id的物品索引:', existingItemIndex);
+        if (existingItemIndex >= 0) {
+          console.log('背包中已存在的物品信息:', latestItems[existingItemIndex]);
+        }
         
         if (existingItemIndex >= 0) {
           // 如果已存在，更新现有物品的数量
@@ -400,7 +419,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         setTimeout(() => {
           console.log('实际React状态中的装备栏:', equippedItemsRef.current);
           // 打印背包栏状态
-          console.log('实际React状态中的背包栏:', items);
+          console.log('实际React状态中的背包栏:', latestItems);
         }, 100);
         
         // 使用更新后的背包物品
