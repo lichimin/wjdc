@@ -309,7 +309,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         }
         
         const lootedItem: LootItem = {
-          id: `${itemToUnequip.id}-${Date.now()}`, // 生成一个唯一的id，避免与背包中已有的物品冲突
+          id: itemToUnequip.id, // 生成一个唯一的id，避免与背包中已有的物品冲突
           item_id: itemToUnequip.item_id,
           name: itemToUnequip.name,
           value: itemToUnequip.value,
