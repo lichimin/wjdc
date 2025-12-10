@@ -677,12 +677,12 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
               
               {/* Middle character image */}
               <div className="flex-1 flex items-center justify-center mx-2 sm:mx-4">
-                <div className="w-28 sm:w-40 h-28 sm:h-40 flex items-center justify-center relative">
+                <div className="w-28 sm:w-40 h-28 sm:h-40 flex items-center justify-center relative overflow-visible">
                   {skinData?.idle_image_urls && skinData.idle_image_urls.length > 0 ? (
                     <img 
                       src={skinData.idle_image_urls[currentIdleImageIndex]} 
                       alt="Character idle animation" 
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-contain z-1"
                       style={{ transform: `scale(${skinData?.scale ? (skinData.scale / 100) * 1.1 : 1.1})` }}
                     />
                   ) : (
@@ -692,7 +692,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                   )}
                   {/* Character attributes button */}
                   <button 
-                    className="absolute top-0 right-0 bg-blue-500/80 hover:bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border border-blue-700/50 backdrop-blur-sm transition-all"
+                    className="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold border-2 border-red-700 shadow-2xl z-50"
                     onClick={async () => {
                       await fetchCharacterAttributes();
                       setShowAttributesModal(true);
