@@ -463,7 +463,6 @@ const App: React.FC = () => {
       // Save original API data for equipment details
       setOriginalInventoryItems(data.data);
       setInventory(mappedItems);
-      setRunInventory(mappedItems); // 同时更新runInventory，确保背包数据被正确重置
     } catch (error) {
       console.error('Failed to fetch backpack items:', error);
     } finally {

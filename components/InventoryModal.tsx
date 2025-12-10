@@ -105,16 +105,21 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           // 出售成功后打印状态日志
           console.log(`出售宝物，id${sellItem.id}，数量${sellQuantity}`);
           
-          // 调用统一刷新方法
-          refreshInventoryData();
+          // 调用统一刷新方法，只刷新背包数据
+          refreshInventoryData(false);
+          
+          // 显示出售成功提示
+          alert('宝物出售成功！');
           
           setShowSellModal(false);
           closeDetails();
         } else {
           console.error('出售失败:', result.message);
+          alert('出售失败：' + result.message);
         }
       } else {
         console.error('出售请求失败:', response.status);
+        alert('出售请求失败，请稍后重试。');
       }
     } catch (error) {
       console.error('出售时发生错误:', error);
@@ -283,17 +288,43 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     unequipItem(itemId);
   };
   
-  // 集成刷新方法：初始化背包数据（请求我的装备，及我的物品接口）
-  const refreshInventoryData = async () => {
+  // 集成刷新方法：初始化背包数据
+  const refreshInventoryData = async (shouldRefreshEquipped = true) => {
     console.log('=== 开始刷新背包数据 ===');
     try {
-      console.log('1. 通知父组件更新背包数据...');
-      // 通知父组件更新背包数据（父组件会重新请求API）
-      if (onInventoryUpdate) {
-        console.log('2. 调用onInventoryUpdate通知父组件...');
-        onInventoryUpdate([]); // 传递空数组，父组件会重新请求API获取最新数据
+      if (shouldRefreshEquipped) {
+        console.log('1. 开始重新获取装备栏数据...');
+        await fetchEquippedItems();
+      }
+      
+      console.log('2. 获取我的物品数据...');
+      // 手动发起请求获取我的物品，确保API调用被执行
+      const token = authService.getAuthToken();
+      if (token) {
+        console.log('3. 手动发起网络请求获取我的物品...');
+        const myItemsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/my-items?position=backpack`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        console.log('4. 我的物品请求完成，响应状态:', myItemsResponse.status);
+        
+        if (myItemsResponse.ok) {
+          const result = await myItemsResponse.json();
+          if (result.code === 200 && Array.isArray(result.data)) {
+            console.log('5. 我的物品数据获取成功，通知父组件更新...');
+            // 通知父组件更新背包数据，传递最新的物品列表
+            if (onInventoryUpdate) {
+              // 这里需要将API返回的数据转换为父组件期望的格式
+              // 假设API返回的data就是LootItem[]类型的数组
+              onInventoryUpdate(result.data);
+            }
+          }
+        }
       } else {
-        console.log('2. onInventoryUpdate未定义，无法通知父组件');
+        console.log('3. 没有令牌，无法手动发起请求获取我的物品');
       }
       
       console.log('=== 背包数据刷新完成 ===');
@@ -433,7 +464,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       className={`relative p-1 sm:p-2 rounded-lg border ${getRarityStyle(equippedItems.weapon.rarity)} cursor-pointer hover:scale-105 transition-transform`}
                       onClick={() => handleEquipmentClick(equippedItems.weapon)}
                     >
-                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700 overflow-hidden">
                         {equippedItems.weapon.imageUrl ? (
                           <img 
                             src={equippedItems.weapon.imageUrl} 
@@ -465,7 +496,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       className={`relative p-1 sm:p-2 rounded-lg border ${getRarityStyle(equippedItems.helmet.rarity)} cursor-pointer hover:scale-105 transition-transform`}
                       onClick={() => handleEquipmentClick(equippedItems.helmet)}
                     >
-                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700 overflow-hidden">
                         {equippedItems.helmet.imageUrl ? (
                           <img 
                             src={equippedItems.helmet.imageUrl} 
@@ -497,7 +528,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       className={`relative p-1 sm:p-2 rounded-lg border ${getRarityStyle(equippedItems.chest.rarity)} cursor-pointer hover:scale-105 transition-transform`}
                       onClick={() => handleEquipmentClick(equippedItems.chest)}
                     >
-                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700 overflow-hidden">
                         {equippedItems.chest.imageUrl ? (
                           <img 
                             src={equippedItems.chest.imageUrl} 
@@ -529,7 +560,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       className={`relative p-1 sm:p-2 rounded-lg border ${getRarityStyle(equippedItems.gloves.rarity)} cursor-pointer hover:scale-105 transition-transform`}
                       onClick={() => handleEquipmentClick(equippedItems.gloves)}
                     >
-                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700 overflow-hidden">
                         {equippedItems.gloves.imageUrl ? (
                           <img 
                             src={equippedItems.gloves.imageUrl} 
@@ -587,7 +618,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.pants.imageUrl} 
                             alt={equippedItems.pants.name} 
-                            className="w-10 sm:w-12 h-10 sm:h-12 object-contain"
+                            className="w-full h-full object-contain max-w-12 max-h-12"
                           />
                         ) : (
                           <div 
@@ -614,7 +645,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       className={`relative p-1 sm:p-2 rounded-lg border ${getRarityStyle(equippedItems.boots.rarity)} cursor-pointer hover:scale-105 transition-transform`}
                       onClick={() => handleEquipmentClick(equippedItems.boots)}
                     >
-                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700 overflow-hidden">
                         {equippedItems.boots.imageUrl ? (
                           <img 
                             src={equippedItems.boots.imageUrl} 
@@ -646,7 +677,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       className={`relative p-1 sm:p-2 rounded-lg border ${getRarityStyle(equippedItems.ring.rarity)} cursor-pointer hover:scale-105 transition-transform`}
                       onClick={() => handleEquipmentClick(equippedItems.ring)}
                     >
-                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700">
+                      <div className="aspect-square flex items-center justify-center bg-slate-900 rounded border border-slate-700 overflow-hidden">
                         {equippedItems.ring.imageUrl ? (
                           <img 
                             src={equippedItems.ring.imageUrl} 
