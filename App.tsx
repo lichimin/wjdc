@@ -942,6 +942,13 @@ const App: React.FC = () => {
               onClose={() => setIsHomeInventoryOpen(false)} 
               originalItems={originalInventoryItems} 
               skinData={userSkin?.skin || null}
+              onInventoryUpdate={(updatedItems) => {
+                console.log('=== App: 收到首页背包更新通知 ===');
+                console.log('1. 更新首页背包状态:', updatedItems);
+                setInventory(updatedItems);
+                console.log('2. 装备操作后重新获取背包数据...');
+                fetchBackpackItems();
+              }}
             />
         )}
       </>
