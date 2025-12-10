@@ -101,7 +101,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       
       if (response.ok) {
         const result = await response.json();
-        if (result.code === 200) {
+        if (result.success) {
           // 出售成功后打印状态日志
           console.log(`出售宝物，id${sellItem.id}，数量${sellQuantity}`);
           
@@ -313,7 +313,8 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         
         if (myItemsResponse.ok) {
           const result = await myItemsResponse.json();
-          if (result.code === 200 && Array.isArray(result.data)) {
+          // 检查API响应是否成功，并确保data是数组
+          if ((result.success || result.code === 200) && Array.isArray(result.data)) {
             console.log('5. 我的物品数据获取成功，通知父组件更新...');
             // 通知父组件更新背包数据，传递最新的物品列表
             if (onInventoryUpdate) {
@@ -321,6 +322,8 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
               // 假设API返回的data就是LootItem[]类型的数组
               onInventoryUpdate(result.data);
             }
+          } else {
+            console.error('5. 我的物品数据格式不正确:', result);
           }
         }
       } else {
