@@ -52,6 +52,11 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     message: '',
     type: 'success' as 'success' | 'error' | 'info'
   });
+
+  // Character attributes state
+  const [showAttributesModal, setShowAttributesModal] = useState(false);
+  const [attributesData, setAttributesData] = useState<any>(null);
+  const [isLoadingAttributes, setIsLoadingAttributes] = useState(false);
   
   // 使用ref跟踪最新的装备栏状态，避免闭包问题
   const equippedItemsRef = useRef<Record<string, EquippedItem>>({});
@@ -372,6 +377,44 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     }
   };
 
+  // Get character attributes data
+  const fetchCharacterAttributes = async () => {
+    setIsLoadingAttributes(true);
+    try {
+      const token = authService.getAuthToken();
+      if (token) {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/user/attributes`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            setAttributesData(result.data);
+          } else {
+            console.error('获取角色属性失败:', result.message);
+            setToast({ visible: true, message: '获取角色属性失败', type: 'error' });
+          }
+        } else {
+          console.error('获取角色属性失败，状态码:', response.status);
+          setToast({ visible: true, message: '获取角色属性失败', type: 'error' });
+        }
+      } else {
+        console.error('没有认证令牌，无法获取角色属性');
+        setToast({ visible: true, message: '没有认证令牌，无法获取角色属性', type: 'error' });
+      }
+    } catch (error) {
+      console.error('获取角色属性时发生错误:', error);
+      setToast({ visible: true, message: '获取角色属性时发生错误', type: 'error' });
+    } finally {
+      setIsLoadingAttributes(false);
+    }
+  };
+
   // 组件挂载时获取已装备物品
   useEffect(() => {
     refreshInventoryData();
@@ -634,7 +677,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
               
               {/* Middle character image */}
               <div className="flex-1 flex items-center justify-center mx-2 sm:mx-4">
-                <div className="w-28 sm:w-40 h-28 sm:h-40 flex items-center justify-center">
+                <div className="w-28 sm:w-40 h-28 sm:h-40 flex items-center justify-center relative">
                   {skinData?.idle_image_urls && skinData.idle_image_urls.length > 0 ? (
                     <img 
                       src={skinData.idle_image_urls[currentIdleImageIndex]} 
@@ -647,6 +690,17 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       <span className="text-slate-500">No idle animation</span>
                     </div>
                   )}
+                  {/* Character attributes button */}
+                  <button 
+                    className="absolute top-0 right-0 bg-blue-500/80 hover:bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border border-blue-700/50 backdrop-blur-sm transition-all"
+                    onClick={async () => {
+                      await fetchCharacterAttributes();
+                      setShowAttributesModal(true);
+                    }}
+                    title="角色属性详情"
+                  >
+                    ⓘ
+                  </button>
                 </div>
               </div>
               
@@ -1175,6 +1229,59 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
             ${toast.type === 'info' ? 'bg-blue-500/80 border border-blue-600/50' : ''}
           `}>
             {toast.message}
+          </div>
+        </div>
+      )}
+
+      {/* Character Attributes Modal */}
+      {showAttributesModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-fadeIn" onClick={() => setShowAttributesModal(false)}></div>
+          
+          <div className="relative z-10 w-80 bg-slate-900 border-2 border-slate-700 rounded-lg shadow-2xl p-6 transform transition-all scale-100">
+            <div className="flex justify-between items-center mb-6 border-b border-slate-700 pb-2">
+              <h3 className="text-amber-500 font-bold tracking-widest uppercase text-sm">角色属性详情</h3>
+              <button onClick={() => setShowAttributesModal(false)} className="text-slate-400 hover:text-white font-bold">✕</button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Avatar Circle */}
+              <div className="flex justify-center mb-6">
+                <div className="w-20 h-20 rounded-full border-4 border-slate-700 overflow-hidden bg-slate-800 shadow-inner ring-2 ring-slate-800">
+                  {skinData?.idle_image_urls && skinData.idle_image_urls.length > 0 ? (
+                    <img 
+                      src={skinData.idle_image_urls[currentIdleImageIndex]} 
+                      alt="Character"
+                      className="w-full h-full object-contain scale-125"
+                      style={{ transform: `scale(${skinData?.scale ? (skinData.scale / 100) * 1.1 : 1.1})` }}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                      <span className="text-slate-500 text-xs">No image</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {isLoadingAttributes ? (
+                <div className="flex justify-center items-center py-8">
+                  <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : attributesData ? (
+                <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                  {Object.entries(attributesData).map(([key, value]) => (
+                    <div key={key} className="flex justify-between items-center bg-slate-950/50 p-2.5 rounded border border-slate-800 hover:border-slate-600 transition-colors">
+                      <div className="text-xs text-slate-300 font-bold uppercase tracking-wide">{key}</div>
+                      <span className="text-sm font-bold font-mono text-white">{value}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-slate-400 py-8">
+                  <p>无法获取角色属性数据</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
