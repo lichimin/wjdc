@@ -287,33 +287,13 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   const refreshInventoryData = async () => {
     console.log('=== 开始刷新背包数据 ===');
     try {
-      console.log('1. 开始重新获取装备栏数据...');
-      await fetchEquippedItems();
-      
-      console.log('2. 装备栏数据获取完成，现在手动发起请求获取我的物品...');
-      // 手动发起请求获取我的物品，确保API调用被执行
-      const token = authService.getAuthToken();
-      if (token) {
-        console.log('3. 手动发起网络请求获取我的物品...');
-        const myItemsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/my-items?position=backpack`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        console.log('4. 我的物品请求完成，响应状态:', myItemsResponse.status);
-      } else {
-        console.log('3. 没有令牌，无法手动发起请求获取我的物品');
-      }
-      
-      console.log('5. 通知父组件更新背包数据...');
+      console.log('1. 通知父组件更新背包数据...');
       // 通知父组件更新背包数据（父组件会重新请求API）
       if (onInventoryUpdate) {
-        console.log('6. 调用onInventoryUpdate通知父组件...');
+        console.log('2. 调用onInventoryUpdate通知父组件...');
         onInventoryUpdate([]); // 传递空数组，父组件会重新请求API获取最新数据
       } else {
-        console.log('6. onInventoryUpdate未定义，无法通知父组件');
+        console.log('2. onInventoryUpdate未定义，无法通知父组件');
       }
       
       console.log('=== 背包数据刷新完成 ===');
@@ -458,7 +438,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.weapon.imageUrl} 
                             alt={equippedItems.weapon.name} 
-                            className="w-full h-full object-contain max-w-12 max-h-12"
+                            className="w-10 sm:w-12 h-10 sm:h-12 object-contain"
                           />
                         ) : (
                           <div 
@@ -490,7 +470,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.helmet.imageUrl} 
                             alt={equippedItems.helmet.name} 
-                            className="w-full h-full object-contain max-w-12 max-h-12"
+                            className="w-10 sm:w-12 h-10 sm:h-12 object-contain"
                           />
                         ) : (
                           <div 
@@ -522,7 +502,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.chest.imageUrl} 
                             alt={equippedItems.chest.name} 
-                            className="w-full h-full object-contain max-w-12 max-h-12"
+                            className="w-10 sm:w-12 h-10 sm:h-12 object-contain"
                           />
                         ) : (
                           <div 
@@ -554,7 +534,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.gloves.imageUrl} 
                             alt={equippedItems.gloves.name} 
-                            className="w-full h-full object-contain max-w-12 max-h-12"
+                            className="w-10 sm:w-12 h-10 sm:h-12 object-contain"
                           />
                         ) : (
                           <div 
@@ -607,7 +587,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.pants.imageUrl} 
                             alt={equippedItems.pants.name} 
-                            className="w-full h-full object-contain max-w-12 max-h-12"
+                            className="w-10 sm:w-12 h-10 sm:h-12 object-contain"
                           />
                         ) : (
                           <div 
@@ -639,7 +619,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.boots.imageUrl} 
                             alt={equippedItems.boots.name} 
-                            className="w-full h-full object-contain max-w-12 max-h-12"
+                            className="w-10 sm:w-12 h-10 sm:h-12 object-contain"
                           />
                         ) : (
                           <div 
@@ -671,7 +651,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <img 
                             src={equippedItems.ring.imageUrl} 
                             alt={equippedItems.ring.name} 
-                            className="w-full h-full object-contain max-w-12 max-h-12"
+                            className="w-10 sm:w-12 h-10 sm:h-12 object-contain"
                           />
                         ) : (
                           <div 
