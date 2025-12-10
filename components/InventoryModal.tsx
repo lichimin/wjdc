@@ -290,13 +290,30 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       console.log('1. 开始重新获取装备栏数据...');
       await fetchEquippedItems();
       
-      console.log('2. 装备栏数据获取完成，通知父组件更新背包数据...');
+      console.log('2. 装备栏数据获取完成，现在手动发起请求获取我的物品...');
+      // 手动发起请求获取我的物品，确保API调用被执行
+      const token = authService.getAuthToken();
+      if (token) {
+        console.log('3. 手动发起网络请求获取我的物品...');
+        const myItemsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/my-items?position=backpack`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        console.log('4. 我的物品请求完成，响应状态:', myItemsResponse.status);
+      } else {
+        console.log('3. 没有令牌，无法手动发起请求获取我的物品');
+      }
+      
+      console.log('5. 通知父组件更新背包数据...');
       // 通知父组件更新背包数据（父组件会重新请求API）
       if (onInventoryUpdate) {
-        console.log('3. 调用onInventoryUpdate通知父组件...');
+        console.log('6. 调用onInventoryUpdate通知父组件...');
         onInventoryUpdate([]); // 传递空数组，父组件会重新请求API获取最新数据
       } else {
-        console.log('3. onInventoryUpdate未定义，无法通知父组件');
+        console.log('6. onInventoryUpdate未定义，无法通知父组件');
       }
       
       console.log('=== 背包数据刷新完成 ===');
@@ -414,15 +431,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
 
         <div className="relative z-10 w-full h-full p-6 flex flex-col bg-slate-900/90 border border-slate-700 shadow-2xl overflow-hidden">
           {/* Header */}
-          <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-700">
-            <div>
-              <h2 className="text-2xl font-bold text-amber-500 tracking-wider font-serif uppercase">
-                Inventory
-              </h2>
-              <p className="text-xs text-slate-400 font-mono mt-1">
-                TOTAL WEALTH: <span className="text-amber-300">{totalValue.toLocaleString()} G</span>
-              </p>
-            </div>
+          <div className="flex justify-end items-center mb-2 pb-0">
             <button 
               onClick={onClose}
               className="p-2 text-slate-400 hover:text-white transition-colors"
@@ -432,9 +441,9 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
               </svg>
             </button>
           </div>
-
+          
           {/* Equipment Bar */}
-          <div className="p-2 pt-0 bg-slate-950/50 rounded-xl border border-slate-800 overflow-x-auto max-h-[60vh] sm:max-h-[40vh]">
+          <div className="p-2 pt-0 bg-slate-950/50 rounded-xl border border-slate-800 overflow-x-auto max-h-[50vh] sm:max-h-[35vh]">
             <div className="flex items-center justify-center gap-6 md:gap-8 sm:gap-2">
               {/* Left 4 slots */}
               <div className="flex flex-col gap-2 sm:gap-1">
@@ -458,7 +467,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           ></div>
                         )}
                       </div>
-                      <p className="text-[10px] sm:text-xs mt-0.5 truncate text-center line-clamp-1">{equippedItems.weapon.name}</p>
                       <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('weapon')}</p>
                     </div>
                   ) : (
@@ -491,7 +499,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           ></div>
                         )}
                       </div>
-                      <p className="text-[10px] sm:text-xs mt-0.5 truncate text-center line-clamp-1">{equippedItems.helmet.name}</p>
                       <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('helmet')}</p>
                     </div>
                   ) : (
@@ -524,7 +531,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           ></div>
                         )}
                       </div>
-                      <p className="text-[10px] sm:text-xs mt-0.5 truncate text-center line-clamp-1">{equippedItems.chest.name}</p>
                       <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('chest')}</p>
                     </div>
                   ) : (
@@ -557,7 +563,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           ></div>
                         )}
                       </div>
-                      <p className="text-[10px] sm:text-xs mt-0.5 truncate text-center line-clamp-1">{equippedItems.gloves.name}</p>
                       <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('gloves')}</p>
                     </div>
                   ) : (
@@ -611,7 +616,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           ></div>
                         )}
                       </div>
-                      <p className="text-[10px] sm:text-xs mt-0.5 truncate text-center line-clamp-1">{equippedItems.pants.name}</p>
                       <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('pants')}</p>
                     </div>
                   ) : (
@@ -644,7 +648,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           ></div>
                         )}
                       </div>
-                      <p className="text-[10px] sm:text-xs mt-0.5 truncate text-center line-clamp-1">{equippedItems.boots.name}</p>
                       <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('boots')}</p>
                     </div>
                   ) : (
@@ -677,7 +680,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           ></div>
                         )}
                       </div>
-                      <p className="text-[10px] sm:text-xs mt-0.5 truncate text-center line-clamp-1">{equippedItems.ring.name}</p>
                       <p className="text-[9px] sm:text-xs text-slate-500 line-clamp-1">{getSlotName('ring')}</p>
                     </div>
                   ) : (
@@ -694,7 +696,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           </div>
           
           {/* Grid Content */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-2 mt-6">
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-2 mt-2">
             <h3 className="text-lg font-bold text-amber-500 mb-4 text-center">背包</h3>
             {items.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-slate-600 space-y-4">
