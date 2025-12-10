@@ -38,12 +38,20 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   const [equippedItems, setEquippedItems] = useState<Record<string, EquippedItem>>({});
   const [currentIdleImageIndex, setCurrentIdleImageIndex] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false); // 防止并发操作的加载状态
+  const [isLoading, setIsLoading] = useState(false); // 背包数据刷新时的loading状态
   
   // Sell-related states
   const [showSellModal, setShowSellModal] = useState(false);
   const [sellItem, setSellItem] = useState<LootItem | null>(null);
   const [sellQuantity, setSellQuantity] = useState(1);
   const [isSelling, setIsSelling] = useState(false);
+  
+  // Toast notification state
+  const [toast, setToast] = useState({
+    visible: false,
+    message: '',
+    type: 'success' as 'success' | 'error' | 'info'
+  });
   
   // 使用ref跟踪最新的装备栏状态，避免闭包问题
   const equippedItemsRef = useRef<Record<string, EquippedItem>>({});
@@ -68,6 +76,17 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   useEffect(() => {
     fetchEquippedItems();
   }, []);
+
+  // Toast自动关闭逻辑
+  useEffect(() => {
+    if (toast.visible) {
+      const timer = setTimeout(() => {
+        setToast(prev => ({ ...prev, visible: false }));
+      }, 3000); // 3秒后自动关闭
+
+      return () => clearTimeout(timer);
+    }
+  }, [toast.visible]);
 
   // 移除了通用调试日志，只保留装备穿戴和卸下时的特定格式日志
 
@@ -108,18 +127,32 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           // 调用统一刷新方法，只刷新背包数据
           refreshInventoryData(false);
           
-          // 显示出售成功提示
-          alert('宝物出售成功！');
+          // 显示出售成功toast提示
+          setToast({
+            visible: true,
+            message: '宝物出售成功！',
+            type: 'success'
+          });
           
           setShowSellModal(false);
           closeDetails();
         } else {
           console.error('出售失败:', result.message);
-          alert('出售失败：' + result.message);
+          // 显示出售失败toast提示
+          setToast({
+            visible: true,
+            message: '出售失败：' + result.message,
+            type: 'error'
+          });
         }
       } else {
         console.error('出售请求失败:', response.status);
-        alert('出售请求失败，请稍后重试。');
+        // 显示请求失败toast提示
+        setToast({
+          visible: true,
+          message: '出售请求失败，请稍后重试。',
+          type: 'error'
+        });
       }
     } catch (error) {
       console.error('出售时发生错误:', error);
@@ -291,6 +324,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   // 集成刷新方法：初始化背包数据
   const refreshInventoryData = async (shouldRefreshEquipped = true) => {
     console.log('=== 开始刷新背包数据 ===');
+    setIsLoading(true); // 开始刷新时显示loading
     try {
       if (shouldRefreshEquipped) {
         console.log('1. 开始重新获取装备栏数据...');
@@ -333,6 +367,8 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       console.log('=== 背包数据刷新完成 ===');
     } catch (error) {
       console.error('=== 刷新背包数据失败:', error);
+    } finally {
+      setIsLoading(false); // 无论成功失败，都关闭loading
     }
   };
 
@@ -444,6 +480,12 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
         <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={onClose}></div>
 
         <div className="relative z-10 w-full h-full p-6 flex flex-col bg-slate-900/90 border border-slate-700 shadow-2xl overflow-hidden">
+        {/* Loading Overlay */}
+        {isLoading && (
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
+          </div>
+        )}
           {/* Header */}
           <div className="flex justify-end items-center mb-2 pb-0">
             <button 
@@ -1119,6 +1161,20 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                 {isSelling ? '出售中...' : '确认出售'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toast.visible && (
+        <div className="fixed bottom-4 right-4 z-50 p-4 rounded-lg backdrop-blur-sm transition-all duration-300">
+          <div className={`
+            px-4 py-3 rounded-lg text-white font-medium
+            ${toast.type === 'success' ? 'bg-green-500/80 border border-green-600/50' : ''}
+            ${toast.type === 'error' ? 'bg-red-500/80 border border-red-600/50' : ''}
+            ${toast.type === 'info' ? 'bg-blue-500/80 border border-blue-600/50' : ''}
+          `}>
+            {toast.message}
           </div>
         </div>
       )}
