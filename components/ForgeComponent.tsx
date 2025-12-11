@@ -112,8 +112,14 @@ const ForgeComponent: React.FC<ForgeComponentProps> = ({ isOpen, onClose, onGold
       const data = await response.json();
       
       if (data.success) {
-        // 过滤出宝物类型的物品
-        const treasureItems = data.data.items.filter((item: any) => item.type === 'treasure');
+        // 过滤出宝物类型的物品，注意API返回的结构是data.data直接是数组
+        const treasureItems = data.data.filter((item: any) => item.type === 'treasure').map((item: any) => ({
+          ...item,
+          // 确保image_url没有反引号和多余空格
+          image_url: item.treasure?.image_url?.trim()?.replace(/^`|`$/g, '') || '',
+          // 从item中获取quantity属性
+          quantity: item.quantity || 1
+        }));
         setTreasures(treasureItems);
       } else {
         throw new Error(`API返回错误: ${data.message}`);
