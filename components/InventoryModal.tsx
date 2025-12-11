@@ -692,7 +692,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                   )}
                   {/* Character attributes button */}
                   <button 
-                    className="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold border-2 border-red-700 shadow-2xl z-50"
+                    className="absolute top-0 right-0 bg-yellow-400 hover:bg-yellow-300 text-black rounded-full w-14 h-14 flex items-center justify-center text-2xl font-bold border-2 border-yellow-600 shadow-2xl z-50 animate-pulse"
                     onClick={async () => {
                       await fetchCharacterAttributes();
                       setShowAttributesModal(true);
