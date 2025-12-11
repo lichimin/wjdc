@@ -104,15 +104,24 @@ const ForgeComponent: React.FC<ForgeComponentProps> = ({ isOpen, onClose, onGold
         },
       });
 
+      // 检查响应状态码
+      if (!response.ok) {
+        throw new Error(`API请求失败: ${response.status}`);
+      }
+
       const data = await response.json();
       
       if (data.success) {
         // 过滤出宝物类型的物品
         const treasureItems = data.data.items.filter((item: any) => item.type === 'treasure');
         setTreasures(treasureItems);
+      } else {
+        throw new Error(`API返回错误: ${data.message}`);
       }
     } catch (error) {
       console.error('获取宝物列表失败:', error);
+      // 显示错误信息
+      alert('获取宝物列表失败，请稍后重试');
     } finally {
       setLoading(false);
     }
@@ -127,6 +136,11 @@ const ForgeComponent: React.FC<ForgeComponentProps> = ({ isOpen, onClose, onGold
 
   // 过滤可用的宝物（排除已选择的数量）
   const getAvailableTreasures = (index: number) => {
+    // 如果treasures数组为空，直接返回空数组
+    if (!treasures || treasures.length === 0) {
+      return [];
+    }
+
     return treasures.map(treasure => {
       // 计算已选择的数量
       const selectedQuantity = selectedTreasures.reduce((total, selected, i) => {
@@ -282,6 +296,8 @@ const ForgeComponent: React.FC<ForgeComponentProps> = ({ isOpen, onClose, onGold
                   <div className="absolute top-full left-0 mt-2 w-full bg-slate-800 border border-cyan-500 rounded-lg shadow-[0_0_20px_rgba(6,182,212,0.5)] max-h-60 overflow-y-auto z-10">
                     {loading ? (
                       <div className="p-4 text-center text-cyan-400">加载中...</div>
+                    ) : getAvailableTreasures(index).length === 0 ? (
+                      <div className="p-4 text-center text-slate-400">没有可用的宝物</div>
                     ) : (
                       getAvailableTreasures(index).map((availableTreasure) => (
                         <button
