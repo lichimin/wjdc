@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { UserData, authService } from '../services/authService';
+import ForgeComponent from './ForgeComponent';
 
 interface HomeProps {
   userData: UserData;
@@ -7,6 +8,7 @@ interface HomeProps {
   onOpenInventory: () => void;
   onLogout: () => void;
   onSkinLoaded: (skin: UserSkin) => void;
+  onGoldUpdate: (newGold: number) => void;
 }
 
 interface SkinData {
@@ -109,13 +111,17 @@ const PixelIcon: React.FC<{ type: 'sword' | 'bag' | 'anvil' | 'shirt', scale?: n
   );
 };
 
-export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenInventory, onLogout, onSkinLoaded }) => {
+export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenInventory, onLogout, onSkinLoaded, onGoldUpdate }) => {
   const [showDifficulty, setShowDifficulty] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [userSkin, setUserSkin] = useState<UserSkin | null>(null);
   const [currentIdleImageIndex, setCurrentIdleImageIndex] = useState(0);
   const animationRef = useRef<NodeJS.Timeout | null>(null);
+  // FORGE按钮展开/折叠状态
+  const [showForgeOptions, setShowForgeOptions] = useState(false);
+  // 合成弹窗显示/隐藏状态
+  const [showForgeModal, setShowForgeModal] = useState(false);
 
   // Fetch user skin data on component mount
   useEffect(() => {
@@ -321,9 +327,56 @@ export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenIn
          {/* Secondary Actions Grid */}
          <div className="grid grid-cols-3 gap-4">
             <CyberButton label="INVENTORY" icon="bag" color="cyan" onClick={onOpenInventory} />
-            <CyberButton label="FORGE" icon="anvil" color="purple" onClick={() => alert("SYSTEM OFFLINE")} />
+            
+            {/* FORGE按钮及展开选项 */}
+            <div className="relative">
+              <CyberButton 
+                label="FORGE" 
+                icon="anvil" 
+                color="purple" 
+                onClick={() => setShowForgeOptions(!showForgeOptions)}
+              />
+              
+              {/* 展开的三个小按钮 */}
+              {showForgeOptions && (
+                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mb-2 grid grid-cols-3 gap-2 w-[120%]">
+                  <MiniCyberButton 
+                    label="合成" 
+                    color="green" 
+                    onClick={() => {
+                      setShowForgeModal(true);
+                      setShowForgeOptions(false);
+                    }}
+                  />
+                  <MiniCyberButton 
+                    label="强化" 
+                    color="blue" 
+                    onClick={() => {
+                      alert("强化功能开发中");
+                      setShowForgeOptions(false);
+                    }}
+                  />
+                  <MiniCyberButton 
+                    label="融合" 
+                    color="yellow" 
+                    onClick={() => {
+                      alert("融合功能开发中");
+                      setShowForgeOptions(false);
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+            
             <CyberButton label="SKINS" icon="shirt" color="pink" onClick={() => alert("SYSTEM OFFLINE")} />
          </div>
+         
+         {/* 合成弹窗 */}
+         <ForgeComponent 
+           isOpen={showForgeModal} 
+           onClose={() => setShowForgeModal(false)} 
+           onGoldUpdate={onGoldUpdate}
+         />
 
          {/* MAIN ACTION: ADVENTURE */}
          <button 
@@ -434,6 +487,28 @@ const CyberButton: React.FC<{ label: string, icon: 'bag' | 'anvil' | 'shirt', co
         <PixelIcon type={icon} color={color === 'cyan' ? '#22d3ee' : color === 'purple' ? '#a855f7' : '#ec4899'} />
       </div>
       <span className={`text-[10px] font-bold tracking-widest ${theme.text} mt-1`}>{label}</span>
+    </button>
+  );
+};
+
+// 小型CyberButton组件（用于FORGE展开的三个小按钮）
+const MiniCyberButton: React.FC<{ label: string, color: 'green' | 'blue' | 'yellow', onClick: () => void }> = ({ label, color, onClick }) => {
+  const colors = {
+    green: { text: 'text-green-400', border: 'border-green-500', shadow: 'hover:shadow-[0_0_10px_rgba(34,197,94,0.4)]', bg: 'bg-green-950/80' },
+    blue: { text: 'text-blue-400', border: 'border-blue-500', shadow: 'hover:shadow-[0_0_10px_rgba(59,130,246,0.4)]', bg: 'bg-blue-950/80' },
+    yellow: { text: 'text-yellow-400', border: 'border-yellow-500', shadow: 'hover:shadow-[0_0_10px_rgba(234,179,8,0.4)]', bg: 'bg-yellow-950/80' },
+  };
+  const theme = colors[color];
+
+  return (
+    <button 
+      onClick={onClick}
+      className={`
+        flex items-center justify-center py-2 px-3 rounded bg-opacity-80 border border-opacity-50
+        ${theme.bg} ${theme.border} ${theme.shadow} transition-all active:scale-95
+      `}
+    >
+      <span className={`text-[8px] font-bold tracking-widest ${theme.text}`}>{label}</span>
     </button>
   );
 };

@@ -933,6 +933,10 @@ const App: React.FC = () => {
               onOpenInventory={() => setIsHomeInventoryOpen(true)}
               onLogout={handleLogout}
               onSkinLoaded={setUserSkin}
+              onGoldUpdate={(newGold) => {
+                setUserData(prev => prev ? { ...prev, gold: newGold } : null);
+                authService.updateUserGold(newGold);
+              }}
             />
           )}
         {/* Inventory Overlay for Home */}
