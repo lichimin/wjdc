@@ -7,6 +7,7 @@ import { DungeonCanvas } from './components/DungeonCanvas';
 import { MiniMap } from './components/MiniMap';
 import { ChestModal } from './components/ChestModal';
 import { InventoryModal } from './components/InventoryModal';
+import { AdventureInventoryModal } from './components/AdventureInventoryModal';
 import { StatsModal } from './components/StatsModal';
 import { SummaryModal } from './components/SummaryModal';
 import { Home } from './components/Home'; // Imported Home
@@ -1278,18 +1279,9 @@ const App: React.FC = () => {
       )}
       
       {isChestOpen && <ChestModal loot={currentLoot} onConfirm={handleConfirmLoot} />}
-      {isInventoryOpen && <InventoryModal 
+      {isInventoryOpen && <AdventureInventoryModal 
         items={runInventory} 
         onClose={() => setIsInventoryOpen(false)} 
-        originalItems={originalInventoryItems} 
-        skinData={userSkin?.skin || null}
-        onInventoryUpdate={(updatedItems) => {
-          console.log('=== App: 收到背包更新通知 ===');
-          console.log('1. 更新背包状态:', updatedItems);
-          setRunInventory(updatedItems);
-          console.log('2. 装备操作后重新获取背包数据...');
-          fetchBackpackItems();
-        }}
       />}
       {isStatsOpen && <StatsModal playerState={playerRef.current} userAttributes={userAttributes} onClose={() => setIsStatsOpen(false)} />}
       {isSummaryOpen && <SummaryModal type={summaryType} inventory={runInventory} onRestart={handleReturnHome} />}
