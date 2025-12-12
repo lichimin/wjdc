@@ -558,7 +558,7 @@ const App: React.FC = () => {
   
   // Fetch user attributes when entering adventure
   useEffect(() => {
-    if (gameState === 'playing') {
+    if (gameState === 'PLAYING') {
       fetchUserAttributes();
     }
   }, [gameState]);
@@ -702,6 +702,9 @@ const App: React.FC = () => {
     // Fetch treasure data
     const treasures = await fetchTreasureData();
     setTreasureData(treasures);
+    
+    // Fetch user attributes data
+    await fetchUserAttributes();
     
     // Preload all treasure images
     await preloadImages(treasures);
