@@ -922,18 +922,18 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       {selectedEquipment && (
         <div 
           id="equipment-details-modal"
-          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-gradient-to-br from-black/80 to-slate-900/90 backdrop-blur-md animate-fadeIn"
         >
           {/* Modal Content */}
-          <div className="relative w-full max-w-2xl bg-slate-950 border-4 border-cyan-500/50 rounded-lg shadow-[0_0_20px_rgba(0,255,255,0.5)] p-6 font-mono transform scale-50">
+          <div className="relative w-full max-w-2xl bg-slate-950 border-4 border-cyan-500/30 rounded-xl shadow-[0_0_30px_rgba(0,255,255,0.3)] p-6 font-mono transform transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,255,255,0.5)]">
             {/* Header with pixel-style title */}
             <div className="flex justify-between items-center mb-6 pb-4 border-b-4 border-amber-500/30">
-              <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
+              <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 animate-pulse">
                 {selectedEquipment.name}
               </h2>
               <button 
                 onClick={closeDetails} 
-                className="p-2 bg-red-500/20 border-2 border-red-500 text-red-400 hover:bg-red-500/30 transition-all hover:shadow-[0_0_10px_rgba(255,0,0,0.8)]"
+                className="p-2 bg-red-500/20 border-2 border-red-500 text-red-400 hover:bg-red-500/40 transition-all hover:shadow-[0_0_15px_rgba(255,0,0,0.8)] rounded-lg"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="square" strokeLinejoin="square" strokeWidth={2} d="M6 6L18 18M6 18L18 6" />
@@ -963,11 +963,11 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Equipment Image */}
                       {selectedEquipment.equipment.equipment_template.image_url && (
-                        <div className="bg-slate-900 p-4 rounded border border-slate-800 flex items-center justify-center">
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-6 rounded-xl border-2 border-cyan-500/20 flex items-center justify-center shadow-inner shadow-cyan-500/10">
                           <img 
                             src={selectedEquipment.equipment.equipment_template.image_url} 
                             alt={selectedEquipment.equipment.equipment_template.name} 
-                            className="max-h-32 max-w-full object-contain"
+                            className="max-h-40 max-w-full object-contain animate-float"
                           />
                         </div>
                       )}
@@ -975,24 +975,24 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       {/* Basic Info */}
                       <div className="space-y-3">
                         {/* Name */}
-                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                          <div className="text-sm text-slate-400 mb-1">装备名称</div>
+                        <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-3 rounded-lg border border-slate-700/50 shadow-sm">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wider">装备名称</div>
                           <div className="text-xl font-bold text-white">
                             {selectedEquipment.equipment.equipment_template.name}
                           </div>
                         </div>
                         
                         {/* Level */}
-                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                          <div className="text-sm text-slate-400 mb-1">品级</div>
-                          <div className={`text-xl font-bold ${getLevelColor(selectedEquipment.equipment.equipment_template.level)}`}>
+                        <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-3 rounded-lg border border-slate-700/50 shadow-sm">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wider">品级</div>
+                          <div className={`text-xl font-bold ${getLevelColor(selectedEquipment.equipment.equipment_template.level)} animate-glow`}>
                             {['普通', '稀有', '史诗', '传说', '神话', '创世'][selectedEquipment.equipment.equipment_template.level - 1]}
                           </div>
                         </div>
                         
                         {/* Slot */}
-                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                          <div className="text-sm text-slate-400 mb-1">部位</div>
+                        <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-3 rounded-lg border border-slate-700/50 shadow-sm">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wider">部位</div>
                           <div className="text-xl font-bold text-white">
                             {{
                               'weapon': '武器',
@@ -1008,113 +1008,113 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                     </div>
                     
                     {/* Attributes Grid */}
-                    <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
                       {/* Health */}
                       {selectedEquipment.equipment.equipment_template.hp > 0 && (
-                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                          <div className="text-sm text-slate-400 mb-1">生命值</div>
-                          <div className="text-lg font-bold text-white">
-                            {selectedEquipment.equipment.equipment_template.hp}
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-red-500/20 hover:border-red-500/40 transition-all hover:shadow-[0_0_10px_rgba(255,0,0,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">生命值</div>
+                          <div className="text-lg font-bold text-red-400">
+                            +{selectedEquipment.equipment.equipment_template.hp}
                           </div>
                         </div>
                       )}
                       
                       {/* Attack */}
                       {selectedEquipment.equipment.equipment_template.attack > 0 && (
-                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                          <div className="text-sm text-slate-400 mb-1">攻击力</div>
-                          <div className="text-lg font-bold text-white">
-                            {selectedEquipment.equipment.equipment_template.attack}
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-green-500/20 hover:border-green-500/40 transition-all hover:shadow-[0_0_10px_rgba(0,255,0,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">攻击力</div>
+                          <div className="text-lg font-bold text-green-400">
+                            +{selectedEquipment.equipment.equipment_template.attack}
                           </div>
                         </div>
                       )}
                       
                       {/* Attack Speed */}
                       {selectedEquipment.equipment.equipment_template.attack_speed > 0 && (
-                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                          <div className="text-sm text-slate-400 mb-1">攻速</div>
-                          <div className="text-lg font-bold text-white">
-                            {selectedEquipment.equipment.equipment_template.attack_speed}
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-yellow-500/20 hover:border-yellow-500/40 transition-all hover:shadow-[0_0_10px_rgba(255,255,0,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">攻速</div>
+                          <div className="text-lg font-bold text-yellow-400">
+                            +{selectedEquipment.equipment.equipment_template.attack_speed}
                           </div>
                         </div>
                       )}
                       
                       {/* Move Speed */}
                       {selectedEquipment.equipment.equipment_template.move_speed > 0 && (
-                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                          <div className="text-sm text-slate-400 mb-1">移速</div>
-                          <div className="text-lg font-bold text-white">
-                            {selectedEquipment.equipment.equipment_template.move_speed}
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-blue-500/20 hover:border-blue-500/40 transition-all hover:shadow-[0_0_10px_rgba(0,0,255,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">移速</div>
+                          <div className="text-lg font-bold text-blue-400">
+                            +{selectedEquipment.equipment.equipment_template.move_speed}
                           </div>
                         </div>
                       )}
                       
                       {/* Bullet Speed */}
                       {selectedEquipment.equipment.equipment_template.bullet_speed > 0 && (
-                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                          <div className="text-sm text-slate-400 mb-1">弹速</div>
-                          <div className="text-lg font-bold text-white">
-                            {selectedEquipment.equipment.equipment_template.bullet_speed}
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-cyan-500/20 hover:border-cyan-500/40 transition-all hover:shadow-[0_0_10px_rgba(0,255,255,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">弹速</div>
+                          <div className="text-lg font-bold text-cyan-400">
+                            +{selectedEquipment.equipment.equipment_template.bullet_speed}
                           </div>
                         </div>
                       )}
                       
                       {/* Drain */}
                       {selectedEquipment.equipment.equipment_template.drain > 0 && (
-                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                          <div className="text-sm text-slate-400 mb-1">吸血</div>
-                          <div className="text-lg font-bold text-white">
-                            {selectedEquipment.equipment.equipment_template.drain}
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-pink-500/20 hover:border-pink-500/40 transition-all hover:shadow-[0_0_10px_rgba(255,0,255,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">吸血</div>
+                          <div className="text-lg font-bold text-pink-400">
+                            +{selectedEquipment.equipment.equipment_template.drain}
                           </div>
                         </div>
                       )}
                       
                       {/* Critical */}
                       {selectedEquipment.equipment.equipment_template.critical > 0 && (
-                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                          <div className="text-sm text-slate-400 mb-1">暴击</div>
-                          <div className="text-lg font-bold text-white">
-                            {selectedEquipment.equipment.equipment_template.critical}
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-orange-500/20 hover:border-orange-500/40 transition-all hover:shadow-[0_0_10px_rgba(255,165,0,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">暴击</div>
+                          <div className="text-lg font-bold text-orange-400">
+                            +{selectedEquipment.equipment.equipment_template.critical}
                           </div>
                         </div>
                       )}
                       
                       {/* Dodge */}
                       {selectedEquipment.equipment.equipment_template.dodge > 0 && (
-                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                          <div className="text-sm text-slate-400 mb-1">闪避</div>
-                          <div className="text-lg font-bold text-white">
-                            {selectedEquipment.equipment.equipment_template.dodge}
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-purple-500/20 hover:border-purple-500/40 transition-all hover:shadow-[0_0_10px_rgba(128,0,128,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">闪避</div>
+                          <div className="text-lg font-bold text-purple-400">
+                            +{selectedEquipment.equipment.equipment_template.dodge}
                           </div>
                         </div>
                       )}
                       
                       {/* Instant Kill */}
                       {selectedEquipment.equipment.equipment_template.instant_kill > 0 && (
-                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                          <div className="text-sm text-slate-400 mb-1">秒杀</div>
-                          <div className="text-lg font-bold text-white">
-                            {selectedEquipment.equipment.equipment_template.instant_kill}
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-amber-500/20 hover:border-amber-500/40 transition-all hover:shadow-[0_0_10px_rgba(255,215,0,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">秒杀</div>
+                          <div className="text-lg font-bold text-amber-400">
+                            +{selectedEquipment.equipment.equipment_template.instant_kill}
                           </div>
                         </div>
                       )}
                       
                       {/* Recovery */}
                       {selectedEquipment.equipment.equipment_template.recovery > 0 && (
-                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                          <div className="text-sm text-slate-400 mb-1">恢复</div>
-                          <div className="text-lg font-bold text-white">
-                            {selectedEquipment.equipment.equipment_template.recovery}
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-teal-500/20 hover:border-teal-500/40 transition-all hover:shadow-[0_0_10px_rgba(0,128,128,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">恢复</div>
+                          <div className="text-lg font-bold text-teal-400">
+                            +{selectedEquipment.equipment.equipment_template.recovery}
                           </div>
                         </div>
                       )}
                       
                       {/* Trajectory */}
                       {selectedEquipment.equipment.equipment_template.trajectory > 0 && (
-                        <div className="bg-slate-900 p-3 rounded border border-slate-800">
-                          <div className="text-sm text-slate-400 mb-1">弹道数</div>
-                          <div className="text-lg font-bold text-white">
-                            {selectedEquipment.equipment.equipment_template.trajectory}
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-indigo-500/20 hover:border-indigo-500/40 transition-all hover:shadow-[0_0_10px_rgba(75,0,130,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">弹道数</div>
+                          <div className="text-lg font-bold text-indigo-400">
+                            +{selectedEquipment.equipment.equipment_template.trajectory}
                           </div>
                         </div>
                       )}
@@ -1124,14 +1124,17 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                 
                 {/* Additional Attributes */}
                 {selectedEquipment.equipment?.additional_attrs && selectedEquipment.equipment.additional_attrs.length > 0 && (
-                  <div>
-                    <div className="text-lg font-bold text-cyan-400 mb-4">附加属性</div>
-                    <div className="space-y-3">
+                  <div className="mt-8">
+                    <div className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-6 pb-2 border-b-2 border-purple-500/30">
+                      附加属性
+                    </div>
+                    <div className="space-y-4">
                       {selectedEquipment.equipment.additional_attrs.map((attr: any, index: number) => {
                         const isSin = isSevenDeadlySin(attr.attr_type);
                         const textColor = isSin ? 'text-red-400' : 'text-purple-400';
-                        const borderColor = isSin ? 'border-red-500/30' : 'border-purple-500/30';
-                        const bgColor = isSin ? 'bg-red-500/5' : 'bg-purple-500/5';
+                        const borderColor = isSin ? 'border-red-500/40' : 'border-purple-500/40';
+                        const bgColor = isSin ? 'bg-gradient-to-r from-red-500/10 to-red-500/5' : 'bg-gradient-to-r from-purple-500/10 to-purple-500/5';
+                        const glowColor = isSin ? 'rgba(255,0,0,0.3)' : 'rgba(128,0,128,0.3)';
                         
                         // Map seven deadly sins to their descriptions
                         const sinDescriptions: Record<string, string> = {
@@ -1150,10 +1153,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           : attr.attr_name;
                         
                         return (
-                          <div key={index} className={`${bgColor} p-3 rounded border ${borderColor}`}>
+                          <div key={index} className={`${bgColor} p-4 rounded-lg border-2 ${borderColor} hover:shadow-[0_0_15px_${glowColor}] transition-all duration-300`}>
                             <div className="flex justify-between items-center">
-                              <div className={`text-sm font-bold ${textColor}`}>{formattedAttrName}</div>
-                              <div className={`text-sm font-bold ${textColor}`}>{attr.attr_value}</div>
+                              <div className={`text-sm font-bold ${textColor} uppercase tracking-wide`}>{formattedAttrName}</div>
+                              <div className={`text-sm font-bold ${textColor} text-lg`}>+{attr.attr_value}</div>
                             </div>
                           </div>
                         );
@@ -1165,7 +1168,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
             )}
 
             {/* Bottom Buttons */}
-            <div className="mt-8 flex justify-center gap-4">
+            <div className="mt-10 flex justify-center gap-6">
               {/* 宝物只显示出售按钮 */}
               {selectedEquipment.type === 'treasure' ? (
                 <button 
@@ -1175,7 +1178,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       closeDetails();
                     }
                   }}
-                  className="px-6 py-3 bg-gradient-to-r from-yellow-600 to-amber-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-yellow-500 to-amber-500 transition-all hover:shadow-[0_0_15px_rgba(255,215,0,0.8)]"
+                  className="px-8 py-4 bg-gradient-to-r from-yellow-600 to-amber-600 border-2 border-yellow-500/50 text-white font-bold rounded-lg shadow-lg hover:bg-gradient-to-r from-yellow-500 to-amber-500 transition-all hover:shadow-[0_0_20px_rgba(255,215,0,0.8)] hover:scale-105 active:scale-95"
                 >
                   出售
                 </button>
@@ -1191,14 +1194,14 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           closeDetails();
                         }
                       }}
-                      className="px-6 py-3 bg-gradient-to-r from-red-600 to-rose-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-red-500 to-rose-500 transition-all hover:shadow-[0_0_15px_rgba(255,0,0,0.8)]"
+                      className="px-8 py-4 bg-gradient-to-r from-red-600 to-rose-600 border-2 border-red-500/50 text-white font-bold rounded-lg shadow-lg hover:bg-gradient-to-r from-red-500 to-rose-500 transition-all hover:shadow-[0_0_20px_rgba(255,0,0,0.8)] hover:scale-105 active:scale-95"
                     >
                       卸下装备
                     </button>
                   ) : (
                     <button 
                       onClick={handleEquipClick}
-                      className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-green-500 to-emerald-500 transition-all hover:shadow-[0_0_15px_rgba(0,255,128,0.8)]"
+                      className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 border-2 border-green-500/50 text-white font-bold rounded-lg shadow-lg hover:bg-gradient-to-r from-green-500 to-emerald-500 transition-all hover:shadow-[0_0_20px_rgba(0,255,128,0.8)] hover:scale-105 active:scale-95"
                     >
                       穿戴装备
                     </button>
@@ -1209,7 +1212,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
               {/* 关闭详情按钮 */}
               <button 
                 onClick={closeDetails}
-                className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-purple-600 border-2 border-white/20 text-white font-bold rounded hover:bg-gradient-to-r from-cyan-500 to-purple-500 transition-all hover:shadow-[0_0_15px_rgba(0,255,255,0.8)]"
+                className="px-8 py-4 bg-gradient-to-r from-cyan-600 to-purple-600 border-2 border-cyan-500/50 text-white font-bold rounded-lg shadow-lg hover:bg-gradient-to-r from-cyan-500 to-purple-500 transition-all hover:shadow-[0_0_20px_rgba(0,255,255,0.8)] hover:scale-105 active:scale-95"
               >
                 关闭详情
               </button>
@@ -1341,3 +1344,11 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
   </>
 );
 };
+
+<style>{`
+@keyframes glow {
+  0%, 100% { filter: drop-shadow(0 0 5px currentColor); }
+  50% { filter: drop-shadow(0 0 15px currentColor); }
+}
+.animate-glow { animation: glow 2s ease-in-out infinite; }
+`}</style>
