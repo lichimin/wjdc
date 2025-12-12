@@ -354,9 +354,47 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
             console.log('5. 我的物品数据获取成功，通知父组件更新...');
             // 通知父组件更新背包数据，传递最新的物品列表
             if (onInventoryUpdate) {
-              // 这里需要将API返回的数据转换为父组件期望的格式
-              // 假设API返回的data就是LootItem[]类型的数组
-              onInventoryUpdate(result.data);
+              // 对API返回的数据进行与fetchBackpackItems函数相同的映射处理
+              const mappedItems = result.data.map((item: any, index: number) => {
+                let itemData: any;
+                let itemType: string = item.type || 'treasure';
+                
+                // Handle different item types
+                if (itemType === 'equipment') {
+                  // Equipment data structure
+                  itemData = item.equipment?.equipment_template || {};
+                } else {
+                  // Treasure data structure
+                  itemData = item.treasure || item;
+                }
+                
+                // Calculate value based on item type
+                let itemValue = 0;
+                if (itemType === 'equipment') {
+                  // For equipment, value can be based on level and attack power
+                  itemValue = (itemData.level || 1) * 10 + (itemData.attack || 0);
+                } else {
+                  // For treasure, use direct value
+                  itemValue = itemData.value || 0;
+                }
+                
+                // Use the original API returned id field as the unique identifier
+                // According to API documentation, id is guaranteed to be unique across all items
+                // Fallback to a unique generated ID if id is not available
+                const generatedId = item.id || `${index}-${Math.random().toString(36).substr(2, 9)}`;
+                
+                return {
+                  id: generatedId,
+                  name: itemData.name || 'Unknown Item',
+                  value: itemValue,
+                  iconColor: itemType === 'equipment' ? '#4ade80' : '#ffd700', // Different color for equipment vs treasure
+                  rarity: (itemData.rarity || 'LEGENDARY') as Rarity,
+                  imageUrl: itemData.image_url || itemData.imageUrl || '',
+                  quantity: itemType === 'equipment' ? 1 : (item.quantity || itemData.quantity || 1),
+                  type: itemType // Store item type for future use
+                };
+              });
+              onInventoryUpdate(mappedItems);
             }
           } else {
             console.error('5. 我的物品数据格式不正确:', result);
