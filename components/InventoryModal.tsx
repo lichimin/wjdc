@@ -507,16 +507,22 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
 
   // Handle equipment click
   const handleEquipmentClick = (item: LootItem) => {
-    console.log('Equipment clicked:', item);
+    console.log('=== Equipment clicked start ===');
+    console.log('Item clicked:', item);
     
     // Get the complete equipment data from originalItems
     const originalEquipmentData = getOriginalEquipmentData(item.id);
     console.log('Original equipment data:', originalEquipmentData);
     
-    setSelectedEquipment({
+    const combinedData = {
       ...item,
       ...(originalEquipmentData || {})
-    });
+    };
+    console.log('Combined data to set:', combinedData);
+    
+    setSelectedEquipment(combinedData);
+    console.log('selectedEquipment set, current state:', selectedEquipment);
+    console.log('=== Equipment clicked end ===');
   };
 
   // Handle equip button click
@@ -860,6 +866,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                        className={`group relative bg-slate-950 p-2 rounded-lg border border-slate-800 transition-colors cursor-pointer ${item.type === 'equipment' ? 'hover:border-amber-500' : ''}`}
                        onClick={(e) => {
                          e.stopPropagation(); // Prevent event bubbling to parent backdrop
+                         console.log('Item clicked:', item.name, item.id);
                          handleEquipmentClick(item);
                        }}
                      >
