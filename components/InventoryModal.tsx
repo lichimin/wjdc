@@ -77,10 +77,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     }
   }, [skinData]);
   
-  // 组件加载时获取已装备的物品
-  useEffect(() => {
-    fetchEquippedItems();
-  }, []);
+  // 组件加载时获取已装备的物品 - 已移至下方统一的refreshInventoryData调用
 
   // Toast自动关闭逻辑
   useEffect(() => {
