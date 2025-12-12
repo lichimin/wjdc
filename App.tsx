@@ -447,8 +447,10 @@ const App: React.FC = () => {
           itemValue = itemData.value || 0;
         }
         
-        // Generate ID - prioritize the top-level item.id first
-        const generatedId = item.id || Math.random().toString(36).substr(2, 9);
+        // Use the original API returned id field as the unique identifier
+        // According to API documentation, id is guaranteed to be unique across all items
+        // Fallback to a unique generated ID if id is not available
+        const generatedId = item.id || `${index}-${Math.random().toString(36).substr(2, 9)}`;
         
         return {
           id: generatedId,
