@@ -722,6 +722,9 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       });
       
       p.fireCooldown = FIRE_RATE;
+    } else {
+      // No enemies in range or still on cooldown, stop attacking animation
+      input.isAttacking = false;
     }
 
     // Particle Effects
@@ -1401,11 +1404,12 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     // Determine which type of monster to draw (BOSS uses one of the regular types)
     let drawType = e.type;
     if (e.type === EnemyType.BOSS) {
-      // For BOSS, use one of the regular monster types based on the boss's appearance
-      // Since we don't have specific boss type data, we'll randomly select one for now
-      // In a real game, this would be determined by the boss's configuration
+      // For BOSS, use a consistent regular monster type based on boss ID
+      // This prevents flickering/overlapping effects from random type changes each frame
       const bossTypes = [EnemyType.SLIME, EnemyType.BAT, EnemyType.SKELETON, EnemyType.ELEPHANT];
-      drawType = bossTypes[Math.floor(Math.random() * bossTypes.length)];
+      // Use a hash of the boss ID to select a consistent type
+      const idHash = e.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      drawType = bossTypes[idHash % bossTypes.length];
     }
     
     // Set consistent monster size based on fallback dimensions (used for both image scaling and health bar positioning)
