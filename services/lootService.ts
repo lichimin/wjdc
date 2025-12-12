@@ -127,12 +127,25 @@ export const generateLoot = (count: number, treasureData: any[] = [], difficulty
     // Get level probabilities based on difficulty level
     const levelProbabilities = getLevelProbabilities(difficultyLevel);
     
+    // Function to get rarity config based on level
+    const getRarityByLevel = (level: number) => {
+      switch (level) {
+        case 1: return { type: Rarity.COMMON, color: '#94a3b8', multiplier: 1 };
+        case 2: return { type: Rarity.RARE, color: '#3b82f6', multiplier: 2 };
+        case 3: return { type: Rarity.EPIC, color: '#a855f7', multiplier: 5 };
+        case 4: return { type: Rarity.LEGENDARY, color: '#f59e0b', multiplier: 10 };
+        case 5: return { type: Rarity.MYTHIC, color: '#ef4444', multiplier: 50 };
+        case 6: return { type: Rarity.GENESIS, color: '#ec4899', multiplier: 100 };
+        default: return { type: Rarity.COMMON, color: '#94a3b8', multiplier: 1 };
+      }
+    };
+    
     return Array.from({ length: count }, (_, i) => {
-      // Get rarity based on difficulty
-      const rarityConfig = getRandomRarityWithDifficulty(difficulty);
-      
       // First, determine the appropriate level based on difficulty probability
       const targetLevel = getRandomLevel(levelProbabilities);
+      
+      // Get rarity based on level (lv1普通, lv2稀有, lv3史诗, lv4传说, lv5神话, lv6创世)
+      const rarityConfig = getRarityByLevel(targetLevel);
       
       // Filter treasures to only those matching the target level
       const matchingTreasures = treasureData.filter(treasure => treasure.level === targetLevel);
@@ -175,7 +188,6 @@ export const generateLoot = (count: number, treasureData: any[] = [], difficulty
   
   // Fallback to original random generation if no treasure data is available
   return Array.from({ length: count }, (_, i) => {
-    const rarityConfig = getRandomRarityWithDifficulty(difficulty);
     const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
     const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
     
@@ -183,9 +195,24 @@ export const generateLoot = (count: number, treasureData: any[] = [], difficulty
     const equipmentNouns = ['Sword', 'Shield', 'Helmet', 'Ring', 'Amulet', 'Gem', 'Scroll'];
     const isEquipment = equipmentNouns.includes(noun);
     
-    // 为回退生成的宝物也添加等级
+    // Generate level based on difficulty
     const levelProbabilities = getLevelProbabilities(difficultyLevel);
     const level = getRandomLevel(levelProbabilities);
+    
+    // Get rarity based on level (lv1普通, lv2稀有, lv3史诗, lv4传说, lv5神话, lv6创世)
+    const getRarityByLevel = (level: number) => {
+      switch (level) {
+        case 1: return { type: Rarity.COMMON, color: '#94a3b8', multiplier: 1 };
+        case 2: return { type: Rarity.RARE, color: '#3b82f6', multiplier: 2 };
+        case 3: return { type: Rarity.EPIC, color: '#a855f7', multiplier: 5 };
+        case 4: return { type: Rarity.LEGENDARY, color: '#f59e0b', multiplier: 10 };
+        case 5: return { type: Rarity.MYTHIC, color: '#ef4444', multiplier: 50 };
+        case 6: return { type: Rarity.GENESIS, color: '#ec4899', multiplier: 100 };
+        default: return { type: Rarity.COMMON, color: '#94a3b8', multiplier: 1 };
+      }
+    };
+    
+    const rarityConfig = getRarityByLevel(level);
     
     // Calculate multiplier based on chest type (large chest gives double rewards)
     const chestMultiplier = chestType === 'large' ? 2 : 1;
