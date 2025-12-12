@@ -1217,58 +1217,6 @@ const App: React.FC = () => {
                     <circle cx="1" cy="4" r="1" fill="white" />
                   </svg>
                 </button>
-                
-                {/* Attack Button - Bottom Right (Large, Primary Button) */}
-                <button 
-                  className="w-20 h-20 bg-gradient-to-br from-red-900/70 to-red-800/70 border-4 border-red-700/80 rounded-full flex items-center justify-center text-white shadow-[0_0_25px_rgba(220,38,38,0.6)] hover:from-red-800/80 hover:to-red-700/80 transition-all active:scale-95"
-                  onMouseDown={(e) => { 
-                    if (inputRef.current) {
-                      if (!inputRef.current.isAttacking) {
-                        inputRef.current.isAttacking = true;
-                        inputRef.current.attackPressed = true;
-                      }
-                    }
-                  }}
-                  onMouseUp={(e) => { 
-                    if (inputRef.current) {
-                      inputRef.current.isAttacking = false;
-                      inputRef.current.attackPressed = false;
-                    }
-                  }}
-                  onMouseLeave={(e) => { 
-                    if (inputRef.current) {
-                      inputRef.current.isAttacking = false;
-                      inputRef.current.attackPressed = false;
-                    }
-                  }}
-                  onTouchStart={(e) => { 
-                    if (inputRef.current) {
-                      if (!inputRef.current.isAttacking) {
-                        inputRef.current.isAttacking = true;
-                        inputRef.current.attackPressed = true;
-                      }
-                    }
-                  }}
-                  onTouchEnd={(e) => { 
-                    if (inputRef.current) {
-                      inputRef.current.isAttacking = false;
-                      inputRef.current.attackPressed = false;
-                    }
-                  }}
-                  onTouchCancel={(e) => {
-                    if (inputRef.current) {
-                      inputRef.current.isAttacking = false;
-                      inputRef.current.attackPressed = false;
-                    }
-                  }}
-                >
-                  {/* Pixel Attack Icon */}
-                  <svg width="48" height="48" viewBox="0 0 8 8" className="w-12 h-12">
-                    <rect x="0" y="3" width="3" height="2" fill="white" />
-                    <rect x="1" y="2" width="1" height="4" fill="white" />
-                    <path d="M3,2 L7,6 M7,2 L3,6" stroke="white" stroke-width="1" fill="none" />
-                  </svg>
-                </button>
               </div>
            </div>
         </div>

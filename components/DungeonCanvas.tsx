@@ -675,13 +675,29 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       p.isMoving = false;
     }
 
-    // Manual Fire Logic - Only fire when attack button is pressed once
+    // Auto Fire Logic - Automatically attack nearby enemies
     const pCenterX = p.x + TILE_SIZE / 2;
     const pCenterY = p.y + TILE_SIZE / 2;
 
-    if (p.fireCooldown <= 0 && input.attackPressed) {
-      // 立即重置attackPressed标志，确保只触发一次攻击
-      input.attackPressed = false;
+    // Find nearest enemy to attack
+    let nearestEnemy: Enemy | null = null;
+    let nearestDist = Infinity;
+    
+    const activeEnemies = enemiesRef.current.filter(e => e.health > 0);
+    for (const e of activeEnemies) {
+      const ex = e.x + TILE_SIZE / 2;
+      const ey = e.y + TILE_SIZE / 2;
+      const dx = ex - pCenterX;
+      const dy = ey - pCenterY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      
+      if (dist < nearestDist && dist < AUTO_FIRE_RANGE) { // Only attack enemies within AUTO_FIRE_RANGE pixels
+        nearestDist = dist;
+        nearestEnemy = e;
+      }
+    }
+
+    if (p.fireCooldown <= 0 && nearestEnemy) {
       input.isAttacking = true;
       // Find nearest enemy to lock onto
       let nearestEnemy: Enemy | null = null;
