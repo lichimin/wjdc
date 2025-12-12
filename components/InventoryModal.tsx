@@ -546,15 +546,32 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     
     let combinedData = { ...item };
     
-    // For equipped items, we need to get attributes from equipment.equipment_template
-    if (item.equipment && item.equipment.equipment_template) {
+    // Check if this is an equipment item with equipment_template
+    if (item.type === 'equipment' && item.equipment && item.equipment.equipment_template) {
       const template = item.equipment.equipment_template;
+      // Merge all template attributes into the combinedData
       combinedData = {
         ...combinedData,
-        ...template
+        ...template,
+        // Ensure imageUrl is properly extracted
+        imageUrl: template.image_url?.trim()?.replace(/^`|`$/g, ''),
+        // Keep additional_attrs
+        equipment: {
+          ...item.equipment
+        }
+      };
+    } else if (item.type === 'treasure' && item.treasure) {
+      // Handle treasure items
+      const treasure = item.treasure;
+      combinedData = {
+        ...combinedData,
+        ...treasure,
+        imageUrl: treasure.image_url?.trim()?.replace(/^`|`$/g, ''),
+        value: treasure.value,
+        level: treasure.level
       };
     } else {
-      // For inventory items, try to get complete data from originalItems
+      // Fallback: try to get data from originalItems
       const originalEquipmentData = getOriginalEquipmentData(item.id);
       console.log('Original equipment data:', originalEquipmentData);
       
@@ -1025,13 +1042,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       
                     {/* Basic Info */}
                     <div className="space-y-1 sm:space-y-2">
-                      {/* Level */}
-                      <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-3 rounded-lg border border-slate-700/50 shadow-sm">
-                        <div className={`text-xl font-bold ${getLevelColor(selectedEquipment.level)} animate-glow`}>
-                          {['普通', '稀有', '史诗', '传说', '神话', '创世'][selectedEquipment.level - 1]}
-                        </div>
-                      </div>
-                      
                       {/* Level */}
                       <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-3 rounded-lg border border-slate-700/50 shadow-sm">
                         <div className={`text-xl font-bold ${getLevelColor(selectedEquipment.level)} animate-glow`}>
