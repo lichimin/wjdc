@@ -75,6 +75,62 @@ export const StatsModal: React.FC<StatsModalProps> = ({ playerState, userAttribu
                 icon="🛡️" 
                 color="text-cyan-400" 
               />
+              <StatRow 
+                label="Lifesteal" 
+                baseValue={0} 
+                additionalValue={parseFloat(userAttributes?.吸血 || "0")} 
+                totalValue={`${parseFloat(userAttributes?.吸血 || "0")}%`} 
+                icon="🩸" 
+                color="text-red-500" 
+              />
+              <StatRow 
+                label="Critical Rate" 
+                baseValue={0} 
+                additionalValue={parseFloat(userAttributes?.暴击率 || "0")} 
+                totalValue={`${parseFloat(userAttributes?.暴击率 || "0")}%`} 
+                icon="💥" 
+                color="text-yellow-500" 
+              />
+              <StatRow 
+                label="Critical Damage" 
+                baseValue={150} 
+                additionalValue={parseFloat(userAttributes?.暴击伤害 || "150") - 150} 
+                totalValue={userAttributes?.暴击伤害 || "150%"} 
+                icon="🎯" 
+                color="text-orange-500" 
+              />
+              <StatRow 
+                label="Dodge Rate" 
+                baseValue={0} 
+                additionalValue={parseFloat(userAttributes?.闪避 || "0")} 
+                totalValue={`${parseFloat(userAttributes?.闪避 || "0")}%`} 
+                icon="👻" 
+                color="text-purple-500" 
+              />
+              <StatRow 
+                label="Instant Kill" 
+                baseValue={0} 
+                additionalValue={parseFloat(userAttributes?.秒杀 || "0")} 
+                totalValue={`${parseFloat(userAttributes?.秒杀 || "0")}%`} 
+                icon="☠️" 
+                color="text-gray-500" 
+              />
+              <StatRow 
+                label="Regeneration" 
+                baseValue={0} 
+                additionalValue={userAttributes?.恢复 || 0} 
+                totalValue={userAttributes?.恢复 || 0} 
+                icon="✨" 
+                color="text-teal-500" 
+              />
+              <StatRow 
+                label="Projectile Count" 
+                baseValue={1} 
+                additionalValue={(userAttributes?.弹道 || 1) - 1} 
+                totalValue={userAttributes?.弹道 || 1} 
+                icon="🎯" 
+                color="text-indigo-500" 
+              />
            </div>
         </div>
         

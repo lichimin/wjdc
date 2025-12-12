@@ -679,7 +679,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     const pCenterX = p.x + TILE_SIZE / 2;
     const pCenterY = p.y + TILE_SIZE / 2;
 
-    // Find nearest enemy to attack
+    // Find nearest enemy to attack within AUTO_FIRE_RANGE
     let nearestEnemy: Enemy | null = null;
     let nearestDist = Infinity;
     
@@ -699,41 +699,17 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
 
     if (p.fireCooldown <= 0 && nearestEnemy) {
       input.isAttacking = true;
-      // Find nearest enemy to lock onto
-      let nearestEnemy: Enemy | null = null;
-      let nearestDist = Infinity;
-      
-      const activeEnemies = enemiesRef.current.filter(e => e.health > 0);
-      for (const e of activeEnemies) {
-        const ex = e.x + TILE_SIZE / 2;
-        const ey = e.y + TILE_SIZE / 2;
-        const dx = ex - pCenterX;
-        const dy = ey - pCenterY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        
-        if (dist < nearestDist && dist < 300) { // Only lock onto enemies within 300 pixels
-          nearestDist = dist;
-          nearestEnemy = e;
-        }
-      }
       
       // Determine bullet direction
       const projSpeed = p.projectileSpeed || 8;
       let vx: number, vy: number;
       
-      if (nearestEnemy) {
-        // Lock onto nearest enemy
-        const targetX = nearestEnemy.x + TILE_SIZE / 2;
-        const targetY = nearestEnemy.y + TILE_SIZE / 2;
-        const angle = Math.atan2(targetY - pCenterY, targetX - pCenterX);
-        vx = Math.cos(angle) * projSpeed;
-        vy = Math.sin(angle) * projSpeed;
-      } else {
-        // Fallback to player facing if no enemies nearby
-        const bulletAngle = p.facingLeft ? Math.PI : 0;
-        vx = Math.cos(bulletAngle) * projSpeed;
-        vy = Math.sin(bulletAngle) * projSpeed;
-      }
+      // Lock onto nearest enemy that's within range
+      const targetX = nearestEnemy.x + TILE_SIZE / 2;
+      const targetY = nearestEnemy.y + TILE_SIZE / 2;
+      const angle = Math.atan2(targetY - pCenterY, targetX - pCenterX);
+      vx = Math.cos(angle) * projSpeed;
+      vy = Math.sin(angle) * projSpeed;
       
       projectilesRef.current.push({
          id: Math.random().toString(),
