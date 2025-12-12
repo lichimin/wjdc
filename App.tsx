@@ -550,12 +550,7 @@ const App: React.FC = () => {
     }
   };
   
-  // Fetch backpack items when Home inventory is opened
-  useEffect(() => {
-    if (isHomeInventoryOpen) {
-      fetchBackpackItems();
-    }
-  }, [isHomeInventoryOpen]);
+  // 移除了Home背包打开时的fetchBackpackItems调用，因为InventoryModal组件内部已经会调用refreshInventoryData()获取数据
   
   // Fetch user attributes when entering adventure
   useEffect(() => {

@@ -832,11 +832,22 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                            relative
                         `}>
                             {item.imageUrl ? (
-                              <img 
-                                src={item.imageUrl} 
-                                alt={item.name} 
-                                className="w-full h-full object-contain p-2"
-                              />
+                              <div className="w-full h-full flex items-center justify-center bg-black">
+                                <img 
+                                  src={item.imageUrl} 
+                                  alt={item.name} 
+                                  className="w-full h-full object-contain p-2"
+                                  onError={(e) => {
+                                    // Fallback to color if image fails to load
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    const parent = target.parentElement;
+                                    if (parent) {
+                                      parent.style.backgroundColor = item.iconColor;
+                                    }
+                                  }}
+                                />
+                              </div>
                             ) : (
                               <div 
                                 className="w-8 h-8 rounded shadow-sm"
