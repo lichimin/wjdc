@@ -492,6 +492,11 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
 
   // Get original equipment data from API response
   const getOriginalEquipmentData = (itemId: any) => {
+    console.log('=== getOriginalEquipmentData start ===');
+    console.log('Looking for item with id:', itemId);
+    console.log('Original items array length:', originalItems.length);
+    console.log('Items array length:', items.length);
+    
     // First try to find the item in the originalItems array
     const foundItemInOriginal = originalItems.find((apiItem: any) => {
       const matchesType = apiItem.type === 'equipment';
@@ -500,18 +505,36 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       const matchesItemId = apiItem.id?.toString() === String(itemId);
       const matchesEquipmentId = apiItem.equipment?.id?.toString() === String(itemId);
       
+      console.log('Checking original item:', {
+        id: apiItem.id,
+        type: apiItem.type,
+        equipmentId: apiItem.equipment?.id,
+        matchesType,
+        matchesItemId,
+        matchesEquipmentId
+      });
+      
       return matchesType && (matchesItemId || matchesEquipmentId);
     });
     
     // If found in originalItems, return it
     if (foundItemInOriginal) {
+      console.log('Found in originalItems:', foundItemInOriginal);
       return foundItemInOriginal;
     }
     
     // If not found in originalItems, try to find it in the items array
     const foundItemInItems = items.find((item: any) => {
-      return item.id?.toString() === String(itemId);
+      const matches = item.id?.toString() === String(itemId);
+      console.log('Checking items array item:', {
+        id: item.id,
+        matches
+      });
+      return matches;
     });
+    
+    console.log('Found in items:', foundItemInItems);
+    console.log('=== getOriginalEquipmentData end ===');
     
     return foundItemInItems;
   };
@@ -943,7 +966,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           className="fixed inset-0 z-[99999] flex items-center justify-center p-2 bg-gradient-to-br from-black/80 to-slate-900/90 backdrop-blur-md animate-fadeIn"
         >
           {/* Modal Content */}
-          <div className="relative w-full max-w-full sm:max-w-2xl bg-slate-950 border-4 border-cyan-500/30 rounded-xl shadow-[0_0_30px_rgba(0,255,255,0.3)] p-4 sm:p-6 font-mono transform transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,255,255,0.5)] max-h-[90vh] overflow-y-auto">
+          <div className="relative w-full max-w-full sm:max-w-2xl bg-slate-950 border-4 border-cyan-500/30 rounded-xl shadow-[0_0_30px_rgba(0,255,255,0.3)] p-3 sm:p-4 font-mono transform transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,255,255,0.5)] max-h-[95vh] overflow-y-auto">
             {/* Header with pixel-style title */}
             <div className="flex justify-between items-center mb-6 pb-4 border-b-4 border-amber-500/30">
               <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 animate-pulse">
@@ -974,43 +997,39 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
             ) : (
               /* 装备详情（保持原有内容） */
               <>
-                {/* Equipment Template Info */}
-                {selectedEquipment.equipment?.equipment_template && (
-                      <div className="mb-6 sm:mb-8">
-                        <div className="text-base sm:text-lg font-bold text-cyan-400 mb-3 sm:mb-4">基础属性</div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                      {/* Equipment Image */}
-                      {selectedEquipment.equipment.equipment_template.image_url && (
-                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-6 rounded-xl border-2 border-cyan-500/20 flex items-center justify-center shadow-inner shadow-cyan-500/10">
-                          <img 
-                            src={selectedEquipment.equipment.equipment_template.image_url} 
-                            alt={selectedEquipment.equipment.equipment_template.name} 
-                            className="max-h-40 max-w-full object-contain animate-float"
-                          />
+                {/* Equipment Info */}
+                <div className="mb-6 sm:mb-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    {/* Equipment Image */}
+                    {selectedEquipment.imageUrl && (
+                      <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-3 sm:p-4 rounded-xl border-2 border-cyan-500/20 flex items-center justify-center shadow-inner shadow-cyan-500/10">
+                        <img 
+                          src={selectedEquipment.imageUrl} 
+                          alt={selectedEquipment.name} 
+                          className="max-h-32 sm:max-h-40 max-w-full object-contain animate-float"
+                        />
+                      </div>
+                    )}
+                     
+                    {/* Basic Info */}
+                    <div className="space-y-1 sm:space-y-2">
+                      {/* Name */}
+                      <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-3 rounded-lg border border-slate-700/50 shadow-sm">
+                        <div className="text-xl font-bold text-white">
+                          {selectedEquipment.name}
                         </div>
-                      )}
+                      </div>
                       
-                      {/* Basic Info */}
-                      <div className="space-y-2 sm:space-y-3">
-                        {/* Name */}
-                        <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-3 rounded-lg border border-slate-700/50 shadow-sm">
-                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wider">装备名称</div>
-                          <div className="text-xl font-bold text-white">
-                            {selectedEquipment.equipment.equipment_template.name}
-                          </div>
+                      {/* Level */}
+                      <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-3 rounded-lg border border-slate-700/50 shadow-sm">
+                        <div className={`text-xl font-bold ${getLevelColor(selectedEquipment.level)} animate-glow`}>
+                          {['普通', '稀有', '史诗', '传说', '神话', '创世'][selectedEquipment.level - 1]}
                         </div>
-                        
-                        {/* Level */}
+                      </div>
+                      
+                      {/* Slot */}
+                      {selectedEquipment.slot && (
                         <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-3 rounded-lg border border-slate-700/50 shadow-sm">
-                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wider">品级</div>
-                          <div className={`text-xl font-bold ${getLevelColor(selectedEquipment.equipment.equipment_template.level)} animate-glow`}>
-                            {['普通', '稀有', '史诗', '传说', '神话', '创世'][selectedEquipment.equipment.equipment_template.level - 1]}
-                          </div>
-                        </div>
-                        
-                        {/* Slot */}
-                        <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-3 rounded-lg border border-slate-700/50 shadow-sm">
-                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wider">部位</div>
                           <div className="text-xl font-bold text-white">
                             {{
                               'weapon': '武器',
@@ -1019,126 +1038,126 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                               'gloves': '防具-护手',
                               'pants': '防具-护腿',
                               'boots': '防具-鞋子'
-                            }[selectedEquipment.equipment.equipment_template.slot] || selectedEquipment.equipment.equipment_template.slot}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Attributes Grid */}
-                    <div className="mt-4 sm:mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-                      {/* Health */}
-                      {selectedEquipment.equipment.equipment_template.hp > 0 && (
-                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-red-500/20 hover:border-red-500/40 transition-all hover:shadow-[0_0_10px_rgba(255,0,0,0.2)]">
-                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">生命值</div>
-                          <div className="text-lg font-bold text-red-400">
-                            +{selectedEquipment.equipment.equipment_template.hp}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Attack */}
-                      {selectedEquipment.equipment.equipment_template.attack > 0 && (
-                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-green-500/20 hover:border-green-500/40 transition-all hover:shadow-[0_0_10px_rgba(0,255,0,0.2)]">
-                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">攻击力</div>
-                          <div className="text-lg font-bold text-green-400">
-                            +{selectedEquipment.equipment.equipment_template.attack}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Attack Speed */}
-                      {selectedEquipment.equipment.equipment_template.attack_speed > 0 && (
-                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-yellow-500/20 hover:border-yellow-500/40 transition-all hover:shadow-[0_0_10px_rgba(255,255,0,0.2)]">
-                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">攻速</div>
-                          <div className="text-lg font-bold text-yellow-400">
-                            +{selectedEquipment.equipment.equipment_template.attack_speed}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Move Speed */}
-                      {selectedEquipment.equipment.equipment_template.move_speed > 0 && (
-                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-blue-500/20 hover:border-blue-500/40 transition-all hover:shadow-[0_0_10px_rgba(0,0,255,0.2)]">
-                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">移速</div>
-                          <div className="text-lg font-bold text-blue-400">
-                            +{selectedEquipment.equipment.equipment_template.move_speed}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Bullet Speed */}
-                      {selectedEquipment.equipment.equipment_template.bullet_speed > 0 && (
-                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-cyan-500/20 hover:border-cyan-500/40 transition-all hover:shadow-[0_0_10px_rgba(0,255,255,0.2)]">
-                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">弹速</div>
-                          <div className="text-lg font-bold text-cyan-400">
-                            +{selectedEquipment.equipment.equipment_template.bullet_speed}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Drain */}
-                      {selectedEquipment.equipment.equipment_template.drain > 0 && (
-                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-pink-500/20 hover:border-pink-500/40 transition-all hover:shadow-[0_0_10px_rgba(255,0,255,0.2)]">
-                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">吸血</div>
-                          <div className="text-lg font-bold text-pink-400">
-                            +{selectedEquipment.equipment.equipment_template.drain}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Critical */}
-                      {selectedEquipment.equipment.equipment_template.critical > 0 && (
-                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-orange-500/20 hover:border-orange-500/40 transition-all hover:shadow-[0_0_10px_rgba(255,165,0,0.2)]">
-                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">暴击</div>
-                          <div className="text-lg font-bold text-orange-400">
-                            +{selectedEquipment.equipment.equipment_template.critical}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Dodge */}
-                      {selectedEquipment.equipment.equipment_template.dodge > 0 && (
-                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-purple-500/20 hover:border-purple-500/40 transition-all hover:shadow-[0_0_10px_rgba(128,0,128,0.2)]">
-                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">闪避</div>
-                          <div className="text-lg font-bold text-purple-400">
-                            +{selectedEquipment.equipment.equipment_template.dodge}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Instant Kill */}
-                      {selectedEquipment.equipment.equipment_template.instant_kill > 0 && (
-                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-amber-500/20 hover:border-amber-500/40 transition-all hover:shadow-[0_0_10px_rgba(255,215,0,0.2)]">
-                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">秒杀</div>
-                          <div className="text-lg font-bold text-amber-400">
-                            +{selectedEquipment.equipment.equipment_template.instant_kill}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Recovery */}
-                      {selectedEquipment.equipment.equipment_template.recovery > 0 && (
-                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-teal-500/20 hover:border-teal-500/40 transition-all hover:shadow-[0_0_10px_rgba(0,128,128,0.2)]">
-                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">恢复</div>
-                          <div className="text-lg font-bold text-teal-400">
-                            +{selectedEquipment.equipment.equipment_template.recovery}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Trajectory */}
-                      {selectedEquipment.equipment.equipment_template.trajectory > 0 && (
-                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-indigo-500/20 hover:border-indigo-500/40 transition-all hover:shadow-[0_0_10px_rgba(75,0,130,0.2)]">
-                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">弹道数</div>
-                          <div className="text-lg font-bold text-indigo-400">
-                            +{selectedEquipment.equipment.equipment_template.trajectory}
+                            }[selectedEquipment.slot] || selectedEquipment.slot}
                           </div>
                         </div>
                       )}
                     </div>
                   </div>
-                )}
+                    
+                    {/* Attributes Grid */}
+                    <div className="mt-4 sm:mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+                      {/* Health */}
+                      {selectedEquipment.hp > 0 && (
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-red-500/20 hover:border-red-500/40 transition-all hover:shadow-[0_0_10px_rgba(255,0,0,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">生命值</div>
+                          <div className="text-lg font-bold text-red-400">
+                            +{selectedEquipment.hp}
+                          </div>
+                        </div>
+                      )}
+                       
+                      {/* Attack */}
+                      {selectedEquipment.attack > 0 && (
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-green-500/20 hover:border-green-500/40 transition-all hover:shadow-[0_0_10px_rgba(0,255,0,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">攻击力</div>
+                          <div className="text-lg font-bold text-green-400">
+                            +{selectedEquipment.attack}
+                          </div>
+                        </div>
+                      )}
+                       
+                      {/* Attack Speed */}
+                      {selectedEquipment.attack_speed > 0 && (
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-yellow-500/20 hover:border-yellow-500/40 transition-all hover:shadow-[0_0_10px_rgba(255,255,0,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">攻速</div>
+                          <div className="text-lg font-bold text-yellow-400">
+                            +{selectedEquipment.attack_speed}
+                          </div>
+                        </div>
+                      )}
+                       
+                      {/* Move Speed */}
+                      {selectedEquipment.move_speed > 0 && (
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-blue-500/20 hover:border-blue-500/40 transition-all hover:shadow-[0_0_10px_rgba(0,0,255,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">移速</div>
+                          <div className="text-lg font-bold text-blue-400">
+                            +{selectedEquipment.move_speed}
+                          </div>
+                        </div>
+                      )}
+                       
+                      {/* Bullet Speed */}
+                      {selectedEquipment.bullet_speed > 0 && (
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-cyan-500/20 hover:border-cyan-500/40 transition-all hover:shadow-[0_0_10px_rgba(0,255,255,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">弹速</div>
+                          <div className="text-lg font-bold text-cyan-400">
+                            +{selectedEquipment.bullet_speed}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Drain */}
+                      {selectedEquipment.drain > 0 && (
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-pink-500/20 hover:border-pink-500/40 transition-all hover:shadow-[0_0_10px_rgba(255,0,255,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">吸血</div>
+                          <div className="text-lg font-bold text-pink-400">
+                            +{selectedEquipment.drain}
+                          </div>
+                        </div>
+                      )}
+                       
+                      {/* Critical */}
+                      {selectedEquipment.critical > 0 && (
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-orange-500/20 hover:border-orange-500/40 transition-all hover:shadow-[0_0_10px_rgba(255,165,0,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">暴击</div>
+                          <div className="text-lg font-bold text-orange-400">
+                            +{selectedEquipment.critical}
+                          </div>
+                        </div>
+                      )}
+                       
+                      {/* Dodge */}
+                      {selectedEquipment.dodge > 0 && (
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-purple-500/20 hover:border-purple-500/40 transition-all hover:shadow-[0_0_10px_rgba(128,0,128,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">闪避</div>
+                          <div className="text-lg font-bold text-purple-400">
+                            +{selectedEquipment.dodge}
+                          </div>
+                        </div>
+                      )}
+                       
+                      {/* Instant Kill */}
+                      {selectedEquipment.instant_kill > 0 && (
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-amber-500/20 hover:border-amber-500/40 transition-all hover:shadow-[0_0_10px_rgba(255,215,0,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">秒杀</div>
+                          <div className="text-lg font-bold text-amber-400">
+                            +{selectedEquipment.instant_kill}
+                          </div>
+                        </div>
+                      )}
+                       
+                      {/* Recovery */}
+                      {selectedEquipment.recovery > 0 && (
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-teal-500/20 hover:border-teal-500/40 transition-all hover:shadow-[0_0_10px_rgba(0,128,128,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">恢复</div>
+                          <div className="text-lg font-bold text-teal-400">
+                            +{selectedEquipment.recovery}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Trajectory */}
+                      {selectedEquipment.trajectory > 0 && (
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-indigo-500/20 hover:border-indigo-500/40 transition-all hover:shadow-[0_0_10px_rgba(75,0,130,0.2)]">
+                          <div className="text-xs text-slate-400 mb-1 uppercase tracking-wide">弹道数</div>
+                          <div className="text-lg font-bold text-indigo-400">
+                            +{selectedEquipment.trajectory}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 
                 {/* Additional Attributes */}
                 {selectedEquipment.equipment?.additional_attrs && selectedEquipment.equipment.additional_attrs.length > 0 && (
