@@ -850,13 +850,13 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
               </div>
             ) : (
               <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
-                {items.map((item) => {
+                {items.map((item, index) => {
                   // console.log('渲染物品:', item);
                   const rarityClass = getRarityStyle(item.rarity);
                   const isGenesis = item.rarity === Rarity.GENESIS;
                   return (
                      <div 
-                       key={item.id} 
+                       key={`${item.id}-${index}`} 
                        className={`group relative bg-slate-950 p-2 rounded-lg border border-slate-800 transition-colors cursor-pointer ${item.type === 'equipment' ? 'hover:border-amber-500' : ''}`}
                        onClick={(e) => {
                          e.stopPropagation(); // Prevent event bubbling to parent backdrop
