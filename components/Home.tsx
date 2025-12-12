@@ -324,51 +324,57 @@ export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenIn
       {/* --- CONTROL DECK (Bottom Navigation) --- */}
       <div className="relative z-10 pb-8 px-6 flex flex-col gap-6">
          
-         {/* Secondary Actions Grid */}
-         <div className="grid grid-cols-3 gap-4">
-            <CyberButton label="INVENTORY" icon="bag" color="cyan" onClick={onOpenInventory} />
-            
-            {/* FORGE按钮及展开选项 */}
-            <div className="relative">
-              <CyberButton 
-                label="FORGE" 
-                icon="anvil" 
-                color="purple" 
-                onClick={() => setShowForgeOptions(!showForgeOptions)}
-              />
-              
-              {/* 展开的三个小按钮 */}
-              {showForgeOptions && (
-                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mb-2 grid grid-cols-3 gap-2 w-[120%]">
-                  <MiniCyberButton 
-                    label="合成" 
-                    color="green" 
-                    onClick={() => {
-                      setShowForgeModal(true);
-                      setShowForgeOptions(false);
-                    }}
-                  />
-                  <MiniCyberButton 
-                    label="强化" 
-                    color="blue" 
-                    onClick={() => {
-                      alert("强化功能开发中");
-                      setShowForgeOptions(false);
-                    }}
-                  />
-                  <MiniCyberButton 
-                    label="融合" 
-                    color="yellow" 
-                    onClick={() => {
-                      alert("融合功能开发中");
-                      setShowForgeOptions(false);
-                    }}
-                  />
-                </div>
-              )}
+         {/* Actions Row - 背包、锻造、皮肤在同一行 */}
+         <div className="flex gap-4">
+            {/* 背包按钮 */}
+            <div className="relative flex-1 h-full flex items-center justify-center">
+               <CyberButton label="背包" icon="bag" color="cyan" onClick={onOpenInventory} />
             </div>
             
-            <CyberButton label="SKINS" icon="shirt" color="pink" onClick={() => alert("SYSTEM OFFLINE")} />
+            {/* 锻造按钮及展开选项 */}
+            <div className="relative flex-1 h-full flex items-center justify-center">
+               <CyberButton 
+                 label="锻造" 
+                 icon="anvil" 
+                 color="purple" 
+                 onClick={() => setShowForgeOptions(!showForgeOptions)}
+               />
+               
+               {/* 展开的三个小按钮 */}
+               {showForgeOptions && (
+                 <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mb-2 grid grid-cols-3 gap-2 w-[120%]">
+                   <MiniCyberButton 
+                     label="合成" 
+                     color="green" 
+                     onClick={() => {
+                       setShowForgeModal(true);
+                       setShowForgeOptions(false);
+                     }}
+                   />
+                   <MiniCyberButton 
+                     label="强化" 
+                     color="blue" 
+                     onClick={() => {
+                       alert("强化功能开发中");
+                       setShowForgeOptions(false);
+                     }}
+                   />
+                   <MiniCyberButton 
+                     label="融合" 
+                     color="yellow" 
+                     onClick={() => {
+                       alert("融合功能开发中");
+                       setShowForgeOptions(false);
+                     }}
+                   />
+                 </div>
+               )}
+            </div>
+            
+            {/* 皮肤按钮 */}
+            <div className="relative flex-1 h-full flex items-center justify-center">
+               <CyberButton label="皮肤" icon="shirt" color="pink" onClick={() => alert("SYSTEM OFFLINE")} />
+            </div>
          </div>
          
          {/* 合成弹窗 */}
@@ -387,7 +393,7 @@ export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenIn
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 group-hover:opacity-40 transition-opacity"></div>
             
             <div className="flex flex-col items-start relative z-10">
-               <span className="text-red-100 font-['Press_Start_2P'] text-lg tracking-widest drop-shadow-md group-hover:text-white">ADVENTURE</span>
+               <span className="text-red-100 font-['Press_Start_2P'] text-lg tracking-widest drop-shadow-md group-hover:text-white">冒险</span>
                <span className="text-[10px] text-red-400 font-mono tracking-[0.2em] mt-1 group-hover:text-red-300">SECTOR INCURSION</span>
             </div>
 
@@ -479,7 +485,7 @@ const CyberButton: React.FC<{ label: string, icon: 'bag' | 'anvil' | 'shirt', co
     <button 
       onClick={onClick}
       className={`
-        flex flex-col items-center justify-center gap-2 py-4 rounded bg-opacity-50 border border-opacity-50
+        flex flex-col items-center justify-center gap-2 py-4 px-8 rounded bg-opacity-50 border border-opacity-50 w-full
         ${theme.bg} ${theme.border} ${theme.shadow} transition-all active:scale-95 group
       `}
     >
