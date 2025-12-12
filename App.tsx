@@ -464,6 +464,20 @@ const App: React.FC = () => {
         };
       });
       
+      // Check for duplicate IDs in mappedItems
+      const ids = mappedItems.map(item => item.id);
+      const uniqueIds = new Set(ids);
+      if (ids.length !== uniqueIds.size) {
+        console.error('=== 发现重复ID ===');
+        const idCounts: Record<string, number> = {};
+        ids.forEach(id => {
+          idCounts[id] = (idCounts[id] || 0) + 1;
+        });
+        const duplicateIds = Object.entries(idCounts).filter(([_, count]) => count > 1);
+        console.error('重复的ID:', duplicateIds);
+        console.error('所有ID:', ids);
+      }
+      
       // Save original API data for equipment details
       setOriginalInventoryItems(data.data);
       setInventory(mappedItems);
