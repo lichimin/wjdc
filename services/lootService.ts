@@ -124,12 +124,24 @@ export const generateLoot = (count: number, treasureData: any[] = [], difficulty
   
   // If treasure data is available, use it to generate loot
   if (treasureData && treasureData.length > 0) {
+    // Get level probabilities based on difficulty level
+    const levelProbabilities = getLevelProbabilities(difficultyLevel);
+    
     return Array.from({ length: count }, (_, i) => {
-      // Randomly select a treasure from all available treasures
-      const randomTreasure = treasureData[Math.floor(Math.random() * treasureData.length)];
-      
       // Get rarity based on difficulty
       const rarityConfig = getRandomRarityWithDifficulty(difficulty);
+      
+      // First, determine the appropriate level based on difficulty probability
+      const targetLevel = getRandomLevel(levelProbabilities);
+      
+      // Filter treasures to only those matching the target level
+      const matchingTreasures = treasureData.filter(treasure => treasure.level === targetLevel);
+      
+      // If there are matching treasures, select from them; otherwise, use all treasures
+      const availableTreasures = matchingTreasures.length > 0 ? matchingTreasures : treasureData;
+      
+      // Randomly select a treasure from available treasures
+      const randomTreasure = availableTreasures[Math.floor(Math.random() * availableTreasures.length)];
       
       // Determine type based on treasure attributes
       const type = randomTreasure.type || (Math.random() > 0.5 ? 'equipment' : 'treasure');
@@ -137,7 +149,6 @@ export const generateLoot = (count: number, treasureData: any[] = [], difficulty
       // Extract treasure information with fallback values
       const treasureName = randomTreasure.treasure_name || randomTreasure.name || 'Mysterious Item';
       const treasureValue = randomTreasure.treasure_value || randomTreasure.value || 100;
-      // Use the actual level from the treasure data, no fallback to generated level
       const treasureLevel = randomTreasure.level;
       
       // Calculate multiplier based on chest type (large chest gives double rewards)
