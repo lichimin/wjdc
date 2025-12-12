@@ -500,11 +500,20 @@ const App: React.FC = () => {
   
   // Fetch user attributes
   const fetchUserAttributes = async () => {
+    console.log('=== App: 开始获取用户属性数据 ===');
+    if (!isAuthenticated) {
+      console.log('1. 用户未认证，跳过获取用户属性数据');
+      return;
+    }
+    
     try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('No token found');
+      const token = authService.getAuthToken();
+      console.log('2. 获取令牌:', token ? '存在' : '不存在');
+      if (!token) throw new Error('No authentication token found');
       
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+      console.log('3. API基础URL:', apiBaseUrl);
+      console.log('4. 开始发起网络请求获取用户属性数据...');
       const response = await fetch(`${apiBaseUrl}/api/v1/user/attributes`, {
         method: 'GET',
         headers: {
@@ -512,6 +521,7 @@ const App: React.FC = () => {
           'Content-Type': 'application/json'
         }
       });
+      console.log('5. 网络请求完成，响应状态:', response.status);
       
       const data = await response.json();
       if (!data.success) throw new Error(data.message || 'Failed to fetch user attributes');
@@ -520,6 +530,7 @@ const App: React.FC = () => {
       
       // Apply attributes to player
       if (data.data) {
+        console.log('6. 应用用户属性到玩家:', data.data);
         playerRef.current.damage = 15 + data.data.攻击力;
         playerRef.current.speed = 3.5 + parseFloat(data.data.移动速度) / 100;
         playerRef.current.projectileSpeed = 8 + parseFloat(data.data.子弹速度) / 100;
@@ -534,7 +545,7 @@ const App: React.FC = () => {
         playerRef.current.regen = data.data.恢复;
       }
     } catch (error) {
-      console.error('Error fetching user attributes:', error);
+      console.error('=== App: 获取用户属性数据失败:', error);
     }
   };
   
