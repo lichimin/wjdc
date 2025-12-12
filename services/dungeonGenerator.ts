@@ -126,7 +126,7 @@ export const generateDungeon = (difficultyMultiplier: number = 1, difficultyLeve
   rooms.forEach((room, index) => {
     if (index === 0) return;
 
-    const enemyCount = randomInt(0, 4);
+    const enemyCount = randomInt(0, 8); // 数量翻倍
     for(let e = 0; e < enemyCount; e++) {
        const ex = randomInt(room.x + 1, room.x + room.w - 2);
        const ey = randomInt(room.y + 1, room.y + room.h - 2);
@@ -161,8 +161,8 @@ export const generateDungeon = (difficultyMultiplier: number = 1, difficultyLeve
             x: ex * TILE_SIZE,
             y: ey * TILE_SIZE,
             type,
-            health: hp * difficultyMultiplier,
-            maxHealth: hp * difficultyMultiplier,
+            health: hp * difficultyMultiplier * 2, // 血量翻倍
+            maxHealth: hp * difficultyMultiplier * 2, // 最大血量翻倍
             speed,
             damage: damage * difficultyMultiplier,
             state: 'idle',
@@ -191,8 +191,8 @@ export const generateDungeon = (difficultyMultiplier: number = 1, difficultyLeve
         x: bx * TILE_SIZE,
         y: by * TILE_SIZE,
         type: EnemyType.BOSS, // Assuming BOSS exists in Enum from previous update
-        health: baseBossHP * difficultyMultiplier,
-        maxHealth: baseBossHP * difficultyMultiplier,
+        health: baseBossHP * difficultyMultiplier * 2, // 血量翻倍
+        maxHealth: baseBossHP * difficultyMultiplier * 2, // 最大血量翻倍
         speed: 2.0,
         damage: baseBossDmg * difficultyMultiplier,
         state: 'idle',

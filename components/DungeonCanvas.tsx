@@ -753,16 +753,19 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
        }
        let hit = false;
        const activeEnemies = enemiesRef.current.filter(e => e.health > 0);
-       for (const e of activeEnemies) {
-          const ex = e.x + 4;
-          const ey = e.y + 4;
-          if (proj.x >= ex && proj.x <= ex + 24 && proj.y >= ey && proj.y <= ey + 24) {
-             e.health -= proj.damage;
-             e.state = 'hit';
-             e.hitFlash = 10;
-             e.vx = proj.vx * 0.5;
-             e.vy = proj.vy * 0.5;
-             spawnFloatingText(e.x + TILE_SIZE/2, e.y, `-${proj.damage}`, '#ef4444');
+       
+       // 检查是否击中玩家（敌人发射的子弹）
+       const isEnemyProjectile = proj.id.startsWith('enemy-projectile-');
+       if (isEnemyProjectile && p.invincibilityTimer <= 0) {
+          const px = p.x + 4;
+          const py = p.y + 4;
+          if (proj.x >= px && proj.x <= px + 24 && proj.y >= py && proj.y <= py + 24) {
+             // 应用伤害减少
+             const damageReduction = playerRef.current.damageReduction || 0;
+             const actualDamage = Math.round(proj.damage * (1 - damageReduction));
+             p.health = Math.max(0, p.health - actualDamage);
+             p.invincibilityTimer = 30;
+             spawnFloatingText(p.x + TILE_SIZE/2, p.y, `-${actualDamage}`, '#fbbf24');
              
              // Create hit particle effect
              for (let j = 0; j < 8; j++) {
@@ -776,12 +779,50 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
                  vy: Math.sin(angle) * speed,
                  life: 20 + Math.floor(Math.random() * 20),
                  alpha: 1,
-                 color: '#ef4444'
+                 color: '#fbbf24'
                });
              }
              
              hit = true;
-             break;
+             
+             if (p.health <= 0 && onGameOver) {
+               onGameOver();
+             }
+          }
+       }
+       
+       // 检查是否击中敌人（玩家发射的子弹）
+       if (!hit && !isEnemyProjectile) {
+          for (const e of activeEnemies) {
+             const ex = e.x + 4;
+             const ey = e.y + 4;
+             if (proj.x >= ex && proj.x <= ex + 24 && proj.y >= ey && proj.y <= ey + 24) {
+                e.health -= proj.damage;
+                e.state = 'hit';
+                e.hitFlash = 10;
+                e.vx = proj.vx * 0.5;
+                e.vy = proj.vy * 0.5;
+                spawnFloatingText(e.x + TILE_SIZE/2, e.y, `-${proj.damage}`, '#ef4444');
+                
+                // Create hit particle effect
+                for (let j = 0; j < 8; j++) {
+                  const angle = (Math.PI * 2 * j) / 8;
+                  const speed = 3 + Math.random() * 2;
+                  particlesRef.current.push({
+                    id: Math.random().toString(),
+                    x: proj.x,
+                    y: proj.y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 20 + Math.floor(Math.random() * 20),
+                    alpha: 1,
+                    color: '#ef4444'
+                  });
+                }
+                
+                hit = true;
+                break;
+             }
           }
        }
        if (hit || proj.life <= 0) {
@@ -837,18 +878,97 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
        const canEY = !isWallOrVoid(Math.floor((e.x + eOff)/TILE_SIZE), Math.floor((nextEY + eOff)/TILE_SIZE));
        if (canEY) e.y = nextEY;
 
-       if (dist < 20 && e.cooldown <= 0 && p.invincibilityTimer <= 0) {
+       // 怪物远程攻击逻辑
+       if (dist < 100 && e.cooldown <= 0 && p.invincibilityTimer <= 0) {
+          // 根据怪物类型设置攻击范围和冷却时间
+          let attackRange = 20;
+          let attackCooldown = 60;
+          let isRanged = true;
+          let projectileSpeed = 5;
           let damage = e.damage || 10;
-          // Apply damage reduction
-          const damageReduction = playerRef.current.damageReduction || 0;
-          damage = Math.round(damage * (1 - damageReduction));
-          p.health = Math.max(0, p.health - damage);
-          p.invincibilityTimer = 30;
-          e.cooldown = 60;
-          spawnFloatingText(p.x + TILE_SIZE/2, p.y, `-${damage}`, '#fbbf24');
 
-          if (p.health <= 0 && onGameOver) {
-            onGameOver();
+          // 根据怪物类型调整攻击参数
+          switch(e.type) {
+            case EnemyType.SLIME:
+              attackRange = 20; // 近战
+              isRanged = false;
+              attackCooldown = 60;
+              break;
+            case EnemyType.BAT:
+              attackRange = 80; // 远程
+              isRanged = true;
+              attackCooldown = 80;
+              projectileSpeed = 6;
+              break;
+            case EnemyType.SKELETON:
+              attackRange = 120; // 远程
+              isRanged = true;
+              attackCooldown = 100;
+              projectileSpeed = 4;
+              break;
+            case EnemyType.ELEPHANT:
+              attackRange = 30; // 近战
+              isRanged = false;
+              attackCooldown = 80;
+              damage = Math.round(damage * 1.5); // 近战伤害更高
+              break;
+            case EnemyType.BOSS:
+              attackRange = 150; // 远程
+              isRanged = true;
+              attackCooldown = 120;
+              projectileSpeed = 7;
+              damage = Math.round(damage * 2); // BOSS伤害更高
+              break;
+            default:
+              attackRange = 20;
+              isRanged = false;
+              attackCooldown = 60;
+          }
+
+          if (dist < attackRange) {
+            if (isRanged) {
+              // 远程攻击 - 发射子弹
+              const eCenterX = e.x + TILE_SIZE / 2;
+              const eCenterY = e.y + TILE_SIZE / 2;
+              const pCenterX = p.x + TILE_SIZE / 2;
+              const pCenterY = p.y + TILE_SIZE / 2;
+
+              // 计算子弹方向
+              const angle = Math.atan2(pCenterY - eCenterY, pCenterX - eCenterX);
+              const vx = Math.cos(angle) * projectileSpeed;
+              const vy = Math.sin(angle) * projectileSpeed;
+
+              // 创建子弹
+              projectilesRef.current.push({
+                id: `enemy-projectile-${Math.random().toString()}`,
+                x: eCenterX,
+                y: eCenterY,
+                vx,
+                vy,
+                life: 100,
+                damage
+              });
+
+              // 应用伤害减少
+              const damageReduction = playerRef.current.damageReduction || 0;
+              damage = Math.round(damage * (1 - damageReduction));
+              p.health = Math.max(0, p.health - damage);
+              p.invincibilityTimer = 30;
+              e.cooldown = attackCooldown;
+              spawnFloatingText(p.x + TILE_SIZE/2, p.y, `-${damage}`, '#fbbf24');
+            } else {
+              // 近战攻击
+              const damageReduction = playerRef.current.damageReduction || 0;
+              damage = Math.round(damage * (1 - damageReduction));
+              p.health = Math.max(0, p.health - damage);
+              p.invincibilityTimer = 30;
+              e.cooldown = attackCooldown;
+              spawnFloatingText(p.x + TILE_SIZE/2, p.y, `-${damage}`, '#fbbf24');
+            }
+
+            if (p.health <= 0 && onGameOver) {
+              onGameOver();
+            }
           }
        }
     }

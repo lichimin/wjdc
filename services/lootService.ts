@@ -59,50 +59,52 @@ export const generateLoot = (count: number, treasureData: any[] = [], difficulty
     switch (level) {
       case 'B':
         return [
-          { level: 1, probability: 0.59 },
-          { level: 2, probability: 0.30 },
-          { level: 3, probability: 0.10 },
-          { level: 6, probability: 0.01 }
+          { level: 1, probability: 0.40 },
+          { level: 2, probability: 0.35 },
+          { level: 3, probability: 0.20 },
+          { level: 4, probability: 0.04 },
+          { level: 5, probability: 0.01 }
         ];
       case 'A':
         return [
-          { level: 1, probability: 0.39 },
-          { level: 2, probability: 0.30 },
-          { level: 3, probability: 0.20 },
+          { level: 1, probability: 0.25 },
+          { level: 2, probability: 0.35 },
+          { level: 3, probability: 0.25 },
           { level: 4, probability: 0.10 },
+          { level: 5, probability: 0.04 },
           { level: 6, probability: 0.01 }
         ];
       case 'S':
         return [
-          { level: 1, probability: 0.30 },
-          { level: 2, probability: 0.34 },
-          { level: 3, probability: 0.20 },
-          { level: 4, probability: 0.10 },
-          { level: 5, probability: 0.05 },
-          { level: 6, probability: 0.01 }
+          { level: 1, probability: 0.15 },
+          { level: 2, probability: 0.30 },
+          { level: 3, probability: 0.30 },
+          { level: 4, probability: 0.15 },
+          { level: 5, probability: 0.08 },
+          { level: 6, probability: 0.02 }
         ];
       case 'SS':
         return [
-          { level: 2, probability: 0.30 },
+          { level: 2, probability: 0.20 },
           { level: 3, probability: 0.30 },
-          { level: 4, probability: 0.20 },
-          { level: 5, probability: 0.17 },
-          { level: 6, probability: 0.03 }
+          { level: 4, probability: 0.25 },
+          { level: 5, probability: 0.20 },
+          { level: 6, probability: 0.05 }
         ];
       case 'SSS':
         return [
-          { level: 2, probability: 0.20 },
-          { level: 3, probability: 0.30 },
-          { level: 4, probability: 0.30 },
-          { level: 5, probability: 0.15 },
-          { level: 6, probability: 0.05 }
+          { level: 3, probability: 0.20 },
+          { level: 4, probability: 0.35 },
+          { level: 5, probability: 0.35 },
+          { level: 6, probability: 0.10 }
         ];
       default:
         return [
-          { level: 1, probability: 0.59 },
-          { level: 2, probability: 0.30 },
-          { level: 3, probability: 0.10 },
-          { level: 6, probability: 0.01 }
+          { level: 1, probability: 0.40 },
+          { level: 2, probability: 0.35 },
+          { level: 3, probability: 0.20 },
+          { level: 4, probability: 0.04 },
+          { level: 5, probability: 0.01 }
         ];
     }
   };
