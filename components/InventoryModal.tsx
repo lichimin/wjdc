@@ -860,6 +860,9 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                           <div className="text-[9px] text-slate-500 font-mono mt-0.5">
                             {item.value} G
                           </div>
+                          <div className="text-[9px] text-cyan-400 font-mono mt-0.5">
+                            Lv.{item.level}
+                          </div>
                         </div>
                      </div>
                   );})}
@@ -898,6 +901,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                 <div className="bg-slate-900 p-6 rounded-lg border border-amber-500/30 mb-6">
                   <div className="text-xl text-slate-400 mb-2">宝物价格</div>
                   <div className="text-4xl font-bold text-yellow-400">{selectedEquipment.value} 金币</div>
+                </div>
+                <div className="bg-slate-900 p-6 rounded-lg border border-cyan-500/30">
+                  <div className="text-xl text-slate-400 mb-2">宝物等级</div>
+                  <div className="text-4xl font-bold text-cyan-400">Lv.{selectedEquipment.level}</div>
                 </div>
               </div>
             ) : (

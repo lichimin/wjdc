@@ -169,6 +169,11 @@ export const ChestModal: React.FC<ChestModalProps> = ({ loot, onConfirm }) => {
                         <div className="text-[8px] text-slate-400 font-mono">
                           {item.value} G
                         </div>
+                        
+                        {/* Level */}
+                        <div className="text-[8px] text-cyan-400 font-mono mt-1">
+                          Lv.{item.level}
+                        </div>
                     </div>
                  </div>
 
