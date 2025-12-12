@@ -11,7 +11,7 @@ import { StatsModal } from './components/StatsModal';
 import { SummaryModal } from './components/SummaryModal';
 import { Home } from './components/Home'; // Imported Home
 import SimpleLogin from './components/SimpleLogin';
-import { DungeonData, Room, ItemType, InputState, PlayerState, Enemy, Projectile, FloatingText, LootItem, Rarity } from './types';
+import { DungeonData, Room, ItemType, InputState, PlayerState, Enemy, Projectile, FloatingText, LootItem, Rarity, UserAttributes } from './types';
 import { GoogleGenAI } from "@google/genai";
 
 // --- CYBERPUNK JOYSTICK --- 
@@ -497,12 +497,59 @@ const App: React.FC = () => {
     }
   };
   
+  // Fetch user attributes
+  const fetchUserAttributes = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No token found');
+      
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+      const response = await fetch(`${apiBaseUrl}/api/v1/user/attributes`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const data = await response.json();
+      if (!data.success) throw new Error(data.message || 'Failed to fetch user attributes');
+      
+      setUserAttributes(data.data);
+      
+      // Apply attributes to player
+      if (data.data) {
+        playerRef.current.damage = 15 + data.data.攻击力;
+        playerRef.current.speed = 3.5 + parseFloat(data.data.移动速度) / 100;
+        playerRef.current.projectileSpeed = 8 + parseFloat(data.data.子弹速度) / 100;
+        playerRef.current.maxHealth = 100 + data.data.生命值;
+        playerRef.current.health = Math.min(playerRef.current.health, playerRef.current.maxHealth);
+        playerRef.current.critRate = parseFloat(data.data.暴击率) / 100;
+        playerRef.current.critDamage = parseFloat(data.data.暴击伤害) / 100 - 1; // Convert to decimal (e.g., 150% -> 0.5)
+        playerRef.current.lifesteal = parseFloat(data.data.吸血) / 100;
+        playerRef.current.dodgeRate = parseFloat(data.data.闪避) / 100;
+        playerRef.current.instantKillRate = parseFloat(data.data.秒杀) / 100;
+        playerRef.current.damageReduction = parseFloat(data.data.减伤) / 100;
+        playerRef.current.regen = data.data.恢复;
+      }
+    } catch (error) {
+      console.error('Error fetching user attributes:', error);
+    }
+  };
+  
   // Fetch backpack items when Home inventory is opened
   useEffect(() => {
     if (isHomeInventoryOpen) {
       fetchBackpackItems();
     }
   }, [isHomeInventoryOpen]);
+  
+  // Fetch user attributes when entering adventure
+  useEffect(() => {
+    if (gameState === 'playing') {
+      fetchUserAttributes();
+    }
+  }, [gameState]);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [summaryType, setSummaryType] = useState<'success' | 'failure'>('success');
@@ -1229,7 +1276,7 @@ const App: React.FC = () => {
           fetchBackpackItems();
         }}
       />}
-      {isStatsOpen && <StatsModal playerState={playerRef.current} onClose={() => setIsStatsOpen(false)} />}
+      {isStatsOpen && <StatsModal playerState={playerRef.current} userAttributes={userAttributes} onClose={() => setIsStatsOpen(false)} />}
       {isSummaryOpen && <SummaryModal type={summaryType} inventory={runInventory} onRestart={handleReturnHome} />}
       
       {/* 登录页面 - 覆盖整个应用 */}

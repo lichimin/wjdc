@@ -1,12 +1,13 @@
 import React from 'react';
-import { PlayerState } from '../types';
+import { PlayerState, UserAttributes } from '../types';
 
 interface StatsModalProps {
   playerState: PlayerState;
+  userAttributes: UserAttributes | null;
   onClose: () => void;
 }
 
-export const StatsModal: React.FC<StatsModalProps> = ({ playerState, onClose }) => {
+export const StatsModal: React.FC<StatsModalProps> = ({ playerState, userAttributes, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-fadeIn" onClick={onClose}></div>
@@ -26,11 +27,54 @@ export const StatsModal: React.FC<StatsModalProps> = ({ playerState, onClose }) 
            </div>
 
            <div className="space-y-3">
-              <StatRow label="Attack Power" value={playerState.damage} icon="⚔️" color="text-red-400" />
-              <StatRow label="Move Speed" value={playerState.speed} icon="👟" color="text-blue-400" />
-              <StatRow label="Projectile Spd" value={playerState.projectileSpeed} icon="🏹" color="text-green-400" />
-              <StatRow label="Max Health" value={playerState.maxHealth} icon="❤️" color="text-pink-400" />
-              <StatRow label="Attack Speed" value="2.5/s" icon="⚡" color="text-yellow-400" />
+              <StatRow 
+                label="Attack Power" 
+                baseValue={15} 
+                additionalValue={userAttributes?.攻击力 || 0} 
+                totalValue={playerState.damage} 
+                icon="⚔️" 
+                color="text-red-400" 
+              />
+              <StatRow 
+                label="Move Speed" 
+                baseValue={3.5} 
+                additionalValue={parseFloat(userAttributes?.移动速度 || "0")} 
+                totalValue={playerState.speed} 
+                icon="👟" 
+                color="text-blue-400" 
+              />
+              <StatRow 
+                label="Projectile Spd" 
+                baseValue={8} 
+                additionalValue={parseFloat(userAttributes?.子弹速度 || "0")} 
+                totalValue={playerState.projectileSpeed} 
+                icon="🏹" 
+                color="text-green-400" 
+              />
+              <StatRow 
+                label="Max Health" 
+                baseValue={100} 
+                additionalValue={userAttributes?.生命值 || 0} 
+                totalValue={playerState.maxHealth} 
+                icon="❤️" 
+                color="text-pink-400" 
+              />
+              <StatRow 
+                label="Attack Speed" 
+                baseValue={2.5} 
+                additionalValue={userAttributes?.攻击速度 || 0} 
+                totalValue={`${(2.5 + (userAttributes?.攻击速度 || 0)).toFixed(1)}/s`} 
+                icon="⚡" 
+                color="text-yellow-400" 
+              />
+              <StatRow 
+                label="Damage Reduction" 
+                baseValue={0} 
+                additionalValue={parseFloat(userAttributes?.减伤 || "0")} 
+                totalValue={`${parseFloat(userAttributes?.减伤 || "0")}%`} 
+                icon="🛡️" 
+                color="text-cyan-400" 
+              />
            </div>
         </div>
         
@@ -46,12 +90,19 @@ export const StatsModal: React.FC<StatsModalProps> = ({ playerState, onClose }) 
   );
 };
 
-const StatRow: React.FC<{ label: string, value: string | number, icon: string, color: string }> = ({ label, value, icon, color }) => (
+const StatRow: React.FC<{ label: string, baseValue: number, additionalValue: number, totalValue: string | number, icon: string, color: string }> = ({ label, baseValue, additionalValue, totalValue, icon, color }) => (
   <div className="flex justify-between items-center bg-slate-950/50 p-2.5 rounded border border-slate-800 hover:border-slate-600 transition-colors">
      <div className="flex items-center gap-3 text-xs text-slate-300">
        <span className="text-base">{icon}</span>
        <span className="uppercase tracking-wide font-bold">{label}</span>
      </div>
-     <span className={`text-sm font-bold font-mono ${color}`}>{value}</span>
+     <div className={`text-sm font-bold font-mono ${color}`}>
+       {typeof totalValue === 'number' ? totalValue.toFixed(1) : totalValue}
+       {additionalValue > 0 && (
+         <span className="text-green-400 ml-1">
+           (+{additionalValue})
+         </span>
+       )}
+     </div>
   </div>
 );

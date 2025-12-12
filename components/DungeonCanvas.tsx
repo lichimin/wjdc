@@ -282,7 +282,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     };
     
     // Apply damage to enemies in range
-    const damage = (playerRef.current.equipment?.attack_power || 50) * 3;
+    const damage = playerRef.current.damage * 3;
     const skillRange = TILE_SIZE * 4; // Character size * 4 (double range)
     
     enemiesRef.current.forEach((enemy, index) => {
@@ -843,7 +843,10 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
        if (canEY) e.y = nextEY;
 
        if (dist < 20 && e.cooldown <= 0 && p.invincibilityTimer <= 0) {
-          const damage = e.damage || 10;
+          let damage = e.damage || 10;
+          // Apply damage reduction
+          const damageReduction = playerRef.current.damageReduction || 0;
+          damage = Math.round(damage * (1 - damageReduction));
           p.health = Math.max(0, p.health - damage);
           p.invincibilityTimer = 30;
           e.cooldown = 60;

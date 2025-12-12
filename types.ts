@@ -164,6 +164,7 @@ export interface PlayerState {
   regenTimer?: number;
   lifesteal?: number;
   instantKillRate?: number;
+  damageReduction?: number;
 
   // Dodge Roll
   rollTimer: number;
@@ -176,8 +177,25 @@ export interface PlayerState {
   interactionTimer: number; // Frames (0 to 60)
 }
 
-// 用户相关类型定义
+// 用户属性接口定义
+export interface UserAttributes {
+  减伤: string;
+  吸血: string;
+  子弹速度: string;
+  弹道: number;
+  恢复: number;
+  攻击力: number;
+  攻击类型: string;
+  攻击速度: number;
+  暴击伤害: string;
+  暴击率: string;
+  生命值: number;
+  秒杀: string;
+  移动速度: string;
+  闪避: string;
+}
 
+// 用户相关类型定义
 export interface User {
   id: number;
   username: string;
