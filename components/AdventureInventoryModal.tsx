@@ -8,6 +8,22 @@ interface AdventureInventoryModalProps {
 
 export const AdventureInventoryModal: React.FC<AdventureInventoryModalProps> = ({ items, onClose }) => {
   const [selectedItem, setSelectedItem] = useState<LootItem | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // 检测屏幕尺寸
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // 初始检测
+    checkScreenSize();
+    
+    // 监听屏幕尺寸变化
+    window.addEventListener('resize', checkScreenSize);
+    
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   // 关闭详情面板
   const closeDetails = () => {
@@ -34,36 +50,41 @@ export const AdventureInventoryModal: React.FC<AdventureInventoryModalProps> = (
       <div className="bg-slate-900 border-2 border-cyan-800 rounded-lg shadow-[0_0_20px_rgba(139,92,246,0.5)] w-full max-w-4xl h-[80vh] flex flex-col">
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b-2 border-cyan-800 bg-slate-950">
-          <h2 className="text-2xl font-bold text-cyan-300">冒险背包</h2>
-          <div className="text-sm text-cyan-200">
-            <span className="mr-4">物品数量: {items.length}</span>
+          <h2 className="text-xl md:text-2xl font-bold text-cyan-300">冒险背包</h2>
+          <div className="text-xs md:text-sm text-cyan-200 flex flex-col md:flex-row gap-1 md:gap-4">
+            <span>物品数量: {items.length}</span>
             <span>总价值: {totalValue} 金币</span>
           </div>
           <button
             onClick={onClose}
-            className="text-cyan-300 hover:text-cyan-100 transition-colors"
+            className="text-cyan-300 hover:text-cyan-100 transition-colors text-lg"
           >
             ✕
           </button>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 overflow-hidden flex">
-          {/* Inventory Grid */}
-          <div className="w-3/4 p-4 overflow-y-auto">
-            <div className="grid grid-cols-5 gap-3">
-              {items.map((item, index) => (
-                <div
-                  key={`${item.id || index}-${index}`}
-                  className={`bg-slate-800 border rounded-lg p-2 cursor-pointer transition-all hover:scale-105 group relative ${getRarityStyle(item.rarity)}`}
-                  onClick={() => setSelectedItem(item)}
+        {/* Main Content - 响应式设计 */}
+        {isMobile ? (
+          // 手机视图：先显示列表，点击后显示详情
+          <div className="flex-1 overflow-hidden flex flex-col">
+            {selectedItem ? (
+              // 详情视图
+              <div className="flex-1 p-4 overflow-y-auto">
+                <button
+                  onClick={closeDetails}
+                  className="mb-4 px-4 py-2 bg-slate-800 border border-cyan-700 rounded hover:border-cyan-500 transition-colors text-cyan-300"
                 >
+                  ← 返回物品列表
+                </button>
+                
+                {/* Item Details */}
+                <div className="space-y-4">
                   {/* Item Image */}
-                  <div className="h-16 w-16 mx-auto mb-2 overflow-hidden rounded bg-slate-900">
-                    {item.imageUrl && (
+                  <div className="h-48 w-48 mx-auto overflow-hidden rounded bg-slate-900">
+                    {selectedItem.imageUrl && (
                       <img
-                        src={item.imageUrl}
-                        alt={item.name}
+                        src={selectedItem.imageUrl}
+                        alt={selectedItem.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
@@ -73,138 +94,304 @@ export const AdventureInventoryModal: React.FC<AdventureInventoryModalProps> = (
                       />
                     )}
                     <div className="hidden h-full w-full flex items-center justify-center text-slate-500">
-                      {item.name}
+                      {selectedItem.name}
                     </div>
                   </div>
 
                   {/* Item Name */}
-                  <div className="text-xs text-center truncate mb-1">{item.name}</div>
+                  <h3 className={`text-xl font-bold text-center ${getRarityStyle(selectedItem.rarity)}`}>
+                    {selectedItem.name}
+                  </h3>
 
-                  {/* Item Quantity */}
-                  {item.quantity && item.quantity > 1 && (
-                    <div className="absolute top-1 left-1 bg-cyan-900 text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {item.quantity}
+                  {/* Basic Details */}
+                  <div className="grid grid-cols-2 gap-4 p-4 bg-slate-800 rounded border border-cyan-900">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">稀有度:</span>
+                      <span className={getRarityStyle(selectedItem.rarity)}>
+                        {selectedItem.rarity === Rarity.COMMON && '普通'}
+                        {selectedItem.rarity === Rarity.RARE && '稀有'}
+                        {selectedItem.rarity === Rarity.EPIC && '史诗'}
+                        {selectedItem.rarity === Rarity.LEGENDARY && '传说'}
+                        {selectedItem.rarity === Rarity.MYTHIC && '神话'}
+                        {selectedItem.rarity === Rarity.GENESIS && '创世'}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">类型:</span>
+                      <span className="text-cyan-300">{selectedItem.type || '未知'}</span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">价值:</span>
+                      <span className="text-yellow-300">{selectedItem.value} 金币</span>
+                    </div>
+
+                    {selectedItem.quantity && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">数量:</span>
+                        <span className="text-green-300">{selectedItem.quantity}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Additional Details */}
+                  {selectedItem.equipment && (
+                    <div className="p-4 bg-slate-800 rounded border border-cyan-900">
+                      <h4 className="text-lg font-bold text-cyan-300 mb-3">装备属性</h4>
+                      <div className="space-y-2">
+                        {selectedItem.equipment.attack && (
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">攻击力:</span>
+                            <span className="text-red-300">+{selectedItem.equipment.attack}</span>
+                          </div>
+                        )}
+                        {selectedItem.equipment.defense && (
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">防御力:</span>
+                            <span className="text-blue-300">+{selectedItem.equipment.defense}</span>
+                          </div>
+                        )}
+                        {selectedItem.equipment.health && (
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">生命值:</span>
+                            <span className="text-green-300">+{selectedItem.equipment.health}</span>
+                          </div>
+                        )}
+                        {selectedItem.equipment.speed && (
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">移动速度:</span>
+                            <span className="text-purple-300">+{selectedItem.equipment.speed}%</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
 
-                  {/* Value Badge */}
-                  <div className="text-xs text-center text-cyan-400">
-                    {item.value} 金币
-                  </div>
+                  {/* Description */}
+                  {selectedItem.description && (
+                    <div className="p-4 bg-slate-800 rounded border border-cyan-900">
+                      <h4 className="text-lg font-bold text-cyan-300 mb-3">描述</h4>
+                      <p className="text-slate-300">{selectedItem.description}</p>
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              // 列表视图
+              <div className="flex-1 p-4 overflow-y-auto">
+                <div className={`grid gap-3 ${items.length > 0 ? 'grid-cols-3' : ''}`}>
+                  {items.length === 0 ? (
+                    <div className="col-span-3 flex items-center justify-center h-64 text-slate-400">
+                      背包为空
+                    </div>
+                  ) : (
+                    items.map((item, index) => (
+                      <div
+                        key={`${item.id || index}-${index}`}
+                        className={`bg-slate-800 border rounded-lg p-2 cursor-pointer transition-all hover:scale-105 group relative ${getRarityStyle(item.rarity)}`}
+                        onClick={() => setSelectedItem(item)}
+                      >
+                        {/* Item Image */}
+                        <div className="h-16 w-16 mx-auto mb-2 overflow-hidden rounded bg-slate-900">
+                          {item.imageUrl && (
+                            <img
+                              src={item.imageUrl}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                const fallback = e.currentTarget.nextElementSibling;
+                                if (fallback) fallback.classList.remove('hidden');
+                              }}
+                            />
+                          )}
+                          <div className="hidden h-full w-full flex items-center justify-center text-slate-500">
+                            {item.name}
+                          </div>
+                        </div>
+
+                        {/* Item Name */}
+                        <div className="text-xs text-center truncate mb-1">{item.name}</div>
+
+                        {/* Item Quantity */}
+                        {item.quantity && item.quantity > 1 && (
+                          <div className="absolute top-1 left-1 bg-cyan-900 text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {item.quantity}
+                          </div>
+                        )}
+
+                        {/* Value Badge */}
+                        <div className="text-xs text-center text-cyan-400">
+                          {item.value} 金币
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
           </div>
-
-          {/* Item Details */}
-          {selectedItem && (
-            <div className="w-1/4 p-4 border-l-2 border-cyan-800 bg-slate-950 overflow-y-auto">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className={`text-lg font-bold ${getRarityStyle(selectedItem.rarity)}`}>
-                  {selectedItem.name}
-                </h3>
-                <button
-                  onClick={closeDetails}
-                  className="text-cyan-300 hover:text-cyan-100 transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* Item Image */}
-              <div className="h-32 w-32 mx-auto mb-4 overflow-hidden rounded bg-slate-900">
-                {selectedItem.imageUrl && (
-                  <img
-                    src={selectedItem.imageUrl}
-                    alt={selectedItem.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                      const fallback = e.currentTarget.nextElementSibling;
-                      if (fallback) fallback.classList.remove('hidden');
-                    }}
-                  />
-                )}
-                <div className="hidden h-full w-full flex items-center justify-center text-slate-500">
-                  {selectedItem.name}
-                </div>
-              </div>
-
-              {/* Item Details */}
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-slate-400">稀有度:</span>
-                  <span className={getRarityStyle(selectedItem.rarity)}>
-                    {selectedItem.rarity === Rarity.COMMON && '普通'}
-                    {selectedItem.rarity === Rarity.RARE && '稀有'}
-                    {selectedItem.rarity === Rarity.EPIC && '史诗'}
-                    {selectedItem.rarity === Rarity.LEGENDARY && '传说'}
-                    {selectedItem.rarity === Rarity.MYTHIC && '神话'}
-                    {selectedItem.rarity === Rarity.GENESIS && '创世'}
-                  </span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-slate-400">类型:</span>
-                  <span className="text-cyan-300">{selectedItem.type || '未知'}</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-slate-400">价值:</span>
-                  <span className="text-yellow-300">{selectedItem.value} 金币</span>
-                </div>
-
-                {selectedItem.quantity && (
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">数量:</span>
-                    <span className="text-green-300">{selectedItem.quantity}</span>
-                  </div>
-                )}
-
-                {/* Additional Details */}
-                {selectedItem.equipment && (
-                  <div className="mt-4 p-3 bg-slate-800 rounded border border-cyan-900">
-                    <h4 className="text-sm font-bold text-cyan-300 mb-2">装备属性</h4>
-                    <div className="space-y-1">
-                      {selectedItem.equipment.attack && (
-                        <div className="flex justify-between text-xs">
-                          <span className="text-slate-400">攻击力:</span>
-                          <span className="text-red-300">+{selectedItem.equipment.attack}</span>
-                        </div>
+        ) : (
+          // 桌面视图：分栏显示
+          <div className="flex-1 overflow-hidden flex">
+            {/* Inventory Grid */}
+            <div className="w-3/4 p-4 overflow-y-auto">
+              <div className="grid grid-cols-5 gap-3">
+                {items.map((item, index) => (
+                  <div
+                    key={`${item.id || index}-${index}`}
+                    className={`bg-slate-800 border rounded-lg p-2 cursor-pointer transition-all hover:scale-105 group relative ${getRarityStyle(item.rarity)}`}
+                    onClick={() => setSelectedItem(item)}
+                  >
+                    {/* Item Image */}
+                    <div className="h-16 w-16 mx-auto mb-2 overflow-hidden rounded bg-slate-900">
+                      {item.imageUrl && (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const fallback = e.currentTarget.nextElementSibling;
+                            if (fallback) fallback.classList.remove('hidden');
+                          }}
+                        />
                       )}
-                      {selectedItem.equipment.defense && (
-                        <div className="flex justify-between text-xs">
-                          <span className="text-slate-400">防御力:</span>
-                          <span className="text-blue-300">+{selectedItem.equipment.defense}</span>
-                        </div>
-                      )}
-                      {selectedItem.equipment.health && (
-                        <div className="flex justify-between text-xs">
-                          <span className="text-slate-400">生命值:</span>
-                          <span className="text-green-300">+{selectedItem.equipment.health}</span>
-                        </div>
-                      )}
-                      {selectedItem.equipment.speed && (
-                        <div className="flex justify-between text-xs">
-                          <span className="text-slate-400">移动速度:</span>
-                          <span className="text-purple-300">+{selectedItem.equipment.speed}%</span>
-                        </div>
-                      )}
+                      <div className="hidden h-full w-full flex items-center justify-center text-slate-500">
+                        {item.name}
+                      </div>
+                    </div>
+
+                    {/* Item Name */}
+                    <div className="text-xs text-center truncate mb-1">{item.name}</div>
+
+                    {/* Item Quantity */}
+                    {item.quantity && item.quantity > 1 && (
+                      <div className="absolute top-1 left-1 bg-cyan-900 text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {item.quantity}
+                      </div>
+                    )}
+
+                    {/* Value Badge */}
+                    <div className="text-xs text-center text-cyan-400">
+                      {item.value} 金币
                     </div>
                   </div>
-                )}
-
-                {/* Description */}
-                {selectedItem.description && (
-                  <div className="mt-4">
-                    <h4 className="text-sm font-bold text-cyan-300 mb-2">描述</h4>
-                    <p className="text-xs text-slate-300">{selectedItem.description}</p>
-                  </div>
-                )}
+                ))}
               </div>
             </div>
-          )}
-        </div>
+
+            {/* Item Details */}
+            {selectedItem && (
+              <div className="w-1/4 p-4 border-l-2 border-cyan-800 bg-slate-950 overflow-y-auto">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className={`text-lg font-bold ${getRarityStyle(selectedItem.rarity)}`}>
+                    {selectedItem.name}
+                  </h3>
+                  <button
+                    onClick={closeDetails}
+                    className="text-cyan-300 hover:text-cyan-100 transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Item Image */}
+                <div className="h-32 w-32 mx-auto mb-4 overflow-hidden rounded bg-slate-900">
+                  {selectedItem.imageUrl && (
+                    <img
+                      src={selectedItem.imageUrl}
+                      alt={selectedItem.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const fallback = e.currentTarget.nextElementSibling;
+                        if (fallback) fallback.classList.remove('hidden');
+                      }}
+                    />
+                  )}
+                  <div className="hidden h-full w-full flex items-center justify-center text-slate-500">
+                    {selectedItem.name}
+                  </div>
+                </div>
+
+                {/* Item Details */}
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">稀有度:</span>
+                    <span className={getRarityStyle(selectedItem.rarity)}>
+                      {selectedItem.rarity === Rarity.COMMON && '普通'}
+                      {selectedItem.rarity === Rarity.RARE && '稀有'}
+                      {selectedItem.rarity === Rarity.EPIC && '史诗'}
+                      {selectedItem.rarity === Rarity.LEGENDARY && '传说'}
+                      {selectedItem.rarity === Rarity.MYTHIC && '神话'}
+                      {selectedItem.rarity === Rarity.GENESIS && '创世'}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">类型:</span>
+                    <span className="text-cyan-300">{selectedItem.type || '未知'}</span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">价值:</span>
+                    <span className="text-yellow-300">{selectedItem.value} 金币</span>
+                  </div>
+
+                  {selectedItem.quantity && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">数量:</span>
+                      <span className="text-green-300">{selectedItem.quantity}</span>
+                    </div>
+                  )}
+
+                  {/* Additional Details */}
+                  {selectedItem.equipment && (
+                    <div className="mt-4 p-3 bg-slate-800 rounded border border-cyan-900">
+                      <h4 className="text-sm font-bold text-cyan-300 mb-2">装备属性</h4>
+                      <div className="space-y-1">
+                        {selectedItem.equipment.attack && (
+                          <div className="flex justify-between text-xs">
+                            <span className="text-slate-400">攻击力:</span>
+                            <span className="text-red-300">+{selectedItem.equipment.attack}</span>
+                          </div>
+                        )}
+                        {selectedItem.equipment.defense && (
+                          <div className="flex justify-between text-xs">
+                            <span className="text-slate-400">防御力:</span>
+                            <span className="text-blue-300">+{selectedItem.equipment.defense}</span>
+                          </div>
+                        )}
+                        {selectedItem.equipment.health && (
+                          <div className="flex justify-between text-xs">
+                            <span className="text-slate-400">生命值:</span>
+                            <span className="text-green-300">+{selectedItem.equipment.health}</span>
+                          </div>
+                        )}
+                        {selectedItem.equipment.speed && (
+                          <div className="flex justify-between text-xs">
+                            <span className="text-slate-400">移动速度:</span>
+                            <span className="text-purple-300">+{selectedItem.equipment.speed}%</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Description */}
+                  {selectedItem.description && (
+                    <div className="mt-4">
+                      <h4 className="text-sm font-bold text-cyan-300 mb-2">描述</h4>
+                      <p className="text-xs text-slate-300">{selectedItem.description}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
