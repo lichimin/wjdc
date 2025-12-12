@@ -242,6 +242,7 @@ const App: React.FC = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loginError, setLoginError] = useState('');
   const [userSkin, setUserSkin] = useState<UserSkin | null>(null);
+  const [userAttributes, setUserAttributes] = useState<UserAttributes | null>(null);
 
   // Game View State
   const [dungeon, setDungeon] = useState<DungeonData | null>(null);
