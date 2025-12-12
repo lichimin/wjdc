@@ -492,7 +492,8 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
 
   // Get original equipment data from API response
   const getOriginalEquipmentData = (itemId: any) => {
-    const foundItem = originalItems.find((apiItem: any) => {
+    // First try to find the item in the originalItems array
+    const foundItemInOriginal = originalItems.find((apiItem: any) => {
       const matchesType = apiItem.type === 'equipment';
       
       // Convert both to string for type-agnostic comparison
@@ -502,7 +503,17 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       return matchesType && (matchesItemId || matchesEquipmentId);
     });
     
-    return foundItem;
+    // If found in originalItems, return it
+    if (foundItemInOriginal) {
+      return foundItemInOriginal;
+    }
+    
+    // If not found in originalItems, try to find it in the items array
+    const foundItemInItems = items.find((item: any) => {
+      return item.id?.toString() === String(itemId);
+    });
+    
+    return foundItemInItems;
   };
 
   // Handle equipment click
@@ -929,10 +940,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
       {selectedEquipment && (
         <div 
           id="equipment-details-modal"
-          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-gradient-to-br from-black/80 to-slate-900/90 backdrop-blur-md animate-fadeIn"
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-2 bg-gradient-to-br from-black/80 to-slate-900/90 backdrop-blur-md animate-fadeIn"
         >
           {/* Modal Content */}
-          <div className="relative w-full max-w-2xl bg-slate-950 border-4 border-cyan-500/30 rounded-xl shadow-[0_0_30px_rgba(0,255,255,0.3)] p-6 font-mono transform transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,255,255,0.5)]">
+          <div className="relative w-full max-w-full sm:max-w-2xl bg-slate-950 border-4 border-cyan-500/30 rounded-xl shadow-[0_0_30px_rgba(0,255,255,0.3)] p-4 sm:p-6 font-mono transform transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,255,255,0.5)] max-h-[90vh] overflow-y-auto">
             {/* Header with pixel-style title */}
             <div className="flex justify-between items-center mb-6 pb-4 border-b-4 border-amber-500/30">
               <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 animate-pulse">
@@ -965,9 +976,9 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
               <>
                 {/* Equipment Template Info */}
                 {selectedEquipment.equipment?.equipment_template && (
-                  <div className="mb-8">
-                    <div className="text-lg font-bold text-cyan-400 mb-4">基础属性</div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="mb-6 sm:mb-8">
+                        <div className="text-base sm:text-lg font-bold text-cyan-400 mb-3 sm:mb-4">基础属性</div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       {/* Equipment Image */}
                       {selectedEquipment.equipment.equipment_template.image_url && (
                         <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-6 rounded-xl border-2 border-cyan-500/20 flex items-center justify-center shadow-inner shadow-cyan-500/10">
@@ -980,7 +991,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       )}
                       
                       {/* Basic Info */}
-                      <div className="space-y-3">
+                      <div className="space-y-2 sm:space-y-3">
                         {/* Name */}
                         <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-3 rounded-lg border border-slate-700/50 shadow-sm">
                           <div className="text-xs text-slate-400 mb-1 uppercase tracking-wider">装备名称</div>
@@ -1015,7 +1026,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                     </div>
                     
                     {/* Attributes Grid */}
-                    <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="mt-4 sm:mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
                       {/* Health */}
                       {selectedEquipment.equipment.equipment_template.hp > 0 && (
                         <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-lg border-2 border-red-500/20 hover:border-red-500/40 transition-all hover:shadow-[0_0_10px_rgba(255,0,0,0.2)]">
@@ -1162,8 +1173,8 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                         return (
                           <div key={index} className={`${bgColor} p-4 rounded-lg border-2 ${borderColor} hover:shadow-[0_0_15px_${glowColor}] transition-all duration-300`}>
                             <div className="flex justify-between items-center">
-                              <div className={`text-sm font-bold ${textColor} uppercase tracking-wide`}>{formattedAttrName}</div>
-                              <div className={`text-sm font-bold ${textColor} text-lg`}>+{attr.attr_value}</div>
+                              <div className={`text-xs sm:text-sm font-bold ${textColor} uppercase tracking-wide`}>{formattedAttrName}</div>
+                              <div className={`text-sm font-bold ${textColor} sm:text-lg`}>+{attr.attr_value}</div>
                             </div>
                           </div>
                         );
