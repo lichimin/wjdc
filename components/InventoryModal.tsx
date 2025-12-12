@@ -546,26 +546,46 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     
     let combinedData = { ...item };
     
-    // Check if this is an equipment item with equipment_template
-    if (item.type === 'equipment' && item.equipment) {
-      const { equipment_template, additional_attrs, ...equipmentRest } = item.equipment;
-      
-      // Merge all equipment data including equipment_template and additional_attrs
+    // Check if this is an equipment item
+    if (item.type === 'equipment') {
+      // Merge all equipment data from different sources
       combinedData = {
         ...combinedData,
-        // Merge equipment template attributes to root level for easy access in UI
-        ...equipment_template,
-        // Ensure imageUrl is properly extracted
-        imageUrl: equipment_template.image_url?.trim()?.replace(/^`|`$/g, ''),
-        // Save all equipment data including additional_attrs
+        // Merge direct equipment attributes if any
+        ...item,
+        // Merge equipment data
+        ...item.equipment,
+        // Merge equipment template attributes if available
+        ...(item.equipment?.equipment_template || {}),
+        // Ensure imageUrl is properly extracted from any available source
+        imageUrl: (item.equipment?.equipment_template?.image_url || item.imageUrl)?.trim()?.replace(/^`|`$/g, ''),
+        // Save all original equipment data structure
         equipment: {
-          ...equipmentRest,
-          equipment_template,
-          additional_attrs
+          ...item.equipment,
+          additional_attrs: item.equipment?.additional_attrs
         },
         // Also save additional_attrs at root level for easy access
-        additional_attrs
+        additional_attrs: item.equipment?.additional_attrs
       };
+      
+      // Fallback: try to get data from originalItems if we don't have all attributes
+      const hasEquipmentAttributes = ['hp', 'attack', 'attack_speed', 'move_speed'].some(attr => combinedData[attr] !== undefined);
+      if (!hasEquipmentAttributes) {
+        const originalEquipmentData = getOriginalEquipmentData(item.id);
+        console.log('Falling back to original equipment data:', originalEquipmentData);
+        
+        if (originalEquipmentData) {
+          combinedData = {
+            ...combinedData,
+            ...originalEquipmentData,
+            ...(originalEquipmentData.equipment || {}),
+            ...(originalEquipmentData.equipment?.equipment_template || {}),
+            imageUrl: (originalEquipmentData.equipment?.equipment_template?.image_url || originalEquipmentData.imageUrl || combinedData.imageUrl)?.trim()?.replace(/^`|`$/g, ''),
+            additional_attrs: originalEquipmentData.equipment?.additional_attrs || combinedData.additional_attrs,
+            equipment: originalEquipmentData.equipment || combinedData.equipment
+          };
+        }
+      }
     } else if (item.type === 'treasure' && item.treasure) {
       // Handle treasure items
       const treasure = item.treasure;
@@ -587,10 +607,8 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           ...combinedData,
           ...originalEquipmentData,
           // Ensure additional_attrs is preserved
-          ...(originalEquipmentData.equipment?.equipment_template && {
-            ...originalEquipmentData.equipment.equipment_template,
-            imageUrl: originalEquipmentData.equipment.equipment_template.image_url?.trim()?.replace(/^`|`$/g, '')
-          }),
+          ...(originalEquipmentData.equipment?.equipment_template || {}),
+          imageUrl: (originalEquipmentData.equipment?.equipment_template?.image_url || originalEquipmentData.imageUrl)?.trim()?.replace(/^`|`$/g, ''),
           additional_attrs: originalEquipmentData.equipment?.additional_attrs,
           equipment: originalEquipmentData.equipment
         };
@@ -1202,7 +1220,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                       附加属性
                     </div>
                     <div className="space-y-4">
-                      {selectedEquipment.equipment.additional_attrs.map((attr: any, index: number) => {
+                      {selectedEquipment.additional_attrs?.map((attr: any, index: number) => {
                         const isSin = isSevenDeadlySin(attr.attr_type);
                         const textColor = isSin ? 'text-red-400' : 'text-purple-400';
                         const borderColor = isSin ? 'border-red-500/40' : 'border-purple-500/40';
