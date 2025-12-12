@@ -544,18 +544,30 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
     console.log('=== Equipment clicked start ===');
     console.log('Item clicked:', item);
     
-    // Get the complete equipment data from originalItems
-    const originalEquipmentData = getOriginalEquipmentData(item.id);
-    console.log('Original equipment data:', originalEquipmentData);
+    let combinedData = { ...item };
     
-    const combinedData = {
-      ...item,
-      ...(originalEquipmentData || {})
-    };
+    // For equipped items, we need to get attributes from equipment.equipment_template
+    if (item.equipment && item.equipment.equipment_template) {
+      const template = item.equipment.equipment_template;
+      combinedData = {
+        ...combinedData,
+        ...template
+      };
+    } else {
+      // For inventory items, try to get complete data from originalItems
+      const originalEquipmentData = getOriginalEquipmentData(item.id);
+      console.log('Original equipment data:', originalEquipmentData);
+      
+      if (originalEquipmentData) {
+        combinedData = {
+          ...combinedData,
+          ...originalEquipmentData
+        };
+      }
+    }
+    
     console.log('Combined data to set:', combinedData);
-    
     setSelectedEquipment(combinedData);
-    console.log('selectedEquipment set, current state:', selectedEquipment);
     console.log('=== Equipment clicked end ===');
   };
 
@@ -1002,21 +1014,21 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {/* Equipment Image */}
                     {selectedEquipment.imageUrl && (
-                      <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-3 sm:p-4 rounded-xl border-2 border-cyan-500/20 flex items-center justify-center shadow-inner shadow-cyan-500/10">
+                      <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-2 sm:p-3 rounded-xl border-2 border-cyan-500/20 flex items-center justify-center shadow-inner shadow-cyan-500/10">
                         <img 
                           src={selectedEquipment.imageUrl} 
                           alt={selectedEquipment.name} 
-                          className="max-h-32 sm:max-h-40 max-w-full object-contain animate-float"
+                          className="max-h-24 sm:max-h-32 max-w-full object-contain animate-float"
                         />
                       </div>
                     )}
-                     
+                      
                     {/* Basic Info */}
                     <div className="space-y-1 sm:space-y-2">
-                      {/* Name */}
+                      {/* Level */}
                       <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-3 rounded-lg border border-slate-700/50 shadow-sm">
-                        <div className="text-xl font-bold text-white">
-                          {selectedEquipment.name}
+                        <div className={`text-xl font-bold ${getLevelColor(selectedEquipment.level)} animate-glow`}>
+                          {['普通', '稀有', '史诗', '传说', '神话', '创世'][selectedEquipment.level - 1]}
                         </div>
                       </div>
                       
