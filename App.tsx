@@ -895,9 +895,9 @@ const App: React.FC = () => {
       const token = authService.getAuthToken();
       if (!token) {
         console.error('No authentication token found');
-        // 如果没有token，返回主页但不清空临时背包
-        setIsSummaryOpen(false);
-        setGameState('HOME');
+        // 如果没有token，显示失败的结算界面
+        setSummaryType('failure');
+        setIsSummaryOpen(true);
         return;
       }
       
@@ -913,21 +913,20 @@ const App: React.FC = () => {
       
       if (response.ok) {
         console.log('Items sent successfully:', requestData);
-        // 请求成功后清空临时背包并返回主页
-        setRunInventory([]);
-        setIsSummaryOpen(false);
-        setGameState('HOME');
+        // 请求成功后显示成功的结算界面
+        setSummaryType('success');
+        setIsSummaryOpen(true);
       } else {
         console.error('Failed to send items:', response.status, await response.text());
-        // 请求失败时返回主页但不清空临时背包
-        setIsSummaryOpen(false);
-        setGameState('HOME');
+        // 请求失败时显示失败的结算界面
+        setSummaryType('failure');
+        setIsSummaryOpen(true);
       }
     } catch (error) {
       console.error('Error sending items:', error);
-      // 发生错误时返回主页但不清空临时背包
-      setIsSummaryOpen(false);
-      setGameState('HOME');
+      // 发生错误时显示失败的结算界面
+      setSummaryType('failure');
+      setIsSummaryOpen(true);
     }
   }, [runInventory, authService]);
 
