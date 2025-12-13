@@ -1,0 +1,9 @@
+diff a/components/Home.tsx b/components/Home.tsx	(rejected hunks)
+@@ -150,7 +150,6 @@
+ 
+   // Cache all skin images if skin is provided
+   useEffect(() => {
+-    const fetchUserSkin = async () => {
+     if (userSkin) {
+       const cacheSkinImages = async () => {
+         const allImages = [

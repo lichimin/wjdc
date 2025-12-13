@@ -12,7 +12,7 @@ import { StatsModal } from './components/StatsModal';
 import { SummaryModal } from './components/SummaryModal';
 import { Home } from './components/Home'; // Imported Home
 import SimpleLogin from './components/SimpleLogin';
-import { DungeonData, Room, ItemType, InputState, PlayerState, Enemy, Projectile, FloatingText, LootItem, Rarity, UserAttributes } from './types';
+import { DungeonData, Room, ItemType, InputState, PlayerState, Enemy, Projectile, FloatingText, LootItem, Rarity, UserAttributes, UserSkin, SkinData } from './types';
 import { GoogleGenAI } from "@google/genai";
 
 // --- CYBERPUNK JOYSTICK --- 
@@ -79,7 +79,11 @@ const Joystick: React.FC<{
         // Only handle the specific touch that started on the joystick
         const touch = Array.from(e.touches).find(t => t.identifier === touchIdRef.current);
         if (touch) {
-          e.preventDefault();
+          try {
+            e.preventDefault();
+          } catch (err) {
+            // Ignore the warning about preventDefault in passive listener
+          }
           handleMove(touch.clientX, touch.clientY);
         }
       } 
@@ -98,7 +102,8 @@ const Joystick: React.FC<{
       // Use normal event listeners instead of capture phase to avoid conflicts
       window.addEventListener('mousemove', onMouseMove);
       window.addEventListener('mouseup', onMouseUp);
-      window.addEventListener('touchmove', onTouchMove, { passive: false });
+      // Remove passive: false to avoid warning, since preventDefault is wrapped in try-catch
+      window.addEventListener('touchmove', onTouchMove);
       window.addEventListener('touchend', onTouchEnd);
       window.addEventListener('touchcancel', onTouchEnd);
     }
@@ -322,8 +327,8 @@ const App: React.FC = () => {
   // Check authentication status on mount
   useEffect(() => {
     // 清除之前的认证数据以方便测试
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_data');
+    // localStorage.removeItem('auth_token');
+    // localStorage.removeItem('user_data');
     
     const checkAuthStatus = async () => {
       setCheckingAuth(true);
@@ -344,6 +349,60 @@ const App: React.FC = () => {
     
     checkAuthStatus();
   }, []);
+  
+  // Fetch user skins when authentication status changes
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchUserSkins();
+    }
+  }, [isAuthenticated]);
+
+  // Fetch user skins data from API
+  const fetchUserSkins = async () => {
+    console.log('=== App: 开始获取用户皮肤数据 ===');
+    if (!isAuthenticated) {
+      console.log('1. 用户未认证，跳过获取皮肤数据');
+      return;
+    }
+    
+    try {
+      const token = authService.getAuthToken();
+      console.log('2. 获取令牌:', token ? '存在' : '不存在');
+      if (!token) throw new Error('No authentication token found');
+      
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://8.130.43.130:10005';
+      console.log('3. API基础URL:', apiBaseUrl);
+      console.log('4. 开始发起网络请求获取皮肤数据...');
+      const response = await fetch(`${apiBaseUrl}/api/v1/user/skins?&is_active=1`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log('5. 网络请求完成，响应状态:', response.status);
+      
+      // 处理token过期情况
+      if (response.status === 401) {
+        console.log('6. Token已过期，执行登出操作');
+        handleLogout();
+        return;
+      }
+      
+      const data = await response.json();
+      if (!data.success) throw new Error(data.message || 'Failed to fetch skins');
+      
+      console.log('7. 皮肤数据获取成功:', data.data);
+      // 从返回的数组中获取第一个皮肤（应该是唯一的激活皮肤）
+      setUserSkin(data.data.length > 0 ? data.data[0] : null);
+    } catch (error) {
+      console.error('8. 获取皮肤数据失败:', error);
+      // 如果是token过期，执行登出
+      if (error instanceof Error && error.message.includes('401')) {
+        handleLogout();
+      }
+    }
+  };
 
   // Handle login
   const handleLogin = async () => {
@@ -360,6 +419,9 @@ const App: React.FC = () => {
       setUserData(result.userData);
       setIsAuthenticated(true);
       setGameState('HOME');
+      
+      // 登录成功后获取用户皮肤数据
+      await fetchUserSkins();
     } catch (error) {
       setLoginError(error instanceof Error ? error.message : '登录失败，请重试');
     } finally {
@@ -419,6 +481,13 @@ const App: React.FC = () => {
         }
       });
       console.log('6. 网络请求完成，响应状态:', response.status);
+      
+      // 处理token过期情况
+      if (response.status === 401) {
+        console.log('7. Token已过期，执行登出操作');
+        handleLogout();
+        return;
+      }
       
       const data = await response.json();
       if (!data.success) throw new Error(data.message || 'Failed to fetch items');
@@ -490,7 +559,7 @@ const App: React.FC = () => {
   
   // Fetch treasure data from API
   const fetchTreasureData = async () => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) return [];
     
     try {
       const token = authService.getAuthToken();
@@ -504,6 +573,13 @@ const App: React.FC = () => {
           'Content-Type': 'application/json'
         }
       });
+      
+      // 处理token过期情况
+      if (response.status === 401) {
+        console.log('Token已过期，执行登出操作');
+        handleLogout();
+        return [];
+      }
       
       const data = await response.json();
       if (!data.success) throw new Error(data.message || 'Failed to fetch treasure data');
@@ -551,6 +627,7 @@ const App: React.FC = () => {
         playerRef.current.damage = 15 + data.data.攻击力;
         playerRef.current.speed = 3.5 + parseFloat(data.data.移动速度) / 100;
         playerRef.current.projectileSpeed = 8 + parseFloat(data.data.子弹速度) / 100;
+        playerRef.current.attackSpeed = 1 + parseFloat(data.data.攻击速度) / 100;
         playerRef.current.maxHealth = 100 + data.data.生命值;
         playerRef.current.health = Math.min(playerRef.current.health, playerRef.current.maxHealth);
         playerRef.current.critRate = parseFloat(data.data.暴击率) / 100;
@@ -593,7 +670,7 @@ const App: React.FC = () => {
   const playerRef = useRef<PlayerState>({
     x: 0, y: 0, facingLeft: false, isMoving: false, frameIndex: 0, lastFrameTime: 0,
     health: 100, maxHealth: 100, attackCooldown: 0, fireCooldown: 0, invincibilityTimer: 0,
-    damage: 15, speed: 3.5, projectileSpeed: 8,
+    damage: 15, speed: 3.5, projectileSpeed: 8, attackSpeed: 1,
     critRate: 0.05, critDamage: 0.15, dodgeRate: 0.05, regen: 5, regenTimer: 0, lifesteal: 0.03, instantKillRate: 0.01,
     rollTimer: 0, rollCooldown: 0, rollVx: 0, rollVy: 0,
     interactionTargetId: null, interactionTimer: 0

@@ -1,8 +1,7 @@
 
 
 import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
-import { DungeonData, TileType, ItemType, Room, InputState, PlayerState, Enemy, EnemyType, Projectile, FloatingText, Item } from '../types';
-import { SkinData } from '../App';
+import { DungeonData, TileType, ItemType, Room, InputState, PlayerState, Enemy, EnemyType, Projectile, FloatingText, Item, SkinData } from '../types';
 
 interface DungeonCanvasProps {
   dungeon: DungeonData;
@@ -413,14 +412,16 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       );
     };
 
-    Promise.all([
-      loadImages(skinData.idle_image_urls),
-      loadImages(skinData.attack_image_urls),
-      loadImages(skinData.move_image_urls)
-    ]).then(([idleImages, attackImages, moveImages]) => {
-      setSkinSprites({ idle: idleImages, attack: attackImages, move: moveImages });
-      setImagesLoaded(true);
-    });
+    if (skinData) {
+      Promise.all([
+        loadImages(skinData.idle_image_urls),
+        loadImages(skinData.attack_image_urls),
+        loadImages(skinData.move_image_urls)
+      ]).then(([idleImages, attackImages, moveImages]) => {
+        setSkinSprites({ idle: idleImages, attack: attackImages, move: moveImages });
+        setImagesLoaded(true);
+      });
+    }
   }, [skinData]);
 
   const floorNoise = useMemo(() => {
@@ -574,10 +575,19 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       }
     }
 
-    if (p.attackCooldown > 0) p.attackCooldown--;
-    if (p.invincibilityTimer > 0) p.invincibilityTimer--;
     if (p.fireCooldown > 0) p.fireCooldown--;
+    if (p.invincibilityTimer > 0) p.invincibilityTimer--;
     if (p.rollCooldown > 0) p.rollCooldown--;
+    
+    // Basic Life Regeneration
+    if (p.regenTimer > 0) p.regenTimer--;
+    if (p.regenTimer <= 0) {
+      const regenAmount = p.regen || 0;
+      if (p.health < p.maxHealth) {
+        p.health = Math.min(p.maxHealth, p.health + regenAmount);
+      }
+      p.regenTimer = 60; // Regenerate every second (assuming 60fps)
+    }
     
     // Heal skill life regeneration
     const healAnim = healSkillAnimationRef.current;
@@ -711,6 +721,18 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       vx = Math.cos(angle) * projSpeed;
       vy = Math.sin(angle) * projSpeed;
       
+      // Calculate damage with critical hit chance
+      let damage = (p.damage || 10) + Math.floor(Math.random() * 5);
+      let isCritical = false;
+      
+      // Apply critical hit
+      const critRate = p.critRate || 0;
+      if (Math.random() < critRate) {
+        const critDamage = p.critDamage || 0;
+        damage = Math.round(damage * (1 + critDamage));
+        isCritical = true;
+      }
+      
       projectilesRef.current.push({
          id: Math.random().toString(),
          x: pCenterX,
@@ -718,10 +740,13 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
          vx,
          vy,
          life: 60,
-         damage: (p.damage || 10) + Math.floor(Math.random() * 5)
+         damage,
+         isCritical
       });
       
-      p.fireCooldown = FIRE_RATE;
+      // Apply attack speed to fire cooldown
+      const attackSpeed = p.attackSpeed || 1;
+      p.fireCooldown = Math.max(1, Math.round(FIRE_RATE / attackSpeed));
     } else {
       // No enemies in range or still on cooldown, stop attacking animation
       input.isAttacking = false;
@@ -802,7 +827,23 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
                 e.hitFlash = 10;
                 e.vx = proj.vx * 0.5;
                 e.vy = proj.vy * 0.5;
-                spawnFloatingText(e.x + TILE_SIZE/2, e.y, `-${proj.damage}`, '#ef4444');
+                
+                // Show critical hit text if applicable
+                if (proj.isCritical) {
+                  spawnFloatingText(e.x + TILE_SIZE/2, e.y, `-${proj.damage}`, '#f59e0b');
+                } else {
+                  spawnFloatingText(e.x + TILE_SIZE/2, e.y, `-${proj.damage}`, '#ef4444');
+                }
+                
+                // Apply lifesteal
+                const lifesteal = p.lifesteal || 0;
+                if (lifesteal > 0) {
+                  const healAmount = Math.round(proj.damage * lifesteal);
+                  if (healAmount > 0 && p.health < p.maxHealth) {
+                    p.health = Math.min(p.maxHealth, p.health + healAmount);
+                    spawnFloatingText(p.x + TILE_SIZE/2, p.y, `+${healAmount}`, '#4ade80');
+                  }
+                }
                 
                 // Create hit particle effect
                 for (let j = 0; j < 8; j++) {

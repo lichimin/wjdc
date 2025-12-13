@@ -97,6 +97,36 @@ export interface Enemy {
   sizeMultiplier?: number; // 体型倍率
 }
 
+export interface SkinData {
+  id: number;
+  name: string;
+  attack: number;
+  hp: number;
+  atk_type: number;
+  atk_speed: number;
+  critical_rate: number;
+  critical_damage: number;
+  background_url: string;
+  idle_image_urls: string[];
+  attack_image_urls: string[];
+  move_image_urls: string[];
+  scale: number; // 角色图片缩放大小，默认100，为100%大小
+  hp_pos: number; // 控制血条位置，默认0即不变，正数上移，负数下移，0.1 = 10%
+  created_at: number;
+  updated_at: number;
+}
+
+export interface UserSkin {
+  id: number;
+  user_id: number;
+  skin_id: number;
+  is_active: boolean;
+  created_at: number;
+  updated_at: number;
+  user: any;
+  skin: SkinData;
+}
+
 export interface Projectile {
   id: string;
   x: number;
@@ -161,6 +191,7 @@ export interface PlayerState {
   damage: number;
   speed: number;
   projectileSpeed: number;
+  attackSpeed?: number;
   
   // Additional Stats
   critRate?: number;
