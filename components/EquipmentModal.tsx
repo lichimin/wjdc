@@ -540,7 +540,7 @@ export const EquipmentModal: React.FC<EquipmentModalProps> = ({ isOpen, onClose,
           </div>
 
           {/* Unequipped Items */}
-          <div className="mt-4 flex flex-col flex-1">
+          <div className="mt-4 flex flex-col flex-1 max-h-[50vh]">
             <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
               <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 pb-2">
               {unequippedItems.length > 0 ? (

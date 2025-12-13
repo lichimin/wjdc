@@ -312,19 +312,19 @@ const [showTreasuresModal, setShowTreasuresModal] = useState(false);
       <div className="relative z-10 pb-8 px-6 flex flex-col gap-6">
          
          {/* Actions Row */}
-         <div className="flex gap-2">
+         <div className="flex justify-center gap-3 max-w-2xl mx-auto">
             {/* 宝物按钮 */}
-            <div className="relative flex-1 h-full flex items-center justify-center">
+            <div className="relative w-20 h-full flex items-center justify-center">
                <CyberButton label="宝物" icon="gem" color="yellow" onClick={() => setShowTreasuresModal(true)} />
             </div>
             
             {/* 装备按钮 */}
-            <div className="relative flex-1 h-full flex items-center justify-center">
+            <div className="relative w-20 h-full flex items-center justify-center">
                <CyberButton label="装备" icon="shield" color="blue" onClick={() => setShowEquipmentModal(true)} />
             </div>
             
             {/* 锻造按钮及展开选项 */}
-            <div className="relative flex-1 h-full flex items-center justify-center">
+            <div className="relative w-20 h-full flex items-center justify-center">
                <CyberButton 
                  label="锻造" 
                  icon="anvil" 
@@ -334,7 +334,7 @@ const [showTreasuresModal, setShowTreasuresModal] = useState(false);
                
                {/* 展开的三个小按钮 */}
                {showForgeOptions && (
-                 <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mb-2 grid grid-cols-3 gap-2 w-[120%]">
+                 <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mb-2 grid grid-cols-3 gap-2 w-[140%]">
                    <MiniCyberButton 
                      label="合成" 
                      color="green" 
@@ -352,10 +352,10 @@ const [showTreasuresModal, setShowTreasuresModal] = useState(false);
                      }}
                    />
                    <MiniCyberButton 
-                     label="融合" 
+                     label="分解" 
                      color="yellow" 
                      onClick={() => {
-                       alert("融合功能开发中");
+                       alert("分解功能开发中");
                        setShowForgeOptions(false);
                      }}
                    />
@@ -364,8 +364,8 @@ const [showTreasuresModal, setShowTreasuresModal] = useState(false);
             </div>
             
             {/* 皮肤按钮 */}
-            <div className="relative flex-1 h-full flex items-center justify-center">
-               <CyberButton label="皮肤" icon="shirt" color="pink" onClick={() => alert("SYSTEM OFFLINE")} />
+            <div className="relative w-20 h-full flex items-center justify-center">
+               <CyberButton label="皮肤" icon="shirt" color="pink" onClick={() => setShowSkinModal(true)} />
             </div>
          </div>
          
@@ -492,14 +492,14 @@ const CyberButton: React.FC<{ label: string, icon: 'bag' | 'anvil' | 'shirt' | '
     <button 
       onClick={onClick}
       className={`
-        flex flex-col items-center justify-center gap-2 py-4 px-8 rounded bg-opacity-50 border border-opacity-50 w-full
+        flex flex-col items-center justify-center gap-2 py-3 px-4 rounded bg-opacity-50 border border-opacity-50 w-full
         ${theme.bg} ${theme.border} ${theme.shadow} transition-all active:scale-95 group
       `}
     >
-      <div className="scale-125 group-hover:-translate-y-1 transition-transform">
+      <div className="scale-100 group-hover:-translate-y-1 transition-transform">
         <PixelIcon type={icon} color={color === 'cyan' ? '#22d3ee' : color === 'purple' ? '#a855f7' : color === 'pink' ? '#ec4899' : color === 'blue' ? '#3b82f6' : '#eab308'} />
       </div>
-      <span className={`text-[10px] font-bold tracking-widest ${theme.text} mt-1`}>{label}</span>
+      <span className={`text-[9px] font-bold tracking-widest ${theme.text} mt-1`}>{label}</span>
     </button>
   );
 };

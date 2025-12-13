@@ -216,7 +216,7 @@ export const TreasuresModal: React.FC<TreasuresModalProps> = ({ isOpen, onClose 
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-4 max-h-[50vh]">
           {error && (
             <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-3 mb-4 text-red-300">
               {error}
