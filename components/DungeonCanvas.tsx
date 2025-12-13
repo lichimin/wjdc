@@ -1004,13 +1004,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
                 bulletColor
               });
 
-              // 应用伤害减少
-              const damageReduction = playerRef.current.damageReduction || 0;
-              damage = Math.round(damage * (1 - damageReduction));
-              p.health = Math.max(0, p.health - damage);
-              p.invincibilityTimer = 30;
               e.cooldown = attackCooldown;
-              spawnFloatingText(p.x + TILE_SIZE/2, p.y, `-${damage}`, '#fbbf24');
             } else {
               // 近战攻击
               const damageReduction = playerRef.current.damageReduction || 0;
@@ -1273,13 +1267,25 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
           );
        }
        
+       // Draw glow effect around bullet
+       const glowRadius = 8;
+       const gradient = ctx.createRadialGradient(proj.x, proj.y, 0, proj.x, proj.y, glowRadius);
+       gradient.addColorStop(0, hexToRgba(bulletColor, 0.8));
+       gradient.addColorStop(0.5, hexToRgba(bulletColor, 0.4));
+       gradient.addColorStop(1, hexToRgba(bulletColor, 0));
+       
+       ctx.fillStyle = gradient;
+       ctx.beginPath();
+       ctx.arc(proj.x, proj.y, glowRadius, 0, Math.PI * 2);
+       ctx.fill();
+       
        // Draw main bullet (half size, pixel art style)
        ctx.fillStyle = bulletColor;
        // Use 1x1 pixel square for main bullet
        ctx.fillRect(proj.x - 0.5, proj.y - 0.5, 1, 1);
        
        // Add pixel art glow effect
-       ctx.fillStyle = hexToRgba(bulletColor, 0.5);
+       ctx.fillStyle = hexToRgba(bulletColor, 0.8);
        ctx.fillRect(proj.x - 1, proj.y - 1, 3, 1);
        ctx.fillRect(proj.x - 1, proj.y + 1, 3, 1);
        ctx.fillRect(proj.x - 1, proj.y - 1, 1, 3);

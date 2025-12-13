@@ -301,7 +301,7 @@ export const EquipmentModal: React.FC<EquipmentModalProps> = ({ isOpen, onClose,
             </button>
           </div>
           {/* Equipment Sections */}
-          <div className="p-4 pt-0 flex flex-col h-[calc(100%-80px)]">
+          <div className="p-4 pt-0 flex flex-col h-full">
           {/* Equipped Slots and Character Section */}
           <div className="mb-4">
             
