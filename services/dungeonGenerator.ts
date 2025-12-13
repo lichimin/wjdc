@@ -262,24 +262,24 @@ export const generateDungeon = (difficultyMultiplier: number = 1, difficultyLeve
     }
   }
 
-  // Generate chests based on difficulty
-  generateChestsByDifficulty({ width: MAP_WIDTH, height: MAP_HEIGHT, grid, rooms, enemies }, difficultyLevel);
+  // Generate chests based on difficulty and spawn elite enemies near each chest
+  generateChestsByDifficulty({ width: MAP_WIDTH, height: MAP_HEIGHT, grid, rooms, enemies }, difficultyLevel, difficultyMultiplier);
   
   // Return the generated dungeon data
   return { width: MAP_WIDTH, height: MAP_HEIGHT, grid, rooms, enemies };
 };
 
 // Generate chests based on difficulty level
-function generateChestsByDifficulty(dungeon: DungeonData, difficultyLevel: string) {
+function generateChestsByDifficulty(dungeon: DungeonData, difficultyLevel: string, difficultyMultiplier: number) {
   // Calculate total number of chests based on difficulty
   const getTotalChestCount = (level: string): number => {
     switch (level) {
-      case 'B': return randomInt(5, 6);
-      case 'A': return randomInt(6, 7);
-      case 'S': return randomInt(7, 8);
-      case 'SS': return randomInt(8, 9);
-      case 'SSS': return randomInt(10, 12);
-      default: return randomInt(5, 6);
+      case 'B': return randomInt(3, 4);
+      case 'A': return randomInt(4, 5);
+      case 'S': return randomInt(5, 6);
+      case 'SS': return randomInt(6, 7);
+      case 'SSS': return randomInt(8, 10);
+      default: return randomInt(3, 4);
     }
   };
   
@@ -303,9 +303,12 @@ function generateChestsByDifficulty(dungeon: DungeonData, difficultyLevel: strin
     
     if (tryAddItem(randomRoom, tx, ty, ItemType.CHEST)) {
       chestsPlaced++;
+      
+      // Spawn an elite enemy near the chest
+      spawnEliteEnemyNearChest(dungeon, randomRoom, tx, ty, difficultyMultiplier);
     }
   }
-};
+}
 
 function tryAddItem(room: Room, x: number, y: number, type: ItemType): boolean {
   if (x <= room.x || x >= room.x + room.w - 1 || y <= room.y || y >= room.y + room.h - 1) return false;
@@ -425,4 +428,102 @@ function createCorridor(grid: TileType[][], x1: number, y1: number, x2: number, 
       }
     }
   }
+}
+
+// Spawn an elite enemy near a chest
+function spawnEliteEnemyNearChest(dungeon: DungeonData, room: Room, chestX: number, chestY: number, difficultyMultiplier: number) {
+  // Try to find a nearby position (1-2 tiles away) from the chest
+  const positions = [
+    [chestX + 1, chestY],
+    [chestX - 1, chestY],
+    [chestX, chestY + 1],
+    [chestX, chestY - 1],
+    [chestX + 2, chestY],
+    [chestX - 2, chestY],
+    [chestX, chestY + 2],
+    [chestX, chestY - 2]
+  ];
+  
+  let enemyX: number | null = null;
+  let enemyY: number | null = null;
+  
+  // Check each position for validity
+  for (const [x, y] of positions) {
+    // Check if position is within room bounds
+    if (x > room.x && x < room.x + room.w - 1 && y > room.y && y < room.y + room.h - 1) {
+      // Check if position is not occupied by another item
+      const isOccupied = room.items.some(item => item.x === x && item.y === y);
+      if (!isOccupied) {
+        enemyX = x;
+        enemyY = y;
+        break;
+      }
+    }
+  }
+  
+  // If no valid position found, use chest position as fallback
+  if (enemyX === null || enemyY === null) {
+    enemyX = chestX;
+    enemyY = chestY;
+  }
+  
+  // Randomly select a base enemy type for the elite
+  const eliteTypes = [EnemyType.SLIME, EnemyType.BAT, EnemyType.SKELETON, EnemyType.ELEPHANT];
+  const baseType = eliteTypes[randomInt(0, eliteTypes.length - 1)];
+  
+  // Base enemy stats
+  let baseHp: number;
+  let baseSpeed: number;
+  let baseDamage: number;
+  
+  switch (baseType) {
+    case EnemyType.SLIME:
+      baseHp = 30;
+      baseSpeed = 0.75;
+      baseDamage = 10;
+      break;
+    case EnemyType.BAT:
+      baseHp = 15;
+      baseSpeed = 1.25;
+      baseDamage = 5;
+      break;
+    case EnemyType.SKELETON:
+      baseHp = 50;
+      baseSpeed = 0.5;
+      baseDamage = 15;
+      break;
+    case EnemyType.ELEPHANT:
+      baseHp = 100;
+      baseSpeed = 0.4;
+      baseDamage = 30;
+      break;
+    default:
+      baseHp = 50;
+      baseSpeed = 0.5;
+      baseDamage = 15;
+  }
+  
+  // Create elite enemy with doubled stats
+  const eliteEnemy: Enemy = {
+    id: `elite-${room.id}-${dungeon.enemies.length}`,
+    x: enemyX * TILE_SIZE,
+    y: enemyY * TILE_SIZE,
+    type: baseType,
+    health: baseHp * difficultyMultiplier * 4, // 血量是普通怪物的两倍（先乘以难度系数，再乘以2）
+    maxHealth: baseHp * difficultyMultiplier * 4, // 最大血量同样是两倍
+    speed: baseSpeed, // 速度保持不变
+    damage: baseDamage * difficultyMultiplier * 2, // 攻击力是普通怪物的两倍
+    state: 'idle',
+    facingLeft: Math.random() < 0.5,
+    vx: 0,
+    vy: 0,
+    cooldown: 0,
+    hitFlash: 0,
+    isElite: true,
+    bulletColor: '#8b5cf6', // 紫色子弹
+    sizeMultiplier: 2 // 体型是普通怪物的两倍
+  };
+  
+  // Add the elite enemy to the dungeon
+  dungeon.enemies.push(eliteEnemy);
 }

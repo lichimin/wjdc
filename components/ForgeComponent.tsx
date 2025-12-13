@@ -296,31 +296,6 @@ const ForgeComponent: React.FC<ForgeComponentProps> = ({ isOpen, onClose, onGold
                     <span className="text-xs text-cyan-300">选择宝物</span>
                   </button>
                 )}
-
-                {/* 宝物选择下拉框 */}
-                {showTreasureSelect === index && (
-                  <div className="absolute top-full left-0 mt-2 w-full bg-slate-800 border border-cyan-500 rounded-lg shadow-[0_0_20px_rgba(6,182,212,0.5)] max-h-60 overflow-y-auto z-10">
-                    {loading ? (
-                      <div className="p-4 text-center text-cyan-400">加载中...</div>
-                    ) : getAvailableTreasures(index).length === 0 ? (
-                      <div className="p-4 text-center text-slate-400">没有可用的宝物</div>
-                    ) : (
-                      getAvailableTreasures(index).map((availableTreasure) => (
-                        <button
-                          key={availableTreasure.id}
-                          onClick={() => handleSelectTreasure(index, availableTreasure)}
-                          className="w-full flex items-center gap-3 p-3 hover:bg-slate-700 transition-colors text-left"
-                        >
-                          <img src={availableTreasure.image_url} alt={availableTreasure.name} className="w-10 h-10 object-cover rounded" />
-                          <div className="flex flex-col">
-                            <div className="text-xs text-cyan-400 font-bold">{availableTreasure.name}</div>
-                            <div className="text-xs text-slate-400">数量: {availableTreasure.quantity}</div>
-                          </div>
-                        </button>
-                      ))
-                    )}
-                  </div>
-                )}
               </div>
             ))}
           </div>
@@ -444,6 +419,48 @@ const ForgeComponent: React.FC<ForgeComponentProps> = ({ isOpen, onClose, onGold
             })}
             {/* 融合光效 */}
             <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-500 to-yellow-500 rounded-full animate-pulse opacity-50"></div>
+          </div>
+        </div>
+      )}
+
+      {/* 宝物选择弹窗 */}
+      {showTreasureSelect !== null && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/90 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-4xl bg-slate-900 border-2 border-cyan-500 rounded-lg shadow-[0_0_30px_rgba(6,182,212,0.3)] overflow-hidden">
+            {/* 弹窗头部 */}
+            <div className="flex justify-between items-center bg-slate-800 p-4">
+              <h2 className="text-xl text-cyan-400 font-['Press_Start_2P']">选择宝物</h2>
+              <button onClick={() => setShowTreasureSelect(null)} className="text-red-500 hover:text-white font-mono text-xl">[X]</button>
+            </div>
+
+            {/* 弹窗内容 */}
+            <div className="p-6 bg-[#0a0a0c]">
+              {loading ? (
+                <div className="p-4 text-center text-cyan-400">加载中...</div>
+              ) : getAvailableTreasures(showTreasureSelect).length === 0 ? (
+                <div className="p-4 text-center text-slate-400">没有可用的宝物</div>
+              ) : (
+                <div className="max-h-96 overflow-y-auto pr-2">
+                  <div className="grid grid-cols-4 gap-4">
+                    {getAvailableTreasures(showTreasureSelect).map((availableTreasure) => (
+                      <button
+                        key={availableTreasure.id}
+                        onClick={() => handleSelectTreasure(showTreasureSelect, availableTreasure)}
+                        className="flex flex-col items-center gap-2 p-3 bg-slate-800 border border-cyan-500 rounded-lg hover:bg-slate-700 transition-colors"
+                      >
+                        <div className="relative w-16 h-16">
+                          <img src={availableTreasure.image_url} alt={availableTreasure.name} className="w-full h-full object-contain rounded" />
+                          <div className="absolute bottom-1 right-1 bg-slate-900 text-cyan-400 text-xs px-1 rounded-full border border-cyan-500">
+                            {availableTreasure.quantity}
+                          </div>
+                        </div>
+                        <div className="text-xs text-cyan-400 font-bold text-center">{availableTreasure.name}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

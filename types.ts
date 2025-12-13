@@ -90,6 +90,11 @@ export interface Enemy {
   isBoss?: boolean;
   abilities?: string[];
   abilityCooldowns?: Record<string, number>;
+  
+  // Elite properties
+  isElite?: boolean;
+  bulletColor?: string; // 子弹颜色
+  sizeMultiplier?: number; // 体型倍率
 }
 
 export interface Projectile {
@@ -100,6 +105,7 @@ export interface Projectile {
   vy: number;
   life: number;
   damage: number;
+  bulletColor?: string; // 子弹颜色，精英怪物紫色，BOSS红色
 }
 
 export interface FloatingText {

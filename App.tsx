@@ -804,26 +804,26 @@ const App: React.FC = () => {
       }
     }
     
-    // 根据难度等级生成不同数量的宝物
+    // 根据难度等级生成不同数量的宝物（减半，最少1个）
     let count: number;
     switch (difficultyLevel) {
       case 'B':
-        count = Math.floor(Math.random() * 3) + 1; // 1-3件
+        count = 1; // 1件（原1-3件减半后最少1件）
         break;
       case 'A':
-        count = Math.floor(Math.random() * 3) + 2; // 2-4件
+        count = Math.floor(Math.random() * 2) + 1; // 1-2件（原2-4件减半）
         break;
       case 'S':
-        count = Math.floor(Math.random() * 3) + 3; // 3-5件
+        count = 2; // 2件（原3-5件减半）
         break;
       case 'SS':
-        count = Math.floor(Math.random() * 3) + 4; // 4-6件
+        count = Math.floor(Math.random() * 2) + 2; // 2-3件（原4-6件减半）
         break;
       case 'SSS':
-        count = Math.floor(Math.random() * 4) + 5; // 5-8件
+        count = Math.floor(Math.random() * 2) + 3; // 3-4件（原5-8件减半）
         break;
       default:
-        count = Math.floor(Math.random() * 3) + 1; // 默认1-3件
+        count = 1; // 默认1件（原1-3件减半后最少1件）
     }
     const loot = generateLoot(count, treasureData, difficulty, difficultyLevel, chestType);
     setCurrentLoot(loot);
@@ -1010,6 +1010,7 @@ const App: React.FC = () => {
                 setUserData(prev => prev ? { ...prev, gold: newGold } : null);
                 authService.updateUserGold(newGold);
               }}
+              userSkin={userSkin}
             />
           )}
         {/* Inventory Overlay for Home */}
@@ -1149,9 +1150,9 @@ const App: React.FC = () => {
                   {/* Pixel Heal Icon */}
                   <svg width="32" height="32" viewBox="0 0 8 8" className="w-8 h-8">
                     <circle cx="4" cy="2" r="1" fill="white" />
-                    <path d="M4,3 L4,6" stroke="white" stroke-width="1" />
-                    <path d="M2,5 L6,5" stroke="white" stroke-width="1" />
-                    <path d="M1,6 L3,8 M5,8 L7,6" stroke="white" stroke-width="1" />
+                    <path d="M4,3 L4,6" stroke="white" strokeWidth="1" />
+<path d="M2,5 L6,5" stroke="white" strokeWidth="1" />
+<path d="M1,6 L3,8 M5,8 L7,6" stroke="white" strokeWidth="1" />
                   </svg>
                   
                   {healSkillCooldown > 0 && (
@@ -1211,8 +1212,8 @@ const App: React.FC = () => {
                 >
                   {/* Pixel Dash Icon */}
                   <svg width="32" height="32" viewBox="0 0 8 8" className="w-8 h-8">
-                    <path d="M1,4 L6,4" stroke="white" stroke-width="1" stroke-dasharray="1,1" />
-                    <path d="M4,2 L7,5 L4,8" stroke="white" stroke-width="1" fill="none" />
+                    <path d="M1,4 L6,4" stroke="white" strokeWidth="1" strokeDasharray="1,1" />
+<path d="M4,2 L7,5 L4,8" stroke="white" strokeWidth="1" fill="none" />
                     <circle cx="1" cy="4" r="1" fill="white" />
                   </svg>
                 </button>

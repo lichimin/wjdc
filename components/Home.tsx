@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { UserData, authService } from '../services/authService';
 import ForgeComponent from './ForgeComponent';
+import { EquipmentModal } from './EquipmentModal';
+import { TreasuresModal } from './TreasuresModal';
 
 interface HomeProps {
   userData: UserData;
@@ -9,6 +11,7 @@ interface HomeProps {
   onLogout: () => void;
   onSkinLoaded: (skin: UserSkin) => void;
   onGoldUpdate: (newGold: number) => void;
+  userSkin: UserSkin | null;
 }
 
 interface SkinData {
@@ -50,7 +53,7 @@ const DIFFICULTIES = [
 ];
 
 // --- PIXEL ICONS (Modified for Neon Style) ---
-const PixelIcon: React.FC<{ type: 'sword' | 'bag' | 'anvil' | 'shirt', scale?: number, color?: string }> = ({ type, scale = 3, color = '#22d3ee' }) => {
+const PixelIcon: React.FC<{ type: 'sword' | 'bag' | 'anvil' | 'shirt' | 'shield' | 'gem', scale?: number, color?: string }> = ({ type, scale = 3, color = '#22d3ee' }) => {
   // Simple 8x8 bitmaps
   const maps: Record<string, string[]> = {
     sword: [
@@ -92,6 +95,26 @@ const PixelIcon: React.FC<{ type: 'sword' | 'bag' | 'anvil' | 'shirt', scale?: n
       "1111111.",
       "1111111.",
       "........",
+    ],
+    shield: [
+      "..1111..",
+      ".111111.",
+      "11111111",
+      "11111111",
+      "11111111",
+      ".111111.",
+      "..1111..",
+      "........",
+    ],
+    gem: [
+      "........",
+      "..1111..",
+      ".111111.",
+      "11111111",
+      "11111111",
+      ".111111.",
+      "..1111..",
+      ".....1...",
     ]
   };
 
@@ -111,86 +134,46 @@ const PixelIcon: React.FC<{ type: 'sword' | 'bag' | 'anvil' | 'shirt', scale?: n
   );
 };
 
-export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenInventory, onLogout, onSkinLoaded, onGoldUpdate }) => {
+export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenInventory, onLogout, onSkinLoaded, onGoldUpdate, userSkin }) => {
   const [showDifficulty, setShowDifficulty] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [userSkin, setUserSkin] = useState<UserSkin | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [currentIdleImageIndex, setCurrentIdleImageIndex] = useState(0);
   const animationRef = useRef<NodeJS.Timeout | null>(null);
   // FORGE按钮展开/折叠状态
   const [showForgeOptions, setShowForgeOptions] = useState(false);
   // 合成弹窗显示/隐藏状态
   const [showForgeModal, setShowForgeModal] = useState(false);
+  // 装备弹窗显示/隐藏状态
+  const [showEquipmentModal, setShowEquipmentModal] = useState(false);
+const [showTreasuresModal, setShowTreasuresModal] = useState(false);
 
-  // Fetch user skin data on component mount
+  // Cache all skin images if skin is provided
   useEffect(() => {
-    const fetchUserSkin = async () => {
-      try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-        const token = authService.getAuthToken();
-        const response = await fetch(`${apiBaseUrl}/api/v1/user/skins?&is_active=1`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
+    if (userSkin) {
+      const cacheSkinImages = async () => {
+        const allImages = [
+          userSkin.skin.background_url,
+          ...userSkin.skin.idle_image_urls,
+          ...userSkin.skin.attack_image_urls,
+          ...userSkin.skin.move_image_urls
+        ];
+        
+        const imagePromises = allImages.map(url => {
+          return new Promise<void>((resolve) => {
+            const img = new Image();
+            img.src = url;
+            img.onload = () => resolve();
+            img.onerror = () => resolve(); // Ignore errors, continue with loading
+          });
         });
-        const data = await response.json();
         
-        // Check if token is invalid
-        if (data.error === "token无效") {
-          onLogout();
-          return;
-        }
-        
-        if (data.success && data.data.length > 0) {
-          const activeSkin = data.data[0];
-          setUserSkin(activeSkin);
-          
-          // Pass skin data to App
-          onSkinLoaded(activeSkin);
-          
-          // Log to console
-          console.log('User skin data:', activeSkin);
-          
-          // Cache all images
-          await cacheSkinImages(activeSkin.skin);
-          
-          // Close loading screen
-          setIsLoading(false);
-        } else {
-          // No active skin found, close loading screen
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error('Error fetching user skin:', error);
-        // Close loading screen even if there's an error
-        setIsLoading(false);
-      }
-    };
-    
-    fetchUserSkin();
-  }, []);
-
-  // Cache all skin images
-  const cacheSkinImages = async (skin: SkinData): Promise<void> => {
-    const allImages = [
-      skin.background_url,
-      ...skin.idle_image_urls,
-      ...skin.attack_image_urls,
-      ...skin.move_image_urls
-    ];
-    
-    const imagePromises = allImages.map(url => {
-      return new Promise<void>((resolve) => {
-        const img = new Image();
-        img.src = url;
-        img.onload = () => resolve();
-        img.onerror = () => resolve(); // Ignore errors, continue with loading
-      });
-    });
-    
-    await Promise.all(imagePromises);
-  };
+        await Promise.all(imagePromises);
+      };
+      
+      cacheSkinImages();
+    }
+  }, [userSkin]);
 
   // Animate idle images if multiple exist
   useEffect(() => {
@@ -324,11 +307,16 @@ export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenIn
       {/* --- CONTROL DECK (Bottom Navigation) --- */}
       <div className="relative z-10 pb-8 px-6 flex flex-col gap-6">
          
-         {/* Actions Row - 背包、锻造、皮肤在同一行 */}
-         <div className="flex gap-4">
-            {/* 背包按钮 */}
+         {/* Actions Row */}
+         <div className="flex gap-2">
+            {/* 宝物按钮 */}
             <div className="relative flex-1 h-full flex items-center justify-center">
-               <CyberButton label="背包" icon="bag" color="cyan" onClick={onOpenInventory} />
+               <CyberButton label="宝物" icon="gem" color="yellow" onClick={() => setShowTreasuresModal(true)} />
+            </div>
+            
+            {/* 装备按钮 */}
+            <div className="relative flex-1 h-full flex items-center justify-center">
+               <CyberButton label="装备" icon="shield" color="blue" onClick={() => setShowEquipmentModal(true)} />
             </div>
             
             {/* 锻造按钮及展开选项 */}
@@ -467,17 +455,32 @@ export const Home: React.FC<HomeProps> = ({ userData, onStartAdventure, onOpenIn
           50% { transform: translateX(100%); }
         }
       `}</style>
+
+      {/* Equipment Modal */}
+      <EquipmentModal
+            isOpen={showEquipmentModal}
+            onClose={() => setShowEquipmentModal(false)}
+            skinData={userSkin?.skin || null}
+        />
+        
+        {/* Treasures Modal */}
+        <TreasuresModal
+          isOpen={showTreasuresModal}
+          onClose={() => setShowTreasuresModal(false)}
+        />
     </div>
   );
 };
 
 // --- SUB-COMPONENTS ---
 
-const CyberButton: React.FC<{ label: string, icon: 'bag' | 'anvil' | 'shirt', color: 'cyan' | 'purple' | 'pink', onClick: () => void }> = ({ label, icon, color, onClick }) => {
+const CyberButton: React.FC<{ label: string, icon: 'bag' | 'anvil' | 'shirt' | 'shield' | 'gem', color: 'cyan' | 'purple' | 'pink' | 'blue' | 'yellow', onClick: () => void }> = ({ label, icon, color, onClick }) => {
   const colors = {
     cyan: { text: 'text-cyan-400', border: 'border-cyan-500', shadow: 'hover:shadow-[0_0_15px_rgba(34,211,238,0.4)]', bg: 'bg-cyan-950/50' },
     purple: { text: 'text-purple-400', border: 'border-purple-500', shadow: 'hover:shadow-[0_0_15px_rgba(168,85,247,0.4)]', bg: 'bg-purple-950/50' },
     pink: { text: 'text-pink-400', border: 'border-pink-500', shadow: 'hover:shadow-[0_0_15px_rgba(236,72,153,0.4)]', bg: 'bg-pink-950/50' },
+    blue: { text: 'text-blue-400', border: 'border-blue-500', shadow: 'hover:shadow-[0_0_15px_rgba(59,130,246,0.4)]', bg: 'bg-blue-950/50' },
+    yellow: { text: 'text-yellow-400', border: 'border-yellow-500', shadow: 'hover:shadow-[0_0_15px_rgba(234,179,8,0.4)]', bg: 'bg-yellow-950/50' },
   };
   const theme = colors[color];
 
@@ -490,7 +493,7 @@ const CyberButton: React.FC<{ label: string, icon: 'bag' | 'anvil' | 'shirt', co
       `}
     >
       <div className="scale-125 group-hover:-translate-y-1 transition-transform">
-        <PixelIcon type={icon} color={color === 'cyan' ? '#22d3ee' : color === 'purple' ? '#a855f7' : '#ec4899'} />
+        <PixelIcon type={icon} color={color === 'cyan' ? '#22d3ee' : color === 'purple' ? '#a855f7' : color === 'pink' ? '#ec4899' : color === 'blue' ? '#3b82f6' : '#eab308'} />
       </div>
       <span className={`text-[10px] font-bold tracking-widest ${theme.text} mt-1`}>{label}</span>
     </button>

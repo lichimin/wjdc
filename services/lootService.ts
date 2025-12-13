@@ -54,49 +54,49 @@ export const generateLoot = (count: number, treasureData: any[] = [], difficulty
   // Generate a unique base for this batch of loot
   const uniqueBase = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
   
-  // Define level probabilities based on difficulty level
+  // Define level probabilities based on difficulty level (LV3以上概率减半)
   const getLevelProbabilities = (level: string) => {
     switch (level) {
       case 'B':
         return [
-          { level: 1, probability: 0.40 },
-          { level: 2, probability: 0.35 },
-          { level: 3, probability: 0.20 },
-          { level: 4, probability: 0.04 },
-          { level: 5, probability: 0.01 }
+          { level: 1, probability: 0.4625 },
+          { level: 2, probability: 0.4125 },
+          { level: 3, probability: 0.10 },
+          { level: 4, probability: 0.02 },
+          { level: 5, probability: 0.005 }
         ];
       case 'A':
         return [
-          { level: 1, probability: 0.25 },
-          { level: 2, probability: 0.35 },
-          { level: 3, probability: 0.25 },
-          { level: 4, probability: 0.10 },
-          { level: 5, probability: 0.04 },
-          { level: 6, probability: 0.01 }
+          { level: 1, probability: 0.35 },
+          { level: 2, probability: 0.45 },
+          { level: 3, probability: 0.125 },
+          { level: 4, probability: 0.05 },
+          { level: 5, probability: 0.02 },
+          { level: 6, probability: 0.005 }
         ];
       case 'S':
         return [
-          { level: 1, probability: 0.15 },
-          { level: 2, probability: 0.30 },
-          { level: 3, probability: 0.30 },
-          { level: 4, probability: 0.15 },
-          { level: 5, probability: 0.08 },
-          { level: 6, probability: 0.02 }
+          { level: 1, probability: 0.2875 },
+          { level: 2, probability: 0.4375 },
+          { level: 3, probability: 0.15 },
+          { level: 4, probability: 0.075 },
+          { level: 5, probability: 0.04 },
+          { level: 6, probability: 0.01 }
         ];
       case 'SS':
         return [
-          { level: 2, probability: 0.20 },
-          { level: 3, probability: 0.30 },
-          { level: 4, probability: 0.25 },
-          { level: 5, probability: 0.20 },
-          { level: 6, probability: 0.05 }
+          { level: 2, probability: 0.60 },
+          { level: 3, probability: 0.15 },
+          { level: 4, probability: 0.125 },
+          { level: 5, probability: 0.10 },
+          { level: 6, probability: 0.025 }
         ];
       case 'SSS':
         return [
-          { level: 3, probability: 0.20 },
-          { level: 4, probability: 0.35 },
-          { level: 5, probability: 0.35 },
-          { level: 6, probability: 0.10 }
+          { level: 3, probability: 0.60 },
+          { level: 4, probability: 0.175 },
+          { level: 5, probability: 0.175 },
+          { level: 6, probability: 0.05 }
         ];
       default:
         return [

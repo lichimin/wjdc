@@ -925,6 +925,11 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
               attackCooldown = 60;
           }
 
+          // 精英怪物的攻击速度是普通怪物的两倍
+          if (e.isElite) {
+            attackCooldown = Math.round(attackCooldown / 2);
+          }
+
           if (dist < attackRange) {
             if (isRanged) {
               // 远程攻击 - 发射子弹
@@ -938,6 +943,14 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
               const vx = Math.cos(angle) * projectileSpeed;
               const vy = Math.sin(angle) * projectileSpeed;
 
+              // 确定子弹颜色
+              let bulletColor = '#fde047'; // 默认黄色子弹
+              if (e.isElite) {
+                bulletColor = '#a855f7'; // 精英怪物射出紫色子弹
+              } else if (e.type === EnemyType.BOSS) {
+                bulletColor = '#ef4444'; // BOSS射出红色子弹
+              }
+              
               // 创建子弹
               projectilesRef.current.push({
                 id: `enemy-projectile-${Math.random().toString()}`,
@@ -946,7 +959,8 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
                 vx,
                 vy,
                 life: 100,
-                damage
+                damage,
+                bulletColor
               });
 
               // 应用伤害减少
@@ -1191,6 +1205,15 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
        // Create pixel art bullet with trail
        ctx.save();
        
+       // Determine bullet color
+       const bulletColor = proj.bulletColor || '#fde047';
+       
+       // Helper function to convert hex to rgba
+       const hexToRgba = (hex: string, alpha: number) => {
+         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+         return result ? `rgba(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}, ${alpha})` : hex;
+       };
+       
        // Create trail effect
        const trailLength = 15; // Increased trail length for more dramatic effect
        for (let i = trailLength; i > 0; i--) {
@@ -1198,7 +1221,7 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
           const trailScale = i / trailLength * 0.3 + 0.2;
           const trailOffset = i * 1.5;
           
-          ctx.fillStyle = `rgba(253, 224, 71, ${trailOpacity})`;
+          ctx.fillStyle = hexToRgba(bulletColor, trailOpacity);
           // Use square for pixel art trail
           const trailSize = 1 * trailScale;
           ctx.fillRect(
@@ -1210,12 +1233,12 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
        }
        
        // Draw main bullet (half size, pixel art style)
-       ctx.fillStyle = '#fde047';
+       ctx.fillStyle = bulletColor;
        // Use 1x1 pixel square for main bullet
        ctx.fillRect(proj.x - 0.5, proj.y - 0.5, 1, 1);
        
        // Add pixel art glow effect
-       ctx.fillStyle = 'rgba(253, 224, 71, 0.5)';
+       ctx.fillStyle = hexToRgba(bulletColor, 0.5);
        ctx.fillRect(proj.x - 1, proj.y - 1, 3, 1);
        ctx.fillRect(proj.x - 1, proj.y + 1, 3, 1);
        ctx.fillRect(proj.x - 1, proj.y - 1, 1, 3);
@@ -1562,6 +1585,17 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       ctx.fillStyle = '#0f172a'; ctx.fillRect(drawX - barWidth/2 - 1, drawY - barOffset - 1 - bounce, barWidth + 2, barHeight + 2);
       ctx.fillStyle = '#334155'; ctx.fillRect(drawX - barWidth/2, drawY - barOffset - bounce, barWidth, barHeight);
       const ratio = e.health / e.maxHealth; ctx.fillStyle = '#ef4444'; ctx.fillRect(drawX - barWidth/2, drawY - barOffset - bounce, barWidth * ratio, barHeight);
+      
+      // Draw elite/BOSS label
+      ctx.font = '6px "Press Start 2P"';
+      ctx.textAlign = 'center';
+      if (e.isElite) {
+        ctx.strokeStyle = 'black'; ctx.lineWidth = 1; ctx.strokeText('精英', drawX, drawY - barOffset - 5 - bounce);
+        ctx.fillStyle = '#ef4444'; ctx.fillText('精英', drawX, drawY - barOffset - 5 - bounce);
+      } else if (e.type === EnemyType.BOSS) {
+        ctx.strokeStyle = 'black'; ctx.lineWidth = 1; ctx.strokeText('BOSS', drawX, drawY - barOffset - 5 - bounce);
+        ctx.fillStyle = '#f97316'; ctx.fillText('BOSS', drawX, drawY - barOffset - 5 - bounce);
+      }
     }
 
     ctx.translate(drawX, drawY - bounce);
@@ -1597,9 +1631,13 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       
       const img = images[currentFrame % images.length];
       
-      // Apply boss scaling if needed
+      // Apply scaling if needed
       if (e.type === EnemyType.BOSS) {
-        targetSize *= 1.5; // Bosses are 50% larger
+        targetSize *= 2.5; // Bosses are 2.5 times larger (5 times the original base size)
+      } else if (e.sizeMultiplier) {
+        targetSize *= e.sizeMultiplier; // Use sizeMultiplier from enemy data
+      } else if (e.isElite) {
+        targetSize *= 2; // Fallback for elite enemies without sizeMultiplier
       }
       
       // Calculate scale to match target size
