@@ -67,50 +67,50 @@ export const chestConfig: ChestConfig = {
     // B难度宝物等级概率
     'B': [
       { level: 1, probability: 0.4625 },  // 等级1：46.25%
-      { level: 2, probability: 0.4125 },  // 等级2：41.25%
-      { level: 3, probability: 0.10 },    // 等级3：10%
+      { level: 2, probability: 0.3125 },  // 等级2：41.25%
+      { level: 3, probability: 0.20 },    // 等级3：10%
       { level: 4, probability: 0.02 },    // 等级4：2%
       { level: 5, probability: 0.005 }    // 等级5：0.5%
     ],
     // A难度宝物等级概率
     'A': [
       { level: 1, probability: 0.35 },    // 等级1：35%
-      { level: 2, probability: 0.45 },    // 等级2：45%
-      { level: 3, probability: 0.125 },   // 等级3：12.5%
-      { level: 4, probability: 0.05 },    // 等级4：5%
-      { level: 5, probability: 0.02 },    // 等级5：2%
+      { level: 2, probability: 0.35 },    // 等级2：45%
+      { level: 3, probability: 0.155 },   // 等级3：12.5%
+      { level: 4, probability: 0.09 },    // 等级4：5%
+      { level: 5, probability: 0.05 },    // 等级5：2%
       { level: 6, probability: 0.005 }    // 等级6：0.5%
     ],
     // S难度宝物等级概率
     'S': [
-      { level: 1, probability: 0.2875 },  // 等级1：28.75%
-      { level: 2, probability: 0.4375 },  // 等级2：43.75%
-      { level: 3, probability: 0.15 },    // 等级3：15%
-      { level: 4, probability: 0.075 },   // 等级4：7.5%
-      { level: 5, probability: 0.04 },    // 等级5：4%
+      { level: 1, probability: 0.28 },  // 等级1：28.75%
+      { level: 2, probability: 0.32},  // 等级2：43.75%
+      { level: 3, probability: 0.199 },    // 等级3：15%
+      { level: 4, probability: 0.125 },   // 等级4：7.5%
+      { level: 5, probability: 0.075 },    // 等级5：4%
       { level: 6, probability: 0.01 }     // 等级6：1%
     ],
     // SS难度宝物等级概率
     'SS': [
       { level: 2, probability: 0.60 },    // 等级2：60%
       { level: 3, probability: 0.15 },    // 等级3：15%
-      { level: 4, probability: 0.125 },   // 等级4：12.5%
+      { level: 4, probability: 0.10 },   // 等级4：12.5%
       { level: 5, probability: 0.10 },    // 等级5：10%
-      { level: 6, probability: 0.025 }    // 等级6：2.5%
+      { level: 6, probability: 0.05 }    // 等级6：2.5%
     ],
     // SSS难度宝物等级概率
     'SSS': [
       { level: 3, probability: 0.60 },    // 等级3：60%
-      { level: 4, probability: 0.175 },   // 等级4：17.5%
-      { level: 5, probability: 0.175 },   // 等级5：17.5%
-      { level: 6, probability: 0.05 }     // 等级6：5%
+      { level: 4, probability: 0.15 },   // 等级4：17.5%
+      { level: 5, probability: 0.15 },   // 等级5：17.5%
+      { level: 6, probability: 0.1 }     // 等级6：5%
     ]
   },
   
   // 宝箱类型影响
   chestTypeMultipliers: {
     normal: 1.0,  // 普通宝箱：1.0倍价值和数量
-    large: 1.5,   // 大型宝箱：1.5倍价值和数量
+    large: 2,   // 大型宝箱：1.5倍价值和数量
   },
   
   // 难度对稀有度的影响系数

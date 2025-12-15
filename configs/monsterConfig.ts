@@ -48,11 +48,11 @@ export const monsterConfigs: MonsterConfigs = {
   // 史莱姆配置
   [EnemyType.SLIME]: {
     type: EnemyType.SLIME,        // 怪物类型：史莱姆
-    baseHP: 30,                   // 基础生命值：30
+    baseHP: 200,                   // 基础生命值：30
     baseSpeed: 0.75,              // 基础移动速度：0.75
-    baseDamage: 10,               // 基础伤害：10
+    baseDamage: 20,               // 基础伤害：10
     attackRange: 20,              // 攻击范围：20像素（近战）
-    attackCooldown: 60,           // 攻击冷却：60帧
+    attackCooldown: 30,           // 攻击冷却：60帧
     projectileSpeed: 5,           // 子弹速度：5（未使用，因为是近战）
     isRanged: false,              // 是否远程：否（近战）
     frameCount: 11,               // 动画帧数：11帧
@@ -64,12 +64,12 @@ export const monsterConfigs: MonsterConfigs = {
   // 蝙蝠配置
   [EnemyType.BAT]: {
     type: EnemyType.BAT,          // 怪物类型：蝙蝠
-    baseHP: 15,                   // 基础生命值：15
+    baseHP: 150,                   // 基础生命值：15
     baseSpeed: 1.25,              // 基础移动速度：1.25
-    baseDamage: 5,                // 基础伤害：5
+    baseDamage: 10,                // 基础伤害：5
     attackRange: 80,              // 攻击范围：80像素
-    attackCooldown: 80,           // 攻击冷却：80帧
-    projectileSpeed: 6,           // 子弹速度：6
+    attackCooldown: 40,           // 攻击冷却：80帧
+    projectileSpeed: 1,           // 子弹速度：6
     isRanged: true,               // 是否远程：是
     frameCount: 14,               // 动画帧数：14帧
     imageBaseUrl: "https://czrimg.godqb.com/game/monsters/bf/frame", // 图片基础URL
@@ -80,12 +80,12 @@ export const monsterConfigs: MonsterConfigs = {
   // 骷髅配置
   [EnemyType.SKELETON]: {
     type: EnemyType.SKELETON,     // 怪物类型：骷髅
-    baseHP: 5000,                 // 基础生命值：5000
+    baseHP: 200,                 // 基础生命值：5000
     baseSpeed: 0.5,               // 基础移动速度：0.5
     baseDamage: 15,               // 基础伤害：15
     attackRange: 120,             // 攻击范围：120像素
-    attackCooldown: 100,          // 攻击冷却：100帧
-    projectileSpeed: 4,           // 子弹速度：4
+    attackCooldown: 26,          // 攻击冷却：100帧
+    projectileSpeed: 1,           // 子弹速度：4
     isRanged: true,               // 是否远程：是
     frameCount: 13,               // 动画帧数：13帧
     imageBaseUrl: "https://czrimg.godqb.com/game/monsters/wolf/frame", // 图片基础URL
@@ -96,11 +96,11 @@ export const monsterConfigs: MonsterConfigs = {
   // 大象配置
   [EnemyType.ELEPHANT]: {
     type: EnemyType.ELEPHANT,     // 怪物类型：大象
-    baseHP: 100,                  // 基础生命值：100
+    baseHP: 150,                  // 基础生命值：100
     baseSpeed: 0.4,               // 基础移动速度：0.4
     baseDamage: 30,               // 基础伤害：30
     attackRange: 30,              // 攻击范围：30像素（近战）
-    attackCooldown: 80,           // 攻击冷却：80帧
+    attackCooldown: 30,           // 攻击冷却：80帧
     projectileSpeed: 5,           // 子弹速度：5（未使用，因为是近战）
     isRanged: false,              // 是否远程：否（近战）
     frameCount: 11,               // 动画帧数：11帧
@@ -112,12 +112,12 @@ export const monsterConfigs: MonsterConfigs = {
   // BOSS配置
   [EnemyType.BOSS]: {
     type: EnemyType.BOSS,         // 怪物类型：BOSS
-    baseHP: 300,                  // 基础生命值：300
+    baseHP: 600,                  // 基础生命值：300
     baseSpeed: 2.0,               // 基础移动速度：2.0
-    baseDamage: 30,               // 基础伤害：30
+    baseDamage: 50,               // 基础伤害：30
     attackRange: 150,             // 攻击范围：150像素
-    attackCooldown: 120,          // 攻击冷却：120帧
-    projectileSpeed: 7,           // 子弹速度：7
+    attackCooldown: 30,          // 攻击冷却：120帧
+    projectileSpeed: 2,           // 子弹速度：7
     isRanged: true,               // 是否远程：是
     frameCount: 0,                // 动画帧数：0（动态设置）
     imageBaseUrl: "",            // 图片基础URL：空（使用普通怪物的图片）
@@ -147,7 +147,7 @@ export const eliteMonsterConfig = {
  * 定义每增加一级难度，怪物属性的增长倍数
  */
 export const difficultyConfig = {
-  healthMultiplierPerLevel: 1.5,     // 每级难度生命值倍数：1.5倍
+  healthMultiplierPerLevel: 2,     // 每级难度生命值倍数：1.5倍
   damageMultiplierPerLevel: 1.2,     // 每级难度伤害倍数：1.2倍
   speedMultiplierPerLevel: 1.05,     // 每级难度速度倍数：1.05倍
 };
