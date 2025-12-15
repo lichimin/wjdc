@@ -14,7 +14,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ playerState, userAttribu
       
       <div className="relative z-10 w-80 bg-slate-900 border-2 border-slate-700 rounded-lg shadow-2xl p-6 transform transition-all scale-100">
         <div className="flex justify-between items-center mb-6 border-b border-slate-700 pb-2">
-          <h3 className="text-amber-500 font-bold tracking-widest uppercase text-sm">Hero Attributes</h3>
+          <h3 className="text-amber-500 font-bold tracking-widest uppercase text-sm">英雄属性</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-white font-bold">✕</button>
         </div>
 
@@ -28,7 +28,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ playerState, userAttribu
 
            <div className="space-y-3">
               <StatRow 
-                label="Attack Power" 
+                label="攻击力" 
                 baseValue={15} 
                 additionalValue={userAttributes?.攻击力 || 0} 
                 totalValue={playerState.damage} 
@@ -36,7 +36,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ playerState, userAttribu
                 color="text-red-400" 
               />
               <StatRow 
-                label="Move Speed" 
+                label="移动速度" 
                 baseValue={3.5} 
                 additionalValue={parseFloat(userAttributes?.移动速度 || "0")} 
                 totalValue={playerState.speed} 
@@ -44,7 +44,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ playerState, userAttribu
                 color="text-blue-400" 
               />
               <StatRow 
-                label="Projectile Spd" 
+                label="子弹速度" 
                 baseValue={8} 
                 additionalValue={parseFloat(userAttributes?.子弹速度 || "0")} 
                 totalValue={playerState.projectileSpeed} 
@@ -52,7 +52,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ playerState, userAttribu
                 color="text-green-400" 
               />
               <StatRow 
-                label="Max Health" 
+                label="最大生命值" 
                 baseValue={100} 
                 additionalValue={userAttributes?.生命值 || 0} 
                 totalValue={playerState.maxHealth} 
@@ -60,7 +60,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ playerState, userAttribu
                 color="text-pink-400" 
               />
               <StatRow 
-                label="Attack Speed" 
+                label="攻击速度" 
                 baseValue={2.5} 
                 additionalValue={userAttributes?.攻击速度 || 0} 
                 totalValue={`${(2.5 + (userAttributes?.攻击速度 || 0)).toFixed(1)}/s`} 
@@ -68,7 +68,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ playerState, userAttribu
                 color="text-yellow-400" 
               />
               <StatRow 
-                label="Damage Reduction" 
+                label="减伤" 
                 baseValue={0} 
                 additionalValue={parseFloat(userAttributes?.减伤 || "0")} 
                 totalValue={`${parseFloat(userAttributes?.减伤 || "0")}%`} 
@@ -76,7 +76,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ playerState, userAttribu
                 color="text-cyan-400" 
               />
               <StatRow 
-                label="Lifesteal" 
+                label="吸血" 
                 baseValue={0} 
                 additionalValue={parseFloat(userAttributes?.吸血 || "0")} 
                 totalValue={`${parseFloat(userAttributes?.吸血 || "0")}%`} 
@@ -92,7 +92,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ playerState, userAttribu
                 color="text-yellow-500" 
               />
               <StatRow 
-                label="Critical Damage" 
+                label="暴击伤害" 
                 baseValue={150} 
                 additionalValue={parseFloat(userAttributes?.暴击伤害 || "150") - 150} 
                 totalValue={userAttributes?.暴击伤害 || "150%"} 
@@ -116,7 +116,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ playerState, userAttribu
                 color="text-gray-500" 
               />
               <StatRow 
-                label="Regeneration" 
+                label="恢复" 
                 baseValue={0} 
                 additionalValue={userAttributes?.恢复 || 0} 
                 totalValue={userAttributes?.恢复 || 0} 
@@ -124,7 +124,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ playerState, userAttribu
                 color="text-teal-500" 
               />
               <StatRow 
-                label="Projectile Count" 
+                label="弹道" 
                 baseValue={1} 
                 additionalValue={(userAttributes?.弹道 || 1) - 1} 
                 totalValue={userAttributes?.弹道 || 1} 
@@ -135,7 +135,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ playerState, userAttribu
         </div>
         
         <div className="mt-6 pt-4 border-t border-slate-700 text-center">
-           <span className="text-[10px] text-slate-500 font-mono">CLASS: VOID WALKER</span>
+           <span className="text-[10px] text-slate-500 font-mono">职业: 虚空行者</span>
         </div>
       </div>
       <style>{`

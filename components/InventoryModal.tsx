@@ -942,7 +942,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           </div>
           
           {/* Grid Content */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-2 mt-2">
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-2 mt-2" style={{ overscrollBehaviorY: 'contain' }}>
             <h3 className="text-lg font-bold text-amber-500 mb-4 text-center">背包</h3>
             {items.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-slate-600 space-y-4">
@@ -1387,7 +1387,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ items, onClose, 
           
           <div className="relative z-10 w-80 bg-slate-900 border-2 border-slate-700 rounded-lg shadow-2xl p-6 transform transition-all scale-100">
             <div className="flex justify-between items-center mb-6 border-b border-slate-700 pb-2">
-              <h3 className="text-amber-500 font-bold tracking-widest uppercase text-sm">角色属性详情</h3>
+             <h3 className="text-amber-500 font-bold tracking-widest uppercase text-sm">角色属性详情</h3>
               <button onClick={() => setShowAttributesModal(false)} className="text-slate-400 hover:text-white font-bold">✕</button>
             </div>
 
