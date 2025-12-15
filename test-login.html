@@ -29,7 +29,8 @@
     <div class="log" id="log"></div>
 
     <script>
-        const API_URL = 'http://8.130.43.130:10005/api/v1/login';
+        // 使用环境变量或默认值
+const API_URL = `${window.location.origin}/api/v1/login`;
         
         function log(message) {
             const logDiv = document.getElementById('log');

@@ -979,7 +979,7 @@ const App: React.FC = () => {
       }
       
       // 发送请求到/api/v1/my-items接口保存物品
-      const response = await fetch('http://8.130.43.130:10005/api/v1/my-items', {
+      const response = await fetch(`${apiBaseUrl}/api/v1/my-items`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

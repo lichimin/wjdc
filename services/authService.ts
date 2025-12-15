@@ -1,5 +1,5 @@
 // API基础URL
-const API_BASE_URL = 'http://8.130.43.130:10005';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://8.130.43.130:10005';
 
 // 存储键名常量
 const STORAGE_KEYS = {
