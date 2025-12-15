@@ -1119,7 +1119,7 @@ const App: React.FC = () => {
       <header className="relative z-10 bg-slate-900/90 border-b border-cyan-900/50 backdrop-blur-sm p-3 flex justify-between items-center shadow-lg shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded bg-slate-800 border border-cyan-500/50 overflow-hidden relative shadow-[0_0_10px_rgba(6,182,212,0.3)]">
-            <img src="https://czrimg.godqb.com/game/v2/play2/1.png" alt="Hero" className="w-full h-full object-cover scale-125 translate-y-1" style={{ transform: `scale(${userSkin?.skin?.scale ? (userSkin.skin.scale / 100) * 1.1 * 1.25 : 1.375})` }} />
+            <img src="/res/game/v2/play2/1.png" alt="Hero" className="w-full h-full object-cover scale-125 translate-y-1" style={{ transform: `scale(${userSkin?.skin?.scale ? (userSkin.skin.scale / 100) * 1.1 * 1.25 : 1.375})` }} />
           </div>
           
           <div className="flex flex-col gap-0.5">

@@ -56,7 +56,7 @@ export const monsterConfigs: MonsterConfigs = {
     projectileSpeed: 5,           // 子弹速度：5（未使用，因为是近战）
     isRanged: false,              // 是否远程：否（近战）
     frameCount: 11,               // 动画帧数：11帧
-    imageBaseUrl: "https://czrimg.godqb.com/game/monsters/cz/frame", // 图片基础URL
+    imageBaseUrl: "/res/game/monsters/cz/frame", // 图片基础URL
     baseSize: 20,                 // 基础尺寸：20像素
     scaleFactor: 1.0,             // 缩放系数：1.0
     eliteBonus: 1.5               // 精英加成：1.5倍
@@ -72,7 +72,7 @@ export const monsterConfigs: MonsterConfigs = {
     projectileSpeed: 1,           // 子弹速度：6
     isRanged: true,               // 是否远程：是
     frameCount: 14,               // 动画帧数：14帧
-    imageBaseUrl: "https://czrimg.godqb.com/game/monsters/bf/frame", // 图片基础URL
+    imageBaseUrl: "/res/game/monsters/bf/frame", // 图片基础URL
     baseSize: 24,                 // 基础尺寸：24像素
     scaleFactor: 1.0,             // 缩放系数：1.0
     eliteBonus: 1.2               // 精英加成：1.2倍
@@ -88,7 +88,7 @@ export const monsterConfigs: MonsterConfigs = {
     projectileSpeed: 1,           // 子弹速度：4
     isRanged: true,               // 是否远程：是
     frameCount: 13,               // 动画帧数：13帧
-    imageBaseUrl: "https://czrimg.godqb.com/game/monsters/wolf/frame", // 图片基础URL
+    imageBaseUrl: "/res/game/monsters/wolf/frame", // 图片基础URL
     baseSize: 44,                 // 基础尺寸：44像素
     scaleFactor: 1.0,             // 缩放系数：1.0
     eliteBonus: 1.3               // 精英加成：1.3倍
@@ -104,7 +104,7 @@ export const monsterConfigs: MonsterConfigs = {
     projectileSpeed: 5,           // 子弹速度：5（未使用，因为是近战）
     isRanged: false,              // 是否远程：否（近战）
     frameCount: 11,               // 动画帧数：11帧
-    imageBaseUrl: "https://czrimg.godqb.com/game/monsters/dx/frame", // 图片基础URL
+    imageBaseUrl: "/res/game/monsters/dx/frame", // 图片基础URL
     baseSize: 30,                 // 基础尺寸：30像素
     scaleFactor: 1.5,             // 缩放系数：1.5
     eliteBonus: 2.0               // 精英加成：2.0倍

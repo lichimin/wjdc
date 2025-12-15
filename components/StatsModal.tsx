@@ -22,7 +22,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ playerState, userAttribu
            {/* Avatar Circle */}
            <div className="flex justify-center mb-6">
               <div className="w-20 h-20 rounded-full border-4 border-slate-700 overflow-hidden bg-slate-800 shadow-inner ring-2 ring-slate-800">
-                 <img src="https://czrimg.godqb.com/game/v2/play2/1.png" className="w-full h-full object-cover scale-125 translate-y-2" alt="Hero" />
+                 <img src="/res/game/v2/play2/1.png" className="w-full h-full object-cover scale-125 translate-y-2" alt="Hero" />
               </div>
            </div>
 

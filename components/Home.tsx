@@ -218,7 +218,7 @@ const [showTreasuresModal, setShowTreasuresModal] = useState(false);
           >
              <div className="w-10 h-10 rounded-full bg-cyan-900/50 border border-cyan-400 overflow-hidden relative">
                 <img 
-                  src={userData.img || "https://czrimg.godqb.com/game/v2/play2/1.png"} 
+                  src={userData.img || "/res/game/v2/play2/1.png"} 
                   alt={userData.username || "Player"} 
                   className="w-full h-full object-cover" 
                 />
@@ -294,7 +294,7 @@ const [showTreasuresModal, setShowTreasuresModal] = useState(false);
               />
             ) : (
               <img 
-                src={userData.img || "https://czrimg.godqb.com/game/v2/play2/1.png"} 
+                src={userData.img || "/res/game/v2/play2/1.png"} 
                 className="w-32 h-32 object-contain image-pixelated drop-shadow-[0_0_20px_rgba(34,211,238,0.4)] animate-float"
                 style={{ transform: `scale(1.1)` }}
                 alt={userData.username || "Hero"}

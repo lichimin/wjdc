@@ -144,27 +144,27 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
   // Preload skill images
   useEffect(() => {
     const skillImageUrls = [
-      "https://czrimg.godqb.com/game/skill/1/0479_00.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_01.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_02.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_03.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_04.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_05.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_06.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_07.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_08.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_09.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_10.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_11.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_12.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_13.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_14.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_15.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_16.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_17.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_18.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_19.png",
-      "https://czrimg.godqb.com/game/skill/1/0479_20.png"
+      "/res/game/skill/1/0479_00.png",
+      "/res/game/skill/1/0479_01.png",
+      "/res/game/skill/1/0479_02.png",
+      "/res/game/skill/1/0479_03.png",
+      "/res/game/skill/1/0479_04.png",
+      "/res/game/skill/1/0479_05.png",
+      "/res/game/skill/1/0479_06.png",
+      "/res/game/skill/1/0479_07.png",
+      "/res/game/skill/1/0479_08.png",
+      "/res/game/skill/1/0479_09.png",
+      "/res/game/skill/1/0479_10.png",
+      "/res/game/skill/1/0479_11.png",
+      "/res/game/skill/1/0479_12.png",
+      "/res/game/skill/1/0479_13.png",
+      "/res/game/skill/1/0479_14.png",
+      "/res/game/skill/1/0479_15.png",
+      "/res/game/skill/1/0479_16.png",
+      "/res/game/skill/1/0479_17.png",
+      "/res/game/skill/1/0479_18.png",
+      "/res/game/skill/1/0479_19.png",
+      "/res/game/skill/1/0479_20.png"
     ];
     
     const images: HTMLImageElement[] = [];
@@ -188,26 +188,26 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
   // Preload heal skill images
   useEffect(() => {
     const healSkillImageUrls = [
-      "https://czrimg.godqb.com/game/skill/2/frame0.png",
-      "https://czrimg.godqb.com/game/skill/2/frame1.png",
-      "https://czrimg.godqb.com/game/skill/2/frame2.png",
-      "https://czrimg.godqb.com/game/skill/2/frame3.png",
-      "https://czrimg.godqb.com/game/skill/2/frame4.png",
-      "https://czrimg.godqb.com/game/skill/2/frame5.png",
-      "https://czrimg.godqb.com/game/skill/2/frame6.png",
-      "https://czrimg.godqb.com/game/skill/2/frame7.png",
-      "https://czrimg.godqb.com/game/skill/2/frame8.png",
-      "https://czrimg.godqb.com/game/skill/2/frame9.png",
-      "https://czrimg.godqb.com/game/skill/2/frame10.png",
-      "https://czrimg.godqb.com/game/skill/2/frame11.png",
-      "https://czrimg.godqb.com/game/skill/2/frame12.png",
-      "https://czrimg.godqb.com/game/skill/2/frame13.png",
-      "https://czrimg.godqb.com/game/skill/2/frame14.png",
-      "https://czrimg.godqb.com/game/skill/2/frame15.png",
-      "https://czrimg.godqb.com/game/skill/2/frame16.png",
-      "https://czrimg.godqb.com/game/skill/2/frame17.png",
-      "https://czrimg.godqb.com/game/skill/2/frame18.png",
-      "https://czrimg.godqb.com/game/skill/2/frame19.png"
+      "/res/game/skill/2/frame0.png",
+      "/res/game/skill/2/frame1.png",
+      "/res/game/skill/2/frame2.png",
+      "/res/game/skill/2/frame3.png",
+      "/res/game/skill/2/frame4.png",
+      "/res/game/skill/2/frame5.png",
+      "/res/game/skill/2/frame6.png",
+      "/res/game/skill/2/frame7.png",
+      "/res/game/skill/2/frame8.png",
+      "/res/game/skill/2/frame9.png",
+      "/res/game/skill/2/frame10.png",
+      "/res/game/skill/2/frame11.png",
+      "/res/game/skill/2/frame12.png",
+      "/res/game/skill/2/frame13.png",
+      "/res/game/skill/2/frame14.png",
+      "/res/game/skill/2/frame15.png",
+      "/res/game/skill/2/frame16.png",
+      "/res/game/skill/2/frame17.png",
+      "/res/game/skill/2/frame18.png",
+      "/res/game/skill/2/frame19.png"
     ];
     
     const images: HTMLImageElement[] = [];
@@ -366,10 +366,10 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     };
     
     // Set image sources
-    chestImages.normalClosed.src = 'https://czrimg.godqb.com/game/v2/scenes/b1-1.png';
-    chestImages.normalOpen.src = 'https://czrimg.godqb.com/game/v2/scenes/b1-2.png';
-    chestImages.largeClosed.src = 'https://czrimg.godqb.com/game/v2/scenes/b2-1.png';
-    chestImages.largeOpen.src = 'https://czrimg.godqb.com/game/v2/scenes/b2-2.png';
+    chestImages.normalClosed.src = '/res/game/v2/scenes/b1-1.png';
+    chestImages.normalOpen.src = '/res/game/v2/scenes/b1-2.png';
+    chestImages.largeClosed.src = '/res/game/v2/scenes/b2-1.png';
+    chestImages.largeOpen.src = '/res/game/v2/scenes/b2-2.png';
     
     // Add event listeners
     chestImages.normalClosed.onload = onImageLoad;
