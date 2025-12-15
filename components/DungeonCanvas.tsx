@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { DungeonData, TileType, ItemType, Room, InputState, PlayerState, Enemy, EnemyType, Projectile, FloatingText, Item, SkinData } from '../types';
+import { monsterConfigs, eliteMonsterConfig } from '../configs/monsterConfig';
 
 interface DungeonCanvasProps {
   dungeon: DungeonData;
@@ -111,21 +112,21 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
     [EnemyType.BOSS]: []
   });
 
-  // Monster animation frame counts
+  // Monster animation frame counts - 从配置文件获取
   const monsterFrameCounts = {
-    [EnemyType.SLIME]: 11, // frame0-frame10
-    [EnemyType.BAT]: 14,   // frame0-frame13
-    [EnemyType.SKELETON]: 13, // frame0-frame12
-    [EnemyType.ELEPHANT]: 11, // frame0-frame10
+    [EnemyType.SLIME]: monsterConfigs[EnemyType.SLIME].frameCount,
+    [EnemyType.BAT]: monsterConfigs[EnemyType.BAT].frameCount,
+    [EnemyType.SKELETON]: monsterConfigs[EnemyType.SKELETON].frameCount,
+    [EnemyType.ELEPHANT]: monsterConfigs[EnemyType.ELEPHANT].frameCount,
     [EnemyType.BOSS]: 0    // Will be set dynamically based on selected type
   };
 
-  // Monster animation base URLs
+  // Monster animation base URLs - 从配置文件获取
   const monsterImageBaseUrls = {
-    [EnemyType.SLIME]: "https://czrimg.godqb.com/game/monsters/cz/frame",
-    [EnemyType.BAT]: "https://czrimg.godqb.com/game/monsters/bf/frame",
-    [EnemyType.SKELETON]: "https://czrimg.godqb.com/game/monsters/wolf/frame",
-    [EnemyType.ELEPHANT]: "https://czrimg.godqb.com/game/monsters/dx/frame"
+    [EnemyType.SLIME]: monsterConfigs[EnemyType.SLIME].imageBaseUrl,
+    [EnemyType.BAT]: monsterConfigs[EnemyType.BAT].imageBaseUrl,
+    [EnemyType.SKELETON]: monsterConfigs[EnemyType.SKELETON].imageBaseUrl,
+    [EnemyType.ELEPHANT]: monsterConfigs[EnemyType.ELEPHANT].imageBaseUrl
   };
   
   // Heal skill animation
@@ -921,49 +922,19 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
 
        // 怪物远程攻击逻辑
        if (dist < 100 && e.cooldown <= 0 && p.invincibilityTimer <= 0) {
-          // 根据怪物类型设置攻击范围和冷却时间
-          let attackRange = 20;
-          let attackCooldown = 60;
-          let isRanged = true;
-          let projectileSpeed = 5;
-          let damage = e.damage || 10;
+          // 从配置文件获取攻击参数
+          const monsterConfig = monsterConfigs[e.type] || monsterConfigs[EnemyType.SLIME];
+          let attackRange = monsterConfig.attackRange;
+          let attackCooldown = monsterConfig.attackCooldown;
+          let isRanged = monsterConfig.isRanged;
+          let projectileSpeed = monsterConfig.projectileSpeed;
+          let damage = e.damage || monsterConfig.baseDamage;
 
-          // 根据怪物类型调整攻击参数
-          switch(e.type) {
-            case EnemyType.SLIME:
-              attackRange = 20; // 近战
-              isRanged = false;
-              attackCooldown = 60;
-              break;
-            case EnemyType.BAT:
-              attackRange = 80; // 远程
-              isRanged = true;
-              attackCooldown = 80;
-              projectileSpeed = 6;
-              break;
-            case EnemyType.SKELETON:
-              attackRange = 120; // 远程
-              isRanged = true;
-              attackCooldown = 100;
-              projectileSpeed = 4;
-              break;
-            case EnemyType.ELEPHANT:
-              attackRange = 30; // 近战
-              isRanged = false;
-              attackCooldown = 80;
-              damage = Math.round(damage * 1.5); // 近战伤害更高
-              break;
-            case EnemyType.BOSS:
-              attackRange = 150; // 远程
-              isRanged = true;
-              attackCooldown = 120;
-              projectileSpeed = 7;
-              damage = Math.round(damage * 2); // BOSS伤害更高
-              break;
-            default:
-              attackRange = 20;
-              isRanged = false;
-              attackCooldown = 60;
+          // 特殊处理BOSS伤害
+          if (e.type === EnemyType.BOSS) {
+            damage = Math.round(damage * 2); // BOSS伤害更高
+          } else if (e.type === EnemyType.ELEPHANT) {
+            damage = Math.round(damage * 1.5); // 近战伤害更高
           }
 
           // 精英怪物的攻击速度是普通怪物的两倍
@@ -1602,15 +1573,16 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       drawType = bossTypes[idHash % bossTypes.length];
     }
     
-    // Set consistent monster size based on fallback dimensions (used for both image scaling and health bar positioning)
-    let targetSize = 20; // Base size (diameter) based on fallback shapes
+    // Set consistent monster size based on configuration
+    const monsterConfig = monsterConfigs[drawType] || monsterConfigs[EnemyType.SLIME];
+    let targetSize = monsterConfig.baseSize;
     
     if (drawType === EnemyType.BAT) {
-      targetSize = 24; // Bat is doubled in size (was 12)
+      targetSize = monsterConfig.baseSize; // Bat size from config
     } else if (drawType === EnemyType.SKELETON) {
-      targetSize = 44; // Skeleton is doubled in size
+      targetSize = monsterConfig.baseSize; // Skeleton size from config
     } else if (drawType === EnemyType.ELEPHANT) {
-      targetSize = 52; // Elephant is doubled in size (was 26)
+      targetSize = monsterConfig.baseSize; // Elephant size from config
     }
     
     ctx.save();
@@ -1680,11 +1652,11 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       
       // Apply scaling if needed
       if (e.type === EnemyType.BOSS) {
-        targetSize *= 2.5; // Bosses are 2.5 times larger (5 times the original base size)
+        targetSize *= monsterConfigs[EnemyType.BOSS].scaleFactor; // Bosses scale from config
       } else if (e.sizeMultiplier) {
         targetSize *= e.sizeMultiplier; // Use sizeMultiplier from enemy data
       } else if (e.isElite) {
-        targetSize *= 2; // Fallback for elite enemies without sizeMultiplier
+        targetSize *= eliteMonsterConfig.sizeMultiplier; // Elite enemies scale from config
       }
       
       // Calculate scale to match target size

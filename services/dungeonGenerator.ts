@@ -1,5 +1,6 @@
 
 import { DungeonData, TileType, Room, Item, ItemType, Enemy, EnemyType } from '../types';
+import { monsterConfigs, difficultyConfig } from '../configs/monsterConfig';
 
 const MAP_WIDTH = 60;
 const MAP_HEIGHT = 60;
@@ -135,26 +136,21 @@ export const generateDungeon = (difficultyMultiplier: number = 1, difficultyLeve
        if (!occupied) {
           const roll = Math.random();
           let type = EnemyType.SLIME;
-          let hp = 30;
-          let speed = 0.75; // 降低50%
-          let damage = 10;
-
+          
+          // 根据随机数选择怪物类型
           if (roll < 0.25) {
             type = EnemyType.BAT;
-            hp = 15;
-            speed = 1.25; // 降低50%
-            damage = 5;  
           } else if (roll < 0.5) {
             type = EnemyType.SKELETON;
-            hp = 50;
-            speed = 0.5; // 降低50%
-            damage = 15; 
           } else if (roll < 0.75) {
             type = EnemyType.ELEPHANT;
-            hp = 100; // 骷髅的两倍
-            speed = 0.4; // 比骷髅稍快一点
-            damage = 30; // 骷髅的两倍
           }
+          
+          // 从配置文件获取怪物基础属性
+          const monsterConfig = monsterConfigs[type];
+          let hp = monsterConfig.baseHP;
+          let speed = monsterConfig.baseSpeed;
+          let damage = monsterConfig.baseDamage;
 
           enemies.push({
             id: `enemy-${room.id}-${e}`,
@@ -183,8 +179,10 @@ export const generateDungeon = (difficultyMultiplier: number = 1, difficultyLeve
      const bx = bossRoom.x + Math.floor(bossRoom.w / 2);
      const by = bossRoom.y + Math.floor(bossRoom.h / 2);
      
-     const baseBossHP = 300;
-     const baseBossDmg = 30;
+     // 从配置文件获取BOSS基础属性
+     const bossConfig = monsterConfigs[EnemyType.BOSS];
+     const baseBossHP = bossConfig.baseHP;
+     const baseBossDmg = bossConfig.baseDamage;
      
      enemies.push({
         id: `boss-main`,
@@ -193,7 +191,7 @@ export const generateDungeon = (difficultyMultiplier: number = 1, difficultyLeve
         type: EnemyType.BOSS, // Assuming BOSS exists in Enum from previous update
         health: baseBossHP * difficultyMultiplier * 2, // 血量翻倍
         maxHealth: baseBossHP * difficultyMultiplier * 2, // 最大血量翻倍
-        speed: 2.0,
+        speed: bossConfig.baseSpeed,
         damage: baseBossDmg * difficultyMultiplier,
         state: 'idle',
         facingLeft: false,
