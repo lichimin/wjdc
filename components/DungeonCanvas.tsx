@@ -915,10 +915,32 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
        const eBox = 16;
        const eOff = (TILE_SIZE - eBox) / 2;
        
-       const canEX = !isWallOrVoid(Math.floor((nextEX + eOff)/TILE_SIZE), Math.floor((e.y + eOff)/TILE_SIZE));
-       if (canEX) e.x = nextEX;
-       const canEY = !isWallOrVoid(Math.floor((e.x + eOff)/TILE_SIZE), Math.floor((nextEY + eOff)/TILE_SIZE));
-       if (canEY) e.y = nextEY;
+       // 检查整个碰撞盒的四个角落，确保怪物不会卡在墙壁里
+       const isNextXValid = () => {
+         const x1 = nextEX + eOff;
+         const y1 = e.y + eOff;
+         const x2 = x1 + eBox;
+         const y2 = y1 + eBox;
+         return !isWallOrVoid(Math.floor(x1/TILE_SIZE), Math.floor(y1/TILE_SIZE)) &&
+                !isWallOrVoid(Math.floor(x2/TILE_SIZE), Math.floor(y1/TILE_SIZE)) &&
+                !isWallOrVoid(Math.floor(x1/TILE_SIZE), Math.floor(y2/TILE_SIZE)) &&
+                !isWallOrVoid(Math.floor(x2/TILE_SIZE), Math.floor(y2/TILE_SIZE));
+       };
+       
+       const isNextYValid = () => {
+         const x1 = e.x + eOff;
+         const y1 = nextEY + eOff;
+         const x2 = x1 + eBox;
+         const y2 = y1 + eBox;
+         return !isWallOrVoid(Math.floor(x1/TILE_SIZE), Math.floor(y1/TILE_SIZE)) &&
+                !isWallOrVoid(Math.floor(x2/TILE_SIZE), Math.floor(y1/TILE_SIZE)) &&
+                !isWallOrVoid(Math.floor(x1/TILE_SIZE), Math.floor(y2/TILE_SIZE)) &&
+                !isWallOrVoid(Math.floor(x2/TILE_SIZE), Math.floor(y2/TILE_SIZE));
+       };
+       
+       // 分别检查X和Y方向的移动是否有效
+       if (isNextXValid()) e.x = nextEX;
+       if (isNextYValid()) e.y = nextEY;
 
        // 怪物远程攻击逻辑
        if (dist < 100 && e.cooldown <= 0 && p.invincibilityTimer <= 0) {
