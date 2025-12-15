@@ -11,6 +11,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // API基础URL
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://8.130.43.130:10005';
+
+  const handleLogin = async (username: string, password: string) => {
   const handleLogin = async (username: string, password: string) => {
     try {
       setLoading(true);
@@ -18,8 +22,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
       
       // 这里将连接到authService，暂时使用模拟数据
       // 实际实现会在authService中完成
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://8.130.43.130:10005';
-  const response = await fetch(`${apiBaseUrl}/api/v1/login`, {
+      const response = await fetch(`${apiBaseUrl}/api/v1/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
