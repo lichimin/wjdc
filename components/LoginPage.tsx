@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { LoginForm } from './LoginForm';
 import { RegisterForm } from './RegisterForm';
+import { preloadCoreResources, ResourceProgress } from '../services/resourceLoader';
 
 interface LoginPageProps {
   onLoginSuccess: (userData: any) => void;
@@ -10,18 +11,23 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [loadingResources, setLoadingResources] = useState(false);
+  const [resourceProgress, setResourceProgress] = useState<ResourceProgress>({
+    loaded: 0,
+    total: 0,
+    percentage: 0,
+    currentResource: ''
+  });
 
   // API基础URL
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://8.130.43.130:10005';
 
   const handleLogin = async (username: string, password: string) => {
-  const handleLogin = async (username: string, password: string) => {
     try {
       setLoading(true);
       setError('');
       
-      // 这里将连接到authService，暂时使用模拟数据
-      // 实际实现会在authService中完成
+      // 登录API调用
       const response = await fetch(`${apiBaseUrl}/api/v1/login`, {
         method: 'POST',
         headers: {
@@ -33,12 +39,31 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
       const data = await response.json();
       
       if (response.ok && data.code === 200) {
-        // 登录成功
-        onLoginSuccess(data.data);
         // 保存token
         if (data.token) {
           localStorage.setItem('authToken', data.token);
         }
+        
+        // 开始预加载资源
+        setLoadingResources(true);
+        
+        // 调用资源加载服务
+        preloadCoreResources(
+          (progress) => {
+            setResourceProgress(progress);
+          },
+          () => {
+            // 资源加载完成，进入游戏
+            setLoadingResources(false);
+            onLoginSuccess(data.data);
+          },
+          (error) => {
+            console.error('Resource loading error:', error);
+            // 即使资源加载出错，也允许进入游戏
+            setLoadingResources(false);
+            onLoginSuccess(data.data);
+          }
+        );
       } else {
         setError(data.message || '登录失败，请检查用户名和密码');
       }
@@ -106,6 +131,32 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             ENTER THE DIGITAL REALM
           </p>
         </div>
+
+        {/* 资源加载界面 */}
+        {loadingResources && (
+          <div className="fixed inset-0 bg-[#020205]/95 z-50 flex items-center justify-center">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-cyan-400 mb-8 font-['Press_Start_2P',monospace]">
+                加载游戏资源...
+              </h2>
+              <div className="w-96 bg-slate-800/50 rounded-full h-4 overflow-hidden border border-cyan-500/30 mx-auto">
+                <div 
+                  className="bg-gradient-to-r from-cyan-400 to-blue-500 h-full transition-all duration-300"
+                  style={{ width: `${resourceProgress.percentage}%` }}
+                ></div>
+              </div>
+              <p className="mt-4 text-slate-400 text-sm font-mono">
+                {resourceProgress.percentage}% ({resourceProgress.loaded}/{resourceProgress.total})
+              </p>
+              <p className="mt-2 text-xs text-slate-500 font-mono truncate max-w-md mx-auto">
+                {resourceProgress.currentResource}
+              </p>
+              <div className="mt-8 animate-pulse">
+                <div className="inline-block w-8 h-8 border-4 border-cyan-500/30 border-t-cyan-400 rounded-full animate-spin"></div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Form Container */}
         <div className="mx-auto max-w-md bg-slate-900/60 backdrop-blur-sm border border-cyan-500/20 rounded-xl p-8 shadow-[0_0_30px_rgba(6,182,212,0.15)]">

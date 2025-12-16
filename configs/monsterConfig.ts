@@ -48,7 +48,7 @@ export const monsterConfigs: MonsterConfigs = {
   // 史莱姆配置
   [EnemyType.SLIME]: {
     type: EnemyType.SLIME,        // 怪物类型：史莱姆
-    baseHP: 200,                   // 基础生命值：30
+    baseHP: 120,                   // 基础生命值：30
     baseSpeed: 0.75,              // 基础移动速度：0.75
     baseDamage: 20,               // 基础伤害：10
     attackRange: 20,              // 攻击范围：20像素（近战）
@@ -64,7 +64,7 @@ export const monsterConfigs: MonsterConfigs = {
   // 蝙蝠配置
   [EnemyType.BAT]: {
     type: EnemyType.BAT,          // 怪物类型：蝙蝠
-    baseHP: 150,                   // 基础生命值：15
+    baseHP: 70,                   // 基础生命值：15
     baseSpeed: 1.25,              // 基础移动速度：1.25
     baseDamage: 10,                // 基础伤害：5
     attackRange: 80,              // 攻击范围：80像素
@@ -80,11 +80,11 @@ export const monsterConfigs: MonsterConfigs = {
   // 骷髅配置
   [EnemyType.SKELETON]: {
     type: EnemyType.SKELETON,     // 怪物类型：骷髅
-    baseHP: 200,                 // 基础生命值：5000
+    baseHP: 80,                 // 基础生命值：5000
     baseSpeed: 0.5,               // 基础移动速度：0.5
     baseDamage: 15,               // 基础伤害：15
     attackRange: 120,             // 攻击范围：120像素
-    attackCooldown: 26,          // 攻击冷却：100帧
+    attackCooldown: 50,          // 攻击冷却：100帧
     projectileSpeed: 1,           // 子弹速度：4
     isRanged: true,               // 是否远程：是
     frameCount: 13,               // 动画帧数：13帧
@@ -96,7 +96,7 @@ export const monsterConfigs: MonsterConfigs = {
   // 大象配置
   [EnemyType.ELEPHANT]: {
     type: EnemyType.ELEPHANT,     // 怪物类型：大象
-    baseHP: 150,                  // 基础生命值：100
+    baseHP: 100,                  // 基础生命值：100
     baseSpeed: 0.4,               // 基础移动速度：0.4
     baseDamage: 30,               // 基础伤害：30
     attackRange: 30,              // 攻击范围：30像素（近战）
@@ -113,16 +113,16 @@ export const monsterConfigs: MonsterConfigs = {
   [EnemyType.BOSS]: {
     type: EnemyType.BOSS,         // 怪物类型：BOSS
     baseHP: 600,                  // 基础生命值：300
-    baseSpeed: 2.0,               // 基础移动速度：2.0
+    baseSpeed: 1.0,               // 基础移动速度：2.0
     baseDamage: 50,               // 基础伤害：30
     attackRange: 150,             // 攻击范围：150像素
-    attackCooldown: 30,          // 攻击冷却：120帧
+    attackCooldown: 60,          // 攻击冷却：120帧
     projectileSpeed: 2,           // 子弹速度：7
     isRanged: true,               // 是否远程：是
     frameCount: 0,                // 动画帧数：0（动态设置）
     imageBaseUrl: "",            // 图片基础URL：空（使用普通怪物的图片）
     baseSize: 50,                 // 基础尺寸：50像素
-    scaleFactor: 2.5,             // 缩放系数：2.5
+    scaleFactor: 4,             // 缩放系数：2.5
     isBoss: true,                 // 是否为BOSS：是
     eliteBonus: 3.0               // 精英加成：3.0倍
   }

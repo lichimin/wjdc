@@ -192,6 +192,7 @@ export interface PlayerState {
   speed: number;
   projectileSpeed: number;
   attackSpeed?: number;
+  attackRange?: number;
   
   // Additional Stats
   critRate?: number;

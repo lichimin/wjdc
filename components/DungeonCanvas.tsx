@@ -20,11 +20,12 @@ interface DungeonCanvasProps {
   skinData: SkinData | null;
   onActivateSkill?: (activate: (direction: 'left' | 'right') => void) => void;
   onActivateHealSkill?: (activate: () => void) => void;
+  onRollCooldown?: (cooldown: number) => void;
 }
 
 const TILE_SIZE = 32;
 const ANIMATION_SPEED = 100; // ms per frame
-const AUTO_FIRE_RANGE = 250;
+const DEFAULT_FIRE_RANGE = 250;
 const FIRE_RATE = 20; // Frames between shots
 const TEXT_FLOAT_SPEED = 0.8;
 
@@ -60,7 +61,24 @@ interface SkillAnimation {
   y: number;
 } // SkillAnimation interface
 
-export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSelect, selectedRoomId, inputRef, playerRef, visitedRef, enemiesRef, projectilesRef, floatingTextsRef, onOpenChest, onExtract, onGameOver, skinData, onActivateSkill, onActivateHealSkill }) => {
+export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ 
+  dungeon, 
+  onRoomSelect, 
+  selectedRoomId, 
+  inputRef, 
+  playerRef, 
+  visitedRef, 
+  enemiesRef, 
+  projectilesRef, 
+  floatingTextsRef, 
+  onOpenChest, 
+  onExtract, 
+  onGameOver, 
+  skinData,
+  onActivateSkill,
+  onActivateHealSkill,
+  onRollCooldown
+}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoverPos, setHoverPos] = useState<{x: number, y: number} | null>(null);
@@ -668,6 +686,13 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
          p.y = bestY;
          p.rollCooldown = BLINK_COOLDOWN;
          p.invincibilityTimer = 15;
+         
+         // Notify parent component about roll cooldown
+         if (onRollCooldown) {
+           // Convert frames to seconds (assuming 60fps)
+           const cooldownSeconds = Math.round(BLINK_COOLDOWN / 60);
+           onRollCooldown(cooldownSeconds);
+         }
        }
     }
 
@@ -702,7 +727,8 @@ export const DungeonCanvas: React.FC<DungeonCanvasProps> = ({ dungeon, onRoomSel
       const dy = ey - pCenterY;
       const dist = Math.sqrt(dx * dx + dy * dy);
       
-      if (dist < nearestDist && dist < AUTO_FIRE_RANGE) { // Only attack enemies within AUTO_FIRE_RANGE pixels
+      const fireRange = p.attackRange || DEFAULT_FIRE_RANGE;
+      if (dist < nearestDist && dist < fireRange) { // Only attack enemies within fire range pixels
         nearestDist = dist;
         nearestEnemy = e;
       }

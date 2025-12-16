@@ -13,6 +13,7 @@ import { SummaryModal } from './components/SummaryModal';
 import { Home } from './components/Home'; // Imported Home
 import SimpleLogin from './components/SimpleLogin';
 import { DungeonData, Room, ItemType, InputState, PlayerState, Enemy, Projectile, FloatingText, LootItem, Rarity, UserAttributes, UserSkin, SkinData } from './types';
+import { playerBaseStats } from './configs/playerConfig';
 import { GoogleGenAI } from "@google/genai";
 
 // --- CYBERPUNK JOYSTICK --- 
@@ -23,8 +24,12 @@ const Joystick: React.FC<{
   const containerRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
+  // Adjust default position to be higher up (from bottom: 5rem to bottom: 8rem)
+  const [touchPos, setTouchPos] = useState({ x: 64, y: window.innerHeight - 192 }); // Default position at bottom-left, higher up
   const touchIdRef = useRef<number | null>(null); // Track specific touch ID
   const activeTouchCountRef = useRef(0); // Track active touches
+  // Store default position (higher up)
+  const defaultPosRef = useRef({ x: 64, y: window.innerHeight - 192 });
 
   const handleStart = (clientX: number, clientY: number, touchId?: number) => {
     if (!active) {
@@ -32,20 +37,20 @@ const Joystick: React.FC<{
       if (touchId !== undefined) {
         touchIdRef.current = touchId;
       }
+      // Set joystick position to touch location
+      setTouchPos({ x: clientX, y: clientY });
       activeTouchCountRef.current = 1;
     }
     handleMove(clientX, clientY);
   };
 
   const handleMove = (clientX: number, clientY: number) => {
-    if (!containerRef.current || !active) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    let dx = clientX - centerX;
-    let dy = clientY - centerY;
+    if (!active) return;
+    // Calculate joystick movement relative to touch start position
+    let dx = clientX - touchPos.x;
+    let dy = clientY - touchPos.y;
     const distance = Math.sqrt(dx*dx + dy*dy);
-    const maxRadius = rect.width / 2;
+    const maxRadius = 64; // Fixed radius (128px joystick / 2)
     if (distance > maxRadius) {
       const ratio = maxRadius / distance;
       dx *= ratio; dy *= ratio;
@@ -57,12 +62,14 @@ const Joystick: React.FC<{
   const handleEnd = () => {
     setActive(false);
     setPos({ x: 0, y: 0 });
+    // Reset to default position at bottom-left when not active
+    setTouchPos(defaultPosRef.current);
     touchIdRef.current = null;
     activeTouchCountRef.current = 0;
     onStop();
   };
 
-  // Global listeners for drag outside
+  // Global listeners for touch events and drag outside
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => { 
       if (active) {
@@ -74,9 +81,20 @@ const Joystick: React.FC<{
         handleEnd(); 
       } 
     };
+    const onTouchStart = (e: TouchEvent) => {
+      // Handle touch events on left half of screen
+      const touch = e.touches[0];
+      if (touch.clientX < window.innerWidth / 2) {
+        // Only generate new joystick if not already active
+        if (!active) {
+          e.preventDefault();
+          handleStart(touch.clientX, touch.clientY, touch.identifier);
+        }
+      }
+    };
     const onTouchMove = (e: TouchEvent) => { 
       if (active) {
-        // Only handle the specific touch that started on the joystick
+        // Only handle the specific touch that started the joystick
         const touch = Array.from(e.touches).find(t => t.identifier === touchIdRef.current);
         if (touch) {
           try {
@@ -90,7 +108,7 @@ const Joystick: React.FC<{
     };
     const onTouchEnd = (e: TouchEvent) => { 
       if (active) {
-        // Only end if the specific touch that started on the joystick has ended
+        // Only end if the specific touch that started the joystick has ended
         const touch = Array.from(e.changedTouches).find(t => t.identifier === touchIdRef.current);
         if (touch) {
           handleEnd();
@@ -98,6 +116,9 @@ const Joystick: React.FC<{
       } 
     };
 
+    // Always listen for touch start events to generate joystick
+    window.addEventListener('touchstart', onTouchStart, { passive: false });
+    
     if (active) {
       // Use normal event listeners instead of capture phase to avoid conflicts
       window.addEventListener('mousemove', onMouseMove);
@@ -108,6 +129,7 @@ const Joystick: React.FC<{
       window.addEventListener('touchcancel', onTouchEnd);
     }
     return () => {
+      window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
       window.removeEventListener('touchmove', onTouchMove);
@@ -119,7 +141,7 @@ const Joystick: React.FC<{
   return (
     <div 
       ref={containerRef} 
-      className="w-32 h-32 relative touch-none select-none group"
+      className={`w-32 h-32 relative touch-none select-none group`}
       onMouseDown={(e) => {
         // Only prevent default for the initial click
         if (!active) {
@@ -127,24 +149,11 @@ const Joystick: React.FC<{
           handleStart(e.clientX, e.clientY);
         }
       }}
-      onTouchStart={(e) => {
-        // Only handle the first touch on the joystick
-        if (!active && e.touches.length === 1) {
-          e.preventDefault();
-          const touch = e.touches[0];
-          handleStart(touch.clientX, touch.clientY, touch.identifier);
-        }
-      }}
-      onTouchCancel={(e) => {
-        if (active) {
-          // Only cancel if it's the joystick touch
-          const touch = Array.from(e.changedTouches).find(t => t.identifier === touchIdRef.current);
-          if (touch) {
-            handleEnd();
-          }
-        }
-      }}
       style={{
+        // Position joystick at touch location when active
+        position: active ? 'fixed' : 'absolute',
+        left: active ? `${touchPos.x - 64}px` : '1rem',
+        top: active ? `${touchPos.y - 64}px` : 'calc(100% - 8rem)',
         // Prevent text selection and touch highlighting
         userSelect: 'none',
         touchAction: 'none',
@@ -302,27 +311,7 @@ const App: React.FC = () => {
     };
   }, []);
 
-  // Auto-fullscreen on mobile devices when game starts
-  useEffect(() => {
-    if (gameState === 'PLAYING' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-      // Only attempt auto-fullscreen on user interaction
-      const handleUserInteraction = () => {
-        if (!isFullscreen) {
-          toggleFullscreen();
-        }
-        window.removeEventListener('click', handleUserInteraction);
-        window.removeEventListener('touchstart', handleUserInteraction);
-      };
-
-      window.addEventListener('click', handleUserInteraction);
-      window.addEventListener('touchstart', handleUserInteraction);
-
-      return () => {
-        window.removeEventListener('click', handleUserInteraction);
-        window.removeEventListener('touchstart', handleUserInteraction);
-      };
-    }
-  }, [gameState, isFullscreen]);
+  // Removed auto-fullscreen on game start as per user request
 
   // Check authentication status on mount
   useEffect(() => {
@@ -624,19 +613,19 @@ const App: React.FC = () => {
       // Apply attributes to player
       if (data.data) {
         console.log('6. 应用用户属性到玩家:', data.data);
-        playerRef.current.damage = 15 + data.data.攻击力;
-        playerRef.current.speed = 3.5 + parseFloat(data.data.移动速度) / 100;
-        playerRef.current.projectileSpeed = 8 + parseFloat(data.data.子弹速度) / 100;
-        playerRef.current.attackSpeed = 1 + parseFloat(data.data.攻击速度) / 100;
-        playerRef.current.maxHealth = 100 + data.data.生命值;
+        playerRef.current.damage = (playerBaseStats.damage || 15) + data.data.攻击力;
+        playerRef.current.speed = (playerBaseStats.speed || 3.5) + parseFloat(data.data.移动速度) / 100;
+        playerRef.current.projectileSpeed = (playerBaseStats.projectileSpeed || 8) + parseFloat(data.data.子弹速度) / 100;
+        playerRef.current.attackSpeed = (playerBaseStats.attackSpeed || 1) + parseFloat(data.data.攻击速度) / 100;
+        playerRef.current.maxHealth = (playerBaseStats.maxHealth || 100) + data.data.生命值;
         playerRef.current.health = Math.min(playerRef.current.health, playerRef.current.maxHealth);
-        playerRef.current.critRate = parseFloat(data.data.暴击率) / 100;
-        playerRef.current.critDamage = parseFloat(data.data.暴击伤害) / 100 - 1; // Convert to decimal (e.g., 150% -> 0.5)
-        playerRef.current.lifesteal = parseFloat(data.data.吸血) / 100;
-        playerRef.current.dodgeRate = parseFloat(data.data.闪避) / 100;
-        playerRef.current.instantKillRate = parseFloat(data.data.秒杀) / 100;
-        playerRef.current.damageReduction = parseFloat(data.data.减伤) / 100;
-        playerRef.current.regen = data.data.恢复;
+        playerRef.current.critRate = (playerBaseStats.critRate || 0.05) + parseFloat(data.data.暴击率) / 100;
+        playerRef.current.critDamage = (playerBaseStats.critDamage || 0.15) + (parseFloat(data.data.暴击伤害) / 100 - 1); // Convert to decimal (e.g., 150% -> 0.5)
+        playerRef.current.lifesteal = (playerBaseStats.lifesteal || 0.03) + parseFloat(data.data.吸血) / 100;
+        playerRef.current.dodgeRate = (playerBaseStats.dodgeRate || 0.05) + parseFloat(data.data.闪避) / 100;
+        playerRef.current.instantKillRate = (playerBaseStats.instantKillRate || 0.01) + parseFloat(data.data.秒杀) / 100;
+        playerRef.current.damageReduction = (playerBaseStats.damageReduction || 0) + parseFloat(data.data.减伤) / 100;
+        playerRef.current.regen = (playerBaseStats.regen || 5) + data.data.恢复;
       }
     } catch (error) {
       console.error('=== App: 获取用户属性数据失败:', error);
@@ -666,14 +655,37 @@ const App: React.FC = () => {
   const [healSkillCooldown, setHealSkillCooldown] = useState(0);
   const [healSkillActive, setHealSkillActive] = useState(false);
   const activateHealSkillRef = useRef<(() => void) | null>(null);
+  
+  // Roll Skill State
+  const [rollSkillCooldown, setRollSkillCooldown] = useState(0);
+  const rollSkillRef = useRef<() => void>(null);
   const inputRef = useRef<InputState>({ dx: 0, dy: 0, isAttacking: false, attackPressed: false, isDodging: false });
   const playerRef = useRef<PlayerState>({
     x: 0, y: 0, facingLeft: false, isMoving: false, frameIndex: 0, lastFrameTime: 0,
-    health: 100, maxHealth: 100, attackCooldown: 0, fireCooldown: 0, invincibilityTimer: 0,
-    damage: 15, speed: 3.5, projectileSpeed: 8, attackSpeed: 1,
-    critRate: 0.05, critDamage: 0.15, dodgeRate: 0.05, regen: 5, regenTimer: 0, lifesteal: 0.03, instantKillRate: 0.01,
-    rollTimer: 0, rollCooldown: 0, rollVx: 0, rollVy: 0,
-    interactionTargetId: null, interactionTimer: 0
+    health: playerBaseStats.maxHealth || 100, 
+    maxHealth: playerBaseStats.maxHealth || 100, 
+    attackCooldown: 0, 
+    fireCooldown: 0, 
+    invincibilityTimer: 0,
+    damage: playerBaseStats.damage || 15, 
+    speed: playerBaseStats.speed || 3.5, 
+    projectileSpeed: playerBaseStats.projectileSpeed || 8, 
+    attackSpeed: playerBaseStats.attackSpeed || 1,
+    attackRange: playerBaseStats.attackRange || 250,
+    critRate: playerBaseStats.critRate || 0.05, 
+    critDamage: playerBaseStats.critDamage || 0.15, 
+    dodgeRate: playerBaseStats.dodgeRate || 0.05, 
+    regen: playerBaseStats.regen || 5, 
+    regenTimer: 0, 
+    lifesteal: playerBaseStats.lifesteal || 0.03, 
+    instantKillRate: playerBaseStats.instantKillRate || 0.01,
+    damageReduction: playerBaseStats.damageReduction || 0,
+    rollTimer: 0, 
+    rollCooldown: 0, 
+    rollVx: 0, 
+    rollVy: 0,
+    interactionTargetId: null, 
+    interactionTimer: 0
   });
 
   const visitedRef = useRef<boolean[][]>([]);
@@ -705,25 +717,35 @@ const App: React.FC = () => {
     };
   }, []);
   
-  // Skill cooldown timer
+  // Skill Cooldown Timer
   useEffect(() => {
     if (skillCooldown > 0) {
-      const timer = setInterval(() => {
+      const timer = setTimeout(() => {
         setSkillCooldown(prev => Math.max(0, prev - 1));
       }, 1000);
-      return () => clearInterval(timer);
+      return () => clearTimeout(timer);
     }
   }, [skillCooldown]);
   
-  // Heal skill cooldown timer
+  // Heal Skill Cooldown Timer
   useEffect(() => {
     if (healSkillCooldown > 0) {
-      const timer = setInterval(() => {
+      const timer = setTimeout(() => {
         setHealSkillCooldown(prev => Math.max(0, prev - 1));
       }, 1000);
-      return () => clearInterval(timer);
+      return () => clearTimeout(timer);
     }
   }, [healSkillCooldown]);
+  
+  // Roll Skill Cooldown Timer
+  useEffect(() => {
+    if (rollSkillCooldown > 0) {
+      const timer = setTimeout(() => {
+        setRollSkillCooldown(prev => Math.max(0, prev - 1));
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [rollSkillCooldown]);
 
   // Function to preload all treasure images
   const preloadImages = async (treasures: any[]) => {
@@ -978,6 +1000,9 @@ const App: React.FC = () => {
         return;
       }
       
+      // 获取API基础URL
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://8.130.43.130:10005';
+      
       // 发送请求到/api/v1/my-items接口保存物品
       const response = await fetch(`${apiBaseUrl}/api/v1/my-items`, {
         method: 'POST',
@@ -1172,6 +1197,7 @@ const App: React.FC = () => {
                skinData={userSkin?.skin || null}
                onActivateSkill={(skillFn) => { activateSkillRef.current = skillFn; }}
                onActivateHealSkill={(healSkillFn) => { activateHealSkillRef.current = healSkillFn; }}
+               onRollCooldown={(cooldown) => { setRollSkillCooldown(cooldown); }}
              />
            ) : (
              <div className="absolute inset-0 flex items-center justify-center text-cyan-500 animate-pulse font-mono tracking-widest text-sm">
@@ -1279,13 +1305,20 @@ const App: React.FC = () => {
               <div className="flex items-end gap-2">
                 {/* Dodge Button - Bottom Left */}
                 <button 
-                  className={`w-14 h-14 bg-gradient-to-br from-blue-900/70 to-blue-800/70 border-3 border-blue-700/80 rounded-full flex items-center justify-center text-white shadow-[0_0_15px_rgba(59,130,246,0.6)] transition-all active:scale-95 relative ${dashBtnActive ? 'from-blue-800/80 to-blue-700/80' : 'hover:from-blue-800/80 hover:to-blue-700/80 cursor-pointer'}`}
-                  onMouseDown={(e) => { inputRef.current.isDodging = true; setDashBtnActive(true); }}
+                  className={`w-14 h-14 bg-gradient-to-br from-blue-900/70 to-blue-800/70 border-3 border-blue-700/80 rounded-full flex items-center justify-center text-white shadow-[0_0_15px_rgba(59,130,246,0.6)] transition-all active:scale-95 relative ${dashBtnActive ? 'from-blue-800/80 to-blue-700/80' : 'hover:from-blue-800/80 hover:to-blue-700/80 cursor-pointer'} ${rollSkillCooldown > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={rollSkillCooldown > 0}
+                  onMouseDown={(e) => { if (rollSkillCooldown === 0) { inputRef.current.isDodging = true; setDashBtnActive(true); } }}
                   onMouseUp={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
                   onMouseLeave={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
-                  onTouchStart={(e) => { inputRef.current.isDodging = true; setDashBtnActive(true); }}
+                  onTouchStart={(e) => { if (rollSkillCooldown === 0) { inputRef.current.isDodging = true; setDashBtnActive(true); } }}
                   onTouchEnd={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
                   onTouchCancel={(e) => { inputRef.current.isDodging = false; setDashBtnActive(false); }}
+                  onClick={() => {
+                    if (rollSkillCooldown === 0) {
+                      // 设置冷却时间，与playerConfig.ts中的配置一致
+                      setRollSkillCooldown(Math.round((playerBaseStats.rollCooldown || 20000) / 1000));
+                    }
+                  }}
                 >
                   {/* Pixel Dash Icon */}
                   <svg width="32" height="32" viewBox="0 0 8 8" className="w-8 h-8">
@@ -1293,6 +1326,11 @@ const App: React.FC = () => {
 <path d="M4,2 L7,5 L4,8" stroke="white" strokeWidth="1" fill="none" />
                     <circle cx="1" cy="4" r="1" fill="white" />
                   </svg>
+                  {rollSkillCooldown > 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center font-pixel text-xs font-bold text-white">
+                      {rollSkillCooldown}
+                    </div>
+                  )}
                 </button>
               </div>
            </div>
